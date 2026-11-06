@@ -1,0 +1,58 @@
+# AGENTS.md — DISPATCH
+
+> Wird jede Session geladen. Kurz halten — Details leben in `docs/`.
+
+**DISPATCH — Your agents. Your publication.** Persönliche Blog-Engine in PHP: Agenten recherchieren und reichen per MCP ein, der Inhaber gibt frei, Besucher bekommen nur statische Dateien. Läuft auf der Wurzel von `https://quantum-canvas.de/`, neben CardMaker und CamScanner.
+
+Kontext, Scope, Abweichungen vom Konzept, Meilensteine: [`docs/PROJECT.md`](docs/PROJECT.md). Fachkonzept: [`docs/design/konzept-blog-engine.md`](docs/design/konzept-blog-engine.md). Vokabular: [`docs/glossary.md`](docs/glossary.md).
+
+---
+
+## Code finden — erst hier, dann suchen
+
+[`docs/code-map.md`](docs/code-map.md) zeigt Namensschema, Repo → Server und Faustregeln. Erst dort nachsehen, dann gezielt öffnen.
+
+---
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| Backend | PHP 8.5, kein Framework, kein Composer |
+| Datenbank | MySQL (Strato), PDO |
+| Website | statisches HTML aus PHP-Templates, Vanilla-JS-ES-Module |
+| Hosting | Strato Shared Hosting, ein SFTP-Zugang auf `www/` |
+| Deploy | `deploy.cmd` + WinSCP ([ADR-005](docs/decisions/005-deploy-skript.md)) |
+| CI | GitHub Actions, PHP-Syntaxprüfung |
+
+---
+
+## Conventions Index
+
+| Topic | File |
+|---|---|
+| PHP | [`docs/conventions/php.md`](docs/conventions/php.md) |
+| Frontend (Templates, CSS, JS) | [`docs/conventions/frontend.md`](docs/conventions/frontend.md) |
+| Linting | [`docs/conventions/linting.md`](docs/conventions/linting.md) |
+| Commits | [`docs/conventions/commits.md`](docs/conventions/commits.md) |
+| Definition of Done | [`docs/conventions/dod.md`](docs/conventions/dod.md) |
+
+---
+
+## Critical Rules
+
+1. **Nachbar-Anwendungen nie anfassen.** `/card/`, `/api/`, `/backend/` (CardMaker) und `/scanner/` (CamScanner) liegen im selben Webroot. Kein Abgleich mit Löschen auf die Wurzel; der Builder löscht nur, was in seinem Manifest steht, und schreibt nie in reservierte Namen ([ADR-001](docs/decisions/001-pfade-auf-gemeinsamer-domain.md)).
+2. **Die Wurzel-`.htaccess` vererbt sich in alle Nachbarordner.** Global nur HTTPS, `-Indexes`, `DirectoryIndex`; CSP, Header, `ErrorDocument` und Caching nur im Block, der die Nachbarn ausnimmt ([ADR-003](docs/decisions/003-wurzel-htaccess.md)).
+3. **PHP-Endpunkte nur unter `/dispatch/`** (dazu `/.well-known/oauth-*`). `/api/` gehört CardMaker.
+4. **`dispatch-app/` ist gesperrt und enthält `.env`.** Nach jedem Deploy muss `/dispatch-app/.env` mit 403 antworten ([ADR-002](docs/decisions/002-code-im-webroot-gesperrt.md)).
+5. **Nichts geht ohne Freigabe des Inhabers online.** Kein MCP- oder OAuth-Token kann veröffentlichen, Vorschläge übernehmen oder Formvorgaben ändern.
+6. **`docs/PROJECT.md` und die ADRs schlagen das Fachkonzept**, wo beide sich widersprechen.
+
+---
+
+## Wo du mehr findest
+
+- **Architektur-Entscheidungen:** [`docs/decisions/`](docs/decisions/)
+- **Aktive Planung:** [`docs/planning/`](docs/planning/) · **Archiv:** [`docs/archive/`](docs/archive/)
+- **Datenmodell:** Konzept → „Datenmodell"; `docs/models.md` entsteht mit den ersten Migrationen (Meilenstein 1)
+- **Projektwissen und Lücken:** [`docs/knowledge/`](docs/knowledge/) · **Projekt-Memory:** [`docs/memory/memory-index.md`](docs/memory/memory-index.md)

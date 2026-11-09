@@ -21,6 +21,8 @@ spl_autoload_register(static function (string $className): void {
     }
 });
 
+require_once __DIR__ . '/src/Site/functions.php';
+
 Env::load(getenv('DISPATCH_ENV_FILE') ?: __DIR__ . '/.env');
 
 set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {

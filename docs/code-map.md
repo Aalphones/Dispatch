@@ -39,16 +39,17 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `config.php` | Basis-URL, Pfade, Formvorgaben, reservierte Namen der obersten Ebene |
 | `src/Mcp/` | Protokoll (beide Generationen), Tool-Registry, `Tools/` |
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |
-| `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt |
-| `src/Auth/` | JWT, Login-Bremse, MCP-Tokens, Scopes |
+| `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`), Diagnose (`DiagController`, nur bis Ende Meilenstein 0) |
+| `src/Auth/` | Deploy-Token (`DeployToken`), JWT, Login-Bremse, MCP-Tokens, Scopes |
+| `src/Db/` | PDO-Verbindung (`Connection`), Migrator |
 | `src/Domain/` | Services und Repositories je Domäne |
-| `src/Site/` | Builder, Manifest, Suchindex, Feed, Sitemap |
+| `src/Site/` | Builder, Manifest, Template-Helfer `e()`, Suchindex, Feed, Sitemap |
 | `src/Util/` | Sanitizer, Formprüfung, HTTP-Client mit SSRF-Schutz, Bildvarianten, Zeit |
-| `templates/` | PHP-Templates der Website |
-| `theme/` | `style.css`, `site.js`, `redaktion/` (nachgeladen) |
+| `templates/` | PHP-Templates der Website (Meilenstein 0: `placeholder.php`, `404.php`) |
+| `theme/` | `style.css`, `site.js`, `redaktion/` (nachgeladen); Meilenstein 0: `placeholder.css` |
 | `defaults/` | Startinhalte als Markdown |
 | `migrations/` | nummerierte SQL-Dateien |
-| `storage/` | `media/`, `logs/` — nur auf dem Server und lokal, nicht im Git |
+| `storage/` | `manifest.json` (vom Builder geschriebene Dateien), `media/`, `logs/` — nur auf dem Server und lokal, nicht im Git |
 
 ## Faustregeln
 

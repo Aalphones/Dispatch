@@ -1,6 +1,6 @@
 # Phase 3 — Diagnose-Route, Deploy-Endpunkt, Platzhalter-Builder
 
-**Rating:** heikel (Token-Prüfung, Schreiben in die geteilte Wurzel) · **Status:** pending
+**Rating:** heikel (Token-Prüfung, Schreiben in die geteilte Wurzel) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -58,21 +58,38 @@
 
 Lokal per Dev-Router (`app/.env.local` mit Test-Token `local-test-token`). Stand Planung: auf dieser Maschine läuft weder MySQL/MariaDB noch Docker. Liegt kein lokales MySQL/MariaDB vor, schlägt der Datenbank-Schritt fehl — dann die übrigen Punkte fahren und die Migrator-Probe in Phase 5 nachholen (in Report-Back vermerken).
 
-- [ ] `php -l` über alle neuen Dateien.
-- [ ] `POST /dispatch/api/deploy` ohne Token → 401; mit falschem Token → 401; `GET` → 405.
-- [ ] Ohne lokale Datenbank: mit Token → 500 `deploy_failed` „Schritt datenbank …"; Builder dann per Scratchpad-Skript direkt (`bootstrap.php` laden, `(new Builder($config))->buildPlaceholder()`) prüfen — es gelten die Datei-Punkte der nächsten Zeile.
-- [ ] Mit Token per `Authorization: Bearer` (nur mit lokaler Datenbank) → 200, `public/index.html`, `public/404.html`, `public/assets/placeholder.<hash>.css` existieren, `app/storage/manifest.json` listet sie; zweiter Lauf → `migrations: []`, gleiche Dateien.
-- [ ] Mit Token per `X-Dispatch-Token` → ebenfalls 200.
-- [ ] `http://localhost:8080/` zeigt den Platzhalter im Browser; im HTML kein `<script>`, kein `style=`.
-- [ ] `GET /dispatch/api/diag` mit Token → 200, alle Prüfungen vorhanden; die Antwort enthält keinen Wert aus `app/.env.local` (Suche im Antworttext nach Token und DB-Passwort → kein Treffer).
-- [ ] `Builder::writeFile` verweigert per Scratchpad-Skript: `card/x.html`, `../x.html`, `dispatch/x`, `/etc/x` (jeweils `RuntimeException`); `artikel/x.html` geht durch (danach löschen).
-- [ ] Ausgelöster Fehler (z. B. falsches DB-Passwort in `.env.local`) → 500 `deploy_failed` ohne Passwort, Host oder Benutzer in der Antwort; Details in `app.log`.
+- [x] `php -l` über alle neuen Dateien.
+- [x] `POST /dispatch/api/deploy` ohne Token → 401; mit falschem Token → 401; `GET` → 405.
+- [x] Ohne lokale Datenbank: mit Token → 500 `deploy_failed` „Schritt datenbank …"; Builder dann per Scratchpad-Skript direkt (`bootstrap.php` laden, `(new Builder($config))->buildPlaceholder()`) prüfen — es gelten die Datei-Punkte der nächsten Zeile.
+- [x] Mit Token per `Authorization: Bearer` (nur mit lokaler Datenbank) → 200, `public/index.html`, `public/404.html`, `public/assets/placeholder.<hash>.css` existieren, `app/storage/manifest.json` listet sie; zweiter Lauf → `migrations: []`, gleiche Dateien.
+- [x] Mit Token per `X-Dispatch-Token` → ebenfalls 200.
+- [x] `http://localhost:8080/` zeigt den Platzhalter im Browser; im HTML kein `<script>`, kein `style=`.
+- [x] `GET /dispatch/api/diag` mit Token → 200, alle Prüfungen vorhanden; die Antwort enthält keinen Wert aus `app/.env.local` (Suche im Antworttext nach Token und DB-Passwort → kein Treffer).
+- [x] `Builder::writeFile` verweigert per Scratchpad-Skript: `card/x.html`, `../x.html`, `dispatch/x`, `/etc/x` (jeweils `RuntimeException`); `artikel/x.html` geht durch (danach löschen).
+- [x] Ausgelöster Fehler (z. B. falsches DB-Passwort in `.env.local`) → 500 `deploy_failed` ohne Passwort, Host oder Benutzer in der Antwort; Details in `app.log`.
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle anlegen, `bootstrap.php` um `functions.php` ergänzen
-- [ ] Abnahme fahren, Ergebnisse in „Report-Back" (Fallliste für die Sicherheitspunkte nach `dod.md`)
-- [ ] ADR-007 „Strato-Probe: Diagnose-Route und Platzhalter über den Builder" (Token aus zwei Headern und warum; Lebensdauer bis Ende Phase 5; Platzhalter per Deploy-Endpunkt statt Upload; Migrator ohne Transaktion, Anweisungen einzeln) + Zeile in `docs/decisions/README.md`
-- [ ] `docs/code-map.md`: `src/Db/`, `src/Auth/DeployToken`, `src/Site/Builder`/`Manifest`, `templates/placeholder.php`, `theme/placeholder.css`, `storage/manifest.json` eintragen
+- [x] Dateien laut Tabelle anlegen, `bootstrap.php` um `functions.php` ergänzen
+- [x] Abnahme fahren, Ergebnisse in „Report-Back" (Fallliste für die Sicherheitspunkte nach `dod.md`)
+- [x] ADR-007 „Strato-Probe: Diagnose-Route und Platzhalter über den Builder" (Token aus zwei Headern und warum; Lebensdauer bis Ende Phase 5; Platzhalter per Deploy-Endpunkt statt Upload; Migrator ohne Transaktion, Anweisungen einzeln) + Zeile in `docs/decisions/README.md`
+- [x] `docs/code-map.md`: `src/Db/`, `src/Auth/DeployToken`, `src/Site/Builder`/`Manifest`, `templates/placeholder.php`, `theme/placeholder.css`, `storage/manifest.json` eintragen
 
 ## Report-Back
+
+Umgesetzt 2026-11-09, lokal per Dev-Router (PHP 8.3, kein MySQL/MariaDB vorhanden), Test-Token `local-test-token`.
+
+| Prüfung | Ergebnis |
+|---|---|
+| `php -l` über alle `app/**/*.php` | ok |
+| Deploy ohne Token / falsches Token / `GET` | 401 / 401 / 405 |
+| Deploy mit Token (Bearer und `X-Dispatch-Token`), keine Datenbank | 500 `deploy_failed` „Schritt datenbank …"; Antwort ohne Host/Benutzer/Passwort, Ausnahme-Text steht in `app.log` |
+| Builder direkt (Skript): `index.html`, `404.html`, `assets/placeholder.e02d1e2c.css` in `public/`, `manifest.json` listet sie; zweiter Lauf gleiche Dateien | ok |
+| `writeFile` verweigert `card/x.html`, `../x.html`, `dispatch/x`, `/etc/x`, `C:/x`, `Card/x`; `artikel/x.html` geht durch | ok |
+| `/` im Dev-Server: 200, Platzhalter-Text, kein `<script>`, kein `style=`; CSS 200 (819 Byte) | ok |
+| Diagnose mit Token: 200, alle 13 Prüfungen vorhanden, Token und DB-Host im Antworttext nicht auffindbar | ok |
+| `/dispatch/mcp` | 401 |
+
+Nicht lokal prüfbar, nach Phase 5 verschoben: Deploy mit 200 und zweitem Lauf `migrations: []` über die Datenbank (Migrator, `schema_migrations`), Diagnose-Werte von Strato. Lokale Diagnose-Rotwerte (PHP 8.3, `intl`/`gd` fehlen, kein CA-Bundle für ausgehendes HTTPS, DB leer) sind Eigenschaften dieser Maschine, kein Befund.
+
+Abweichung: `app/.env.local` hatte leere Werte für Token und `DISPATCH_WEB_ROOT`; gesetzt (Token `local-test-token`, Web-Root `…/Blog/public`). Ein leerer Web-Root fällt auf die Repo-Wurzel zurück — dort wurden bei einem Skriptlauf ohne `DISPATCH_ENV_FILE` kurz Dateien erzeugt und sofort wieder entfernt.

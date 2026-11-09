@@ -10,3 +10,4 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 004 | [Keine automatisierten Tests](004-keine-automatisierten-tests.md) | Akzeptiert |
 | 005 | [Deploy per Skript, nur eigene Ordner, mit Nachprüfung](005-deploy-skript.md) | Akzeptiert |
 | 006 | [Lokale Entwicklung: Dev-Router und eigene Env-Datei](006-lokale-entwicklung-dev-router.md) | Akzeptiert |
+| 007 | [Strato-Probe: Diagnose-Route und Platzhalter über den Builder](007-diagnose-route-und-platzhalter-builder.md) | Akzeptiert |

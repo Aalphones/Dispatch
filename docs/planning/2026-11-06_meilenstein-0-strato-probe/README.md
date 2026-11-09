@@ -8,7 +8,7 @@ Ziel: DISPATCH steht auf der Wurzel von `https://quantum-canvas.de/` mit Brücke
 |---|---|---|---|
 | 1 | [Gerüst, Brücke, Sperre, lokaler Dev-Server](phase-1-geruest.md) | standard | complete |
 | 2 | [Wurzel-`.htaccess`](phase-2-wurzel-htaccess.md) | heikel | complete |
-| 3 | [Diagnose-Route, Deploy-Endpunkt, Platzhalter-Builder](phase-3-diagnose-deploy-endpunkt.md) | heikel | pending |
+| 3 | [Diagnose-Route, Deploy-Endpunkt, Platzhalter-Builder](phase-3-diagnose-deploy-endpunkt.md) | heikel | complete |
 | 4 | [`deploy.cmd` mit Rauchtest](phase-4-deploy-skript.md) | standard | pending |
 | 5 | [Probe auf Strato, Messwerte festhalten, Diagnose entfernen](phase-5-strato-probe.md) | standard | pending |
 

@@ -1,0 +1,251 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Dispatch\Domain;
+
+use PDO;
+
+final class PostRepository
+{
+    /** Spalten, die insert/update schreiben dürfen — nur diese Namen landen im SQL. */
+    private const WRITABLE = [
+        'slug', 'title', 'subtitle', 'kicker', 'excerpt', 'content_html', 'status', 'tags', 'layout', 'accent',
+        'cover_media_id', 'seo_title', 'seo_description', 'origin', 'queue_item_id', 'depth', 'editor_notes',
+        'review_note', 'ai_assisted', 'word_count', 'revision',
+    ];
+
+    private const LIST_COLUMNS = [
+        'id', 'slug', 'title', 'subtitle', 'kicker', 'excerpt', 'status', 'tags', 'layout', 'accent',
+        'cover_media_id', 'seo_title', 'seo_description', 'origin', 'queue_item_id', 'depth', 'review_note',
+        'ai_assisted', 'word_count', 'revision', 'published_revision', 'published_at', 'created_at', 'updated_at',
+    ];
+
+    private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
+
+    public function __construct(private readonly PDO $pdo)
+    {
+    }
+
+    /** @return array<string, mixed>|null */
+    public function find(int $id): ?array
+    {
+        return $this->findOne('id', $id);
+    }
+
+    /** @return array<string, mixed>|null */
+    public function findBySlug(string $slug): ?array
+    {
+        return $this->findOne('slug', $slug);
+    }
+
+    public function slugExists(string $slug, ?int $exceptId): bool
+    {
+        $statement = $this->pdo->prepare('SELECT 1 FROM posts WHERE slug = ? AND id <> ? LIMIT 1');
+        $statement->execute([$slug, $exceptId ?? 0]);
+
+        return $statement->fetchColumn() !== false;
+    }
+
+    /** @param array<string, mixed> $fields */
+    public function insert(array $fields): int
+    {
+        $columns = array_keys($fields);
+        $this->assertWritable($columns);
+
+        $statement = $this->pdo->prepare(sprintf(
+            'INSERT INTO posts (%s, created_at, updated_at) VALUES (%s, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+            implode(', ', $columns),
+            implode(', ', array_fill(0, count($columns), '?'))
+        ));
+        $statement->execute($this->encode($fields));
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /** @param array<string, mixed> $fields */
+    public function update(int $id, array $fields): void
+    {
+        $columns = array_keys($fields);
+        $this->assertWritable($columns);
+
+        $assignments = array_map(static fn (string $column): string => $column . ' = ?', $columns);
+        $statement = $this->pdo->prepare(
+            'UPDATE posts SET ' . implode(', ', $assignments) . ', updated_at = UTC_TIMESTAMP() WHERE id = ?'
+        );
+        $statement->execute([...$this->encode($fields), $id]);
+    }
+
+    /**
+     * Ohne `content_html` und `editor_notes` — Listen sollen klein bleiben.
+     *
+     * @param list<string> $statuses leer = alle
+     * @return list<array<string, mixed>>
+     */
+    public function list(array $statuses, int $limit, int $offset): array
+    {
+        $sql = 'SELECT ' . implode(', ', self::LIST_COLUMNS) . ' FROM posts';
+        if ($statuses !== []) {
+            $sql .= ' WHERE status IN (' . implode(', ', array_fill(0, count($statuses), '?')) . ')';
+        }
+        $sql .= ' ORDER BY updated_at DESC, id DESC LIMIT ? OFFSET ?';
+
+        $statement = $this->pdo->prepare($sql);
+        $position = 1;
+        foreach ($statuses as $status) {
+            $statement->bindValue($position++, $status);
+        }
+        $statement->bindValue($position++, max(1, $limit), PDO::PARAM_INT);
+        $statement->bindValue($position, max(0, $offset), PDO::PARAM_INT);
+        $statement->execute();
+
+        return array_map(fn (array $row): array => $this->decode($row), $statement->fetchAll());
+    }
+
+    public function mediaUid(int $mediaId): ?string
+    {
+        $statement = $this->pdo->prepare('SELECT uid FROM media WHERE id = ?');
+        $statement->execute([$mediaId]);
+        $uid = $statement->fetchColumn();
+
+        return $uid === false ? null : (string) $uid;
+    }
+
+    /** @param list<array{category_id: int, is_primary: bool}> $rows */
+    public function replaceCategories(int $postId, array $rows): void
+    {
+        $this->pdo->prepare('DELETE FROM post_categories WHERE post_id = ?')->execute([$postId]);
+
+        $insert = $this->pdo->prepare('INSERT INTO post_categories (post_id, category_id, is_primary) VALUES (?, ?, ?)');
+        foreach ($rows as $row) {
+            $insert->execute([$postId, $row['category_id'], $row['is_primary'] ? 1 : 0]);
+        }
+    }
+
+    /** @return list<array{slug: string, name: string, primary: bool}> Hauptkategorie zuerst */
+    public function categories(int $postId): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT c.slug, c.name, pc.is_primary FROM post_categories pc
+             JOIN categories c ON c.id = pc.category_id
+             WHERE pc.post_id = ? ORDER BY pc.is_primary DESC, c.name, c.id'
+        );
+        $statement->execute([$postId]);
+
+        return array_map(
+            static fn (array $row): array => [
+                'slug' => (string) $row['slug'],
+                'name' => (string) $row['name'],
+                'primary' => (int) $row['is_primary'] === 1,
+            ],
+            $statement->fetchAll()
+        );
+    }
+
+    /** @param list<array<string, mixed>> $rows normalisiert, in Anzeige-Reihenfolge */
+    public function replaceSources(int $postId, array $rows): void
+    {
+        $this->pdo->prepare('DELETE FROM sources WHERE post_id = ?')->execute([$postId]);
+
+        $insert = $this->pdo->prepare(
+            'INSERT INTO sources (post_id, ref, position, kind, title, url, publisher, author, published, accessed, note)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        foreach (array_values($rows) as $position => $row) {
+            $insert->execute([
+                $postId, $row['ref'], $position, $row['kind'], $row['title'], $row['url'],
+                $row['publisher'], $row['author'], $row['published'], $row['accessed'], $row['note'],
+            ]);
+        }
+    }
+
+    /** @return list<array<string, mixed>> in Reihenfolge der Liste */
+    public function sources(int $postId): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT ref, kind, title, url, publisher, author, published, accessed, note
+             FROM sources WHERE post_id = ? ORDER BY position'
+        );
+        $statement->execute([$postId]);
+
+        return $statement->fetchAll();
+    }
+
+    /** @param array<string, mixed> $snapshot */
+    public function insertRevision(int $postId, int $revision, array $snapshot, string $actor): void
+    {
+        $statement = $this->pdo->prepare(
+            'INSERT INTO post_revisions (post_id, revision, snapshot, actor, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())'
+        );
+        $statement->execute([$postId, $revision, json_encode($snapshot, self::JSON_FLAGS), $actor]);
+    }
+
+    /** @return array<string, mixed>|null der Snapshot */
+    public function revision(int $postId, int $revision): ?array
+    {
+        $statement = $this->pdo->prepare('SELECT snapshot FROM post_revisions WHERE post_id = ? AND revision = ?');
+        $statement->execute([$postId, $revision]);
+        $snapshot = $statement->fetchColumn();
+
+        return $snapshot === false ? null : json_decode((string) $snapshot, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    /** @return list<array{revision: int, actor: string, created_at: string}> neueste zuerst */
+    public function revisions(int $postId): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT revision, actor, created_at FROM post_revisions WHERE post_id = ? ORDER BY revision DESC'
+        );
+        $statement->execute([$postId]);
+
+        return $statement->fetchAll();
+    }
+
+    /** @return array<string, mixed>|null */
+    private function findOne(string $column, int|string $value): ?array
+    {
+        $statement = $this->pdo->prepare('SELECT * FROM posts WHERE ' . $column . ' = ?');
+        $statement->execute([$value]);
+        $row = $statement->fetch();
+
+        return $row === false ? null : $this->decode($row);
+    }
+
+    /** @param list<string> $columns */
+    private function assertWritable(array $columns): void
+    {
+        foreach ($columns as $column) {
+            if (!in_array($column, self::WRITABLE, true)) {
+                throw new \InvalidArgumentException('Unbekannte Artikel-Spalte: ' . $column);
+            }
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $fields
+     * @return list<mixed>
+     */
+    private function encode(array $fields): array
+    {
+        if (array_key_exists('tags', $fields)) {
+            $fields['tags'] = json_encode($fields['tags'], self::JSON_FLAGS);
+        }
+        if (array_key_exists('ai_assisted', $fields)) {
+            $fields['ai_assisted'] = $fields['ai_assisted'] ? 1 : 0;
+        }
+
+        return array_values($fields);
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private function decode(array $row): array
+    {
+        $row['tags'] = json_decode((string) $row['tags'], true, 512, JSON_THROW_ON_ERROR);
+        $row['ai_assisted'] = (int) $row['ai_assisted'] === 1;
+
+        return $row;
+    }
+}

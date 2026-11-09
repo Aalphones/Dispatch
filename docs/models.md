@@ -137,6 +137,8 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 | `published_at` | DATETIME NULL | |
 | `created_at`, `updated_at` | DATETIME | |
 
+**Regeln (`Domain/PostService`, `Util/Text`).** Slug aus dem Titel: `ä→ae, ö→oe, ü→ue, ß→ss`, dann ASCII-Transliteration, alles außer `[a-z0-9]` → `-`, höchstens 80 Zeichen an einer Wortgrenze, leer → `artikel`; belegt → `-2`, `-3`, … (nur automatisch erzeugte), ausdrücklich gesetzt und belegt → `slug_taken`. Nach der Veröffentlichung (`published_revision` gesetzt) ändert nur der Inhaber den Slug (`slug_locked`). Wortzahl (`word_count`): Blockelemente zählen als Trennung, Tags entfernt, Entities dekodiert, ein Wort ist eine Folge aus Buchstaben/Ziffern, innen verbunden durch `'`, `’` oder `-` („Test-Satz“ = 1, „3,5“ = 2). Jedes Speichern erhöht `revision` und schreibt eine Zeile in `post_revisions`; `update` durch einen Nicht-Inhaber setzt `review` → `draft` zurück, `published` bleibt, `archived` ist gesperrt.
+
 ## post_revisions (005)
 
 | Spalte | Typ | Hinweis |
@@ -147,6 +149,8 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 | `snapshot` | JSON | |
 | `actor` | VARCHAR(120) | |
 | `created_at` | DATETIME | |
+
+`snapshot` ist das vollständige Bild des Arbeitsstands: `id`, `revision`, `slug`, `title`, `subtitle`, `kicker`, `excerpt`, `content_html`, `tags`, `layout`, `accent`, `cover_media_uid`, `seo_title`, `seo_description`, `origin`, `queue_item_id`, `depth`, `ai_assisted`, `word_count`, `editor_notes`, `categories` (`{slug, name, primary}`), `sources` (`{ref, kind, title, url, publisher, author, published, accessed, note}`). Nicht enthalten: `status`, `review_note`, `published_revision`, `published_at` (Ablauf, nicht Inhalt). MySQL sortiert JSON-Schlüssel beim Speichern um — die Reihenfolge der Schlüssel ist ohne Bedeutung.
 
 ## post_categories (005)
 

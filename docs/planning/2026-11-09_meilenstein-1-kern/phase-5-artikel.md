@@ -1,6 +1,6 @@
 # Phase 5 — Artikel: Quellen, Kategorien, Revisionen
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -68,17 +68,22 @@
 
 Scratchpad-Skripte gegen `dispatch_dev` (vorher eine aktive Kategorie und ein Bild aus Phase 4 anlegen).
 
-- [ ] `create` mit Titel „Über Größe & Maß", Inhalt mit `<script>`, zwei Quellen, Kategorie, Titelbild → Slug `ueber-groesse-mass`, `removed` nennt das Skript, `revision = 1`, eine Zeile in `post_revisions`, Snapshot enthält Quellen, Kategorie (`primary: true`) und `cover_media_uid`, Audit `post.create`.
-- [ ] Zweiter Artikel mit gleichem Titel → Slug `ueber-groesse-mass-2`; ausdrücklich `slug: 'ueber-groesse-mass'` → `slug_taken`.
-- [ ] `update` nur `title` → `revision = 2`, Quellen und Kategorien unverändert; `update` mit `sources: []` → keine Quellen mehr, Revision 3; `revision(id, 2)` liefert den alten Stand mit Quellen.
-- [ ] Doppelter `ref`, unbekannte Kategorie, Kategorie `active = 0`, zwei `primary`, `accent: 'rot'`, Titelbild-UID eines PDFs → je der benannte Fehler, **keine** Änderung in der DB (Revision unverändert).
-- [ ] Artikel per SQL auf `status = 'review'` → `update` durch `mcp:test` → `draft`; durch `owner` → bleibt `review`. Per SQL `published_revision = 1`, `status = 'published'` → `update` durch `mcp:test` → bleibt `published`, `revision` steigt; Slug-Änderung durch `mcp:test` → `slug_locked`.
-- [ ] `Text::wordCount('<p>Das ist&nbsp;ein Test-Satz, oder? 3,5 Mio.</p>')` → im Report-Back mit Begründung; der Wert muss „Test-Satz" als ein Wort zählen.
+- [x] `create` mit Titel „Über Größe & Maß", Inhalt mit `<script>`, zwei Quellen, Kategorie, Titelbild → Slug `ueber-groesse-mass`, `removed` nennt das Skript, `revision = 1`, eine Zeile in `post_revisions`, Snapshot enthält Quellen, Kategorie (`primary: true`) und `cover_media_uid`, Audit `post.create`.
+- [x] Zweiter Artikel mit gleichem Titel → Slug `ueber-groesse-mass-2`; ausdrücklich `slug: 'ueber-groesse-mass'` → `slug_taken`.
+- [x] `update` nur `title` → `revision = 2`, Quellen und Kategorien unverändert; `update` mit `sources: []` → keine Quellen mehr, Revision 3; `revision(id, 2)` liefert den alten Stand mit Quellen.
+- [x] Doppelter `ref`, unbekannte Kategorie, Kategorie `active = 0`, zwei `primary`, `accent: 'rot'`, Titelbild-UID eines PDFs → je der benannte Fehler, **keine** Änderung in der DB (Revision unverändert).
+- [x] Artikel per SQL auf `status = 'review'` → `update` durch `mcp:test` → `draft`; durch `owner` → bleibt `review`. Per SQL `published_revision = 1`, `status = 'published'` → `update` durch `mcp:test` → bleibt `published`, `revision` steigt; Slug-Änderung durch `mcp:test` → `slug_locked`.
+- [x] `Text::wordCount('<p>Das ist&nbsp;ein Test-Satz, oder? 3,5 Mio.</p>')` → im Report-Back mit Begründung; der Wert muss „Test-Satz" als ein Wort zählen.
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle
-- [ ] `docs/models.md`: Snapshot-Format, Slug-Regel, Wortzahl-Regel
-- [ ] `docs/code-map.md`: `Util/Text`, `Domain/Post*`
+- [x] Dateien laut Tabelle
+- [x] `docs/models.md`: Snapshot-Format, Slug-Regel, Wortzahl-Regel
+- [x] `docs/code-map.md`: `Util/Text`, `Domain/Post*`
 
 ## Report-Back
+
+- Ergebnis: `Util/Text`, `Domain/PostRepository`, `Domain/PostService` stehen; alle sechs Abnahmepunkte per Skript grün. `wordCount('<p>Das ist&nbsp;ein Test-Satz, oder? 3,5 Mio.</p>')` = 8 (Das, ist, ein, Test-Satz, oder, 3, 5, Mio — „Test-Satz“ ein Wort, „3,5“ zwei).
+- Abweichung: Blockelemente (`p`, `li`, `br` …) werden vor `strip_tags` durch ein Leerzeichen ersetzt, sonst verschmilzt `<p>eins</p><p>zwei</p>` zu einem Wort.
+- Zusatz: `PostRepository::mediaUid(int)` (Snapshot braucht die Medien-UID); unbekannte Eingabefelder → `invalid_value`; `list()` sortiert nach `updated_at DESC`.
+- Hinweis: MySQL sortiert JSON-Schlüssel im Snapshot um (Spalte `JSON`); Reihenfolge ohne Bedeutung, in `models.md` vermerkt.

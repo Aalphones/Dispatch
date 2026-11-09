@@ -1,6 +1,6 @@
 # Phase 1 — Gerüst, Brücke, Sperre, lokaler Dev-Server
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -39,19 +39,20 @@
 
 Lokal mit `C:\Users\sasch\develop\.tools\php\php.exe` (8.5.9), Ordner `public/` anlegen, `app/.env.local` aus `dev.env.example`:
 
-- [ ] `php -l` über jede neue `.php`-Datei: keine Fehler.
-- [ ] `curl -i http://localhost:8080/dispatch/mcp` → 401, JSON `{"error":"unauthorized",…}`, Header `WWW-Authenticate: Bearer`, `Cache-Control: no-store`.
-- [ ] `curl -i http://localhost:8080/dispatch/gibt-es-nicht` → 404 JSON `not_found`.
-- [ ] `curl -i http://localhost:8080/dispatch-app/.env` → 403.
-- [ ] Ausnahme-Pfad: vorübergehend `throw new RuntimeException('probe');` als erste Zeile nach dem Bootstrap in `app/index.php` → Anfrage liefert 500 JSON `server_error`, `app/storage/logs/app.log` hat eine Zeile mit `probe`. Danach Zeile wieder entfernen.
-- [ ] Env-Parser: Skript im Scratchpad lädt eine Testdatei mit `X='a#b c'` und `Y=plain` → `Env::get('X') === 'a#b c'`, `Env::get('Y') === 'plain'`.
+- [x] `php -l` über jede neue `.php`-Datei: keine Fehler.
+- [x] `curl -i http://localhost:8080/dispatch/mcp` → 401, JSON `{"error":"unauthorized",…}`, Header `WWW-Authenticate: Bearer`, `Cache-Control: no-store`.
+- [x] `curl -i http://localhost:8080/dispatch/gibt-es-nicht` → 404 JSON `not_found`.
+- [x] `curl -i http://localhost:8080/dispatch-app/.env` → 403.
+- [x] Ausnahme-Pfad: vorübergehend `throw new RuntimeException('probe');` als erste Zeile nach dem Bootstrap in `app/index.php` → Anfrage liefert 500 JSON `server_error`, `app/storage/logs/app.log` hat eine Zeile mit `probe`. Danach Zeile wieder entfernen.
+- [x] Env-Parser: Skript im Scratchpad lädt eine Testdatei mit `X='a#b c'` und `Y=plain` → `Env::get('X') === 'a#b c'`, `Env::get('Y') === 'plain'`.
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle anlegen
-- [ ] Abnahme fahren, Ergebnisse in „Report-Back"
-- [ ] ADR-006 „Lokale Entwicklung: Dev-Router und eigene Env-Datei" (Kontext: `deploy.cmd` überschreibt `app/.env`; Optionen: gemeinsame Datei / `DISPATCH_ENV_FILE` + `.env.local`; Entscheidung; Konsequenz: Dev-Router ist der einzige Setzer) + Zeile in `docs/decisions/README.md`
-- [ ] `docs/code-map.md`: Zeile „Noch kein Code" anpassen; `bootstrap.php`, `src/Http/`, `dev-router.php`, `dev.env.example` eintragen
-- [ ] `AGENTS.md` bzw. `README.md`: Abschnitt „Lokal starten" mit Startbefehl (eine Zeile + Verweis auf `dev.env.example`)
+- [x] Dateien laut Tabelle anlegen
+- [x] Abnahme fahren, Ergebnisse in „Report-Back"
+- [x] ADR-006 „Lokale Entwicklung: Dev-Router und eigene Env-Datei" (Kontext: `deploy.cmd` überschreibt `app/.env`; Optionen: gemeinsame Datei / `DISPATCH_ENV_FILE` + `.env.local`; Entscheidung; Konsequenz: Dev-Router ist der einzige Setzer) + Zeile in `docs/decisions/README.md`
+- [x] `docs/code-map.md`: Zeile „Noch kein Code" anpassen; `bootstrap.php`, `src/Http/`, `dev-router.php`, `dev.env.example` eintragen
+- [x] `AGENTS.md` bzw. `README.md`: Abschnitt „Lokal starten" mit Startbefehl (eine Zeile + Verweis auf `dev.env.example`)
 
 ## Report-Back
+Alle sechs Abnahmepunkte mit `php.exe` 8.5.9 und `php -S localhost:8080 -t public dev-router.php` durchgespielt: `php -l` über alle neuen Dateien ohne Fehler · `/dispatch/mcp` → 401 JSON `unauthorized`, `WWW-Authenticate: Bearer`, `Cache-Control: no-store` · `/dispatch/gibt-es-nicht` → 404 `not_found` · `/dispatch-app/.env` → 403 · temporäres `throw` → 500 `server_error`, Logzeile mit `probe` (Zeile wieder entfernt) · Env-Parser: `X='a#b c'` und `Y=plain` korrekt. Nicht geprüft: die echte Brücke und Sperre (`.htaccess`) — dafür gibt es lokal keinen Apache; Nachweis folgt in Phase 5.

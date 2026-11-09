@@ -2,6 +2,7 @@
 deploy.env
 .env
 app/.env
+app/.env.local
 
 # Laufzeitdaten und lokal gebaute Website
 app/storage/

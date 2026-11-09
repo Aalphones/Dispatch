@@ -1,5 +1,7 @@
 # AGENTS.md — DISPATCH
 
+🚧 Aktive Arbeit → STATE.md
+
 > Wird jede Session geladen. Kurz halten — Details leben in `docs/`.
 
 **DISPATCH — Your agents. Your publication.** Persönliche Blog-Engine in PHP: Agenten recherchieren und reichen per MCP ein, der Inhaber gibt frei, Besucher bekommen nur statische Dateien. Läuft auf der Wurzel von `https://quantum-canvas.de/`, neben CardMaker und CamScanner.
@@ -24,6 +26,12 @@ Kontext, Scope, Abweichungen vom Konzept, Meilensteine: [`docs/PROJECT.md`](docs
 | Hosting | Strato Shared Hosting, ein SFTP-Zugang auf `www/` |
 | Deploy | `deploy.cmd` + WinSCP ([ADR-005](docs/decisions/005-deploy-skript.md)) |
 | CI | GitHub Actions, PHP-Syntaxprüfung |
+
+---
+
+## Lokal starten
+
+`php -S localhost:8080 -t public dev-router.php` — vorher `dev.env.example` nach `app/.env.local` kopieren ([ADR-006](docs/decisions/006-lokale-entwicklung-dev-router.md)).
 
 ---
 

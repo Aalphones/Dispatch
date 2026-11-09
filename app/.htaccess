@@ -1,0 +1,13 @@
+# Der Code wird nie über eine Adresse aufgerufen: die Brücke unter /dispatch/ bindet ihn per
+# Dateizugriff ein, und das ist von dieser Sperre nicht betroffen. Damit sind .env, src/,
+# storage/ und migrations/ von außen gesperrt (ADR-002).
+
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

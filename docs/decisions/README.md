@@ -9,3 +9,4 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 003 | [Die Wurzel-`.htaccess` gehört DISPATCH](003-wurzel-htaccess.md) | Akzeptiert |
 | 004 | [Keine automatisierten Tests](004-keine-automatisierten-tests.md) | Akzeptiert |
 | 005 | [Deploy per Skript, nur eigene Ordner, mit Nachprüfung](005-deploy-skript.md) | Akzeptiert |
+| 006 | [Lokale Entwicklung: Dev-Router und eigene Env-Datei](006-lokale-entwicklung-dev-router.md) | Akzeptiert |

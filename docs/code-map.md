@@ -1,6 +1,6 @@
 # Code-Map — DISPATCH
 
-Feature → Ordner. Bewusst grob, keine Zeilennummern. Noch kein Code — die Struktur steht fest, die Dateien entstehen ab Meilenstein 0.
+Feature → Ordner. Bewusst grob, keine Zeilennummern. Gerüst (Bootstrap, Http, Env, Log, Brücke, Dev-Router) steht seit Meilenstein 0; übrige Ordner entstehen mit ihren Meilensteinen.
 
 ## Namensschema (erst raten, dann suchen)
 
@@ -27,12 +27,15 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | — | `index.html`, `artikel/`, `assets/`, `media/`, … | vom Builder erzeugt, nie hochgeladen |
 | `bin/dispatch` | — | CLI, nur lokal (`hash-password`, `token:create`, `build`) |
 | `deploy.cmd` | — | Deploy (ADR-005) |
+| `dev-router.php`, `dev.env.example` | — | lokaler Server `php -S` mit Brücke und Sperre, Vorlage für `app/.env.local` (ADR-006) |
 
 ## Ordner in `app/`
 
 | Ordner | Aufgabe |
 |---|---|
+| `bootstrap.php` | Autoloader, `.env` laden, Fehler-Handler; liefert die Konfiguration |
 | `index.php` | Router: `/dispatch/mcp` → Mcp, `/dispatch/api/*` → Api, `/dispatch/oauth/*` und `/.well-known/oauth-*` → OAuth |
+| `src/Http/` | `Request`, `Response` (JSON-Antworten, Fehlerformat) |
 | `config.php` | Basis-URL, Pfade, Formvorgaben, reservierte Namen der obersten Ebene |
 | `src/Mcp/` | Protokoll (beide Generationen), Tool-Registry, `Tools/` |
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |

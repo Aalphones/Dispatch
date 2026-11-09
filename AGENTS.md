@@ -31,7 +31,7 @@ Kontext, Scope, Abweichungen vom Konzept, Meilensteine: [`docs/PROJECT.md`](docs
 
 ## Lokal starten
 
-`php -S localhost:8080 -t public dev-router.php` — vorher `dev.env.example` nach `app/.env.local` kopieren ([ADR-006](docs/decisions/006-lokale-entwicklung-dev-router.md)).
+Voraussetzung lokal: PHP 8.5 (Erweiterungen `curl, fileinfo, gd, intl, mbstring, exif, openssl, pdo_mysql`) und MySQL 8.4 mit Datenbank `dispatch_dev` ([ADR-008](docs/decisions/008-zuschnitt-meilenstein-1-lokale-umgebung.md)). `dev.env.example` nach `app/.env.local` kopieren und ausfüllen ([ADR-006](docs/decisions/006-lokale-entwicklung-dev-router.md)), dann `php bin/dispatch migrate` und `php -S localhost:8080 -t public dev-router.php`.
 
 ---
 
@@ -62,5 +62,5 @@ Kontext, Scope, Abweichungen vom Konzept, Meilensteine: [`docs/PROJECT.md`](docs
 
 - **Architektur-Entscheidungen:** [`docs/decisions/`](docs/decisions/)
 - **Aktive Planung:** [`docs/planning/`](docs/planning/) · **Archiv:** [`docs/archive/`](docs/archive/)
-- **Datenmodell:** Konzept → „Datenmodell"; `docs/models.md` entsteht mit den ersten Migrationen (Meilenstein 1)
+- **Datenmodell:** [`docs/models.md`](docs/models.md) (Quelle: die Migrationen); Fachkonzept → „Datenmodell"
 - **Projektwissen und Lücken:** [`docs/knowledge/`](docs/knowledge/) · **Projekt-Memory:** [`docs/memory/memory-index.md`](docs/memory/memory-index.md)

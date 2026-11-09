@@ -1,0 +1,66 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+// Lokale Kommandozeile (ADR-002/ADR-006): läuft nie auf dem Server.
+
+use Dispatch\Db\Connection;
+use Dispatch\Db\Migrator;
+
+if (PHP_SAPI !== 'cli') {
+    exit(1);
+}
+
+$root = dirname(__DIR__);
+$envFile = $root . '/app/.env.local';
+if ((string) getenv('DISPATCH_ENV_FILE') === '' && is_file($envFile)) {
+    putenv('DISPATCH_ENV_FILE=' . $envFile);
+}
+
+$config = require $root . '/app/bootstrap.php';
+
+// Der JSON-Handler aus bootstrap.php passt nicht zur Konsole.
+set_exception_handler(static function (Throwable $exception): void {
+    fwrite(STDERR, 'Fehler: ' . $exception->getMessage() . PHP_EOL);
+    exit(1);
+});
+
+$help = <<<'TXT'
+Aufruf: php bin/dispatch <befehl>
+
+Befehle:
+  hash-password   liest eine Zeile von STDIN und gibt den Passwort-Hash aus
+  migrate         wendet neue Migrationen aus app/migrations/ an
+  seed            legt Startinhalte an (folgt in Phase 2)
+
+TXT;
+
+$command = $argv[1] ?? '';
+
+switch ($command) {
+    case 'hash-password':
+        $line = fgets(STDIN);
+        $password = $line === false ? '' : rtrim($line, "\r\n");
+        if ($password === '') {
+            throw new RuntimeException('Kein Passwort auf STDIN gelesen. Beispiel: echo geheim | php bin/dispatch hash-password');
+        }
+        echo password_hash($password, PASSWORD_DEFAULT), PHP_EOL;
+        break;
+
+    case 'migrate':
+        $applied = (new Migrator(Connection::open(), (string) $config['app_dir'] . '/migrations'))->run();
+        if ($applied === []) {
+            echo 'Nichts zu tun.', PHP_EOL;
+        }
+        foreach ($applied as $filename) {
+            echo $filename, PHP_EOL;
+        }
+        break;
+
+    case 'seed':
+        echo 'Startinhalte: folgt in Phase 2.', PHP_EOL;
+        break;
+
+    default:
+        fwrite(STDERR, $help);
+        exit(1);
+}

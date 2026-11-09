@@ -1,6 +1,6 @@
 # Phase 1 — Lokale Umgebung, Migrationen, CLI, Akteur und Protokoll
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -46,20 +46,24 @@ Lokal: PHP 8.3.32 (winget `PHP.PHP.8.3`), `gd`, `intl`, `exif` in der `php.ini` 
 
 ## Abnahme (Phase)
 
-- [ ] `php -v` → 8.5.x; `php -m` listet `curl, exif, fileinfo, gd, intl, mbstring, openssl, pdo_mysql`; `php -r "var_dump(gd_info()['WebP Support']);"` → `true`.
-- [ ] `php bin/dispatch migrate` auf leerer `dispatch_dev` → listet `001_setting.sql` bis `009_audit.sql`; zweiter Lauf → „Nichts zu tun."; `SHOW TABLES` → 16 Tabellen plus `schema_migrations`.
-- [ ] `SHOW CREATE TABLE posts` zeigt die FKs auf `media` und keinen auf `queue_items`; `queue_items` hat den FK auf `posts`.
-- [ ] `echo geheim | php bin/dispatch hash-password` → Zeile beginnt mit `$2y$` oder `$argon2`; `php bin/dispatch` ohne Befehl → Hilfe, Exit-Code 1.
-- [ ] Scratchpad-Skript: `Transaction::run` mit einer Ausnahme nach einem `INSERT` in `audit_log` → Zeile ist danach **nicht** da; ohne Ausnahme → Zeile da, `latest(1)` liefert sie mit `actor` und `details` als Array.
-- [ ] `php -l` über alle neuen PHP-Dateien inkl. `bin/dispatch`.
+- [x] `php -v` → 8.5.x; `php -m` listet `curl, exif, fileinfo, gd, intl, mbstring, openssl, pdo_mysql`; `php -r "var_dump(gd_info()['WebP Support']);"` → `true`.
+- [x] `php bin/dispatch migrate` auf leerer `dispatch_dev` → listet `001_setting.sql` bis `009_audit.sql`; zweiter Lauf → „Nichts zu tun."; `SHOW TABLES` → 16 Tabellen plus `schema_migrations`.
+- [x] `SHOW CREATE TABLE posts` zeigt die FKs auf `media` und keinen auf `queue_items`; `queue_items` hat den FK auf `posts`.
+- [x] `echo geheim | php bin/dispatch hash-password` → Zeile beginnt mit `$2y$` oder `$argon2`; `php bin/dispatch` ohne Befehl → Hilfe, Exit-Code 1.
+- [x] Scratchpad-Skript: `Transaction::run` mit einer Ausnahme nach einem `INSERT` in `audit_log` → Zeile ist danach **nicht** da; ohne Ausnahme → Zeile da, `latest(1)` liefert sie mit `actor` und `details` als Array.
+- [x] `php -l` über alle neuen PHP-Dateien inkl. `bin/dispatch`.
 
 ## Checkliste
 
-- [ ] Umgebung einrichten (Entscheidungen oben), `app/.env.local` mit lokalen DB-Werten
-- [ ] Migrationen und Klassen laut Tabelle
-- [ ] ADR-008 „Zuschnitt Meilenstein 1 und lokale Umgebung" (Tabellen-Zuschnitt und warum; CLI nur lokal, `token:create` nach Meilenstein 3; lokal MySQL 8.4 + PHP 8.5 statt MariaDB; JSON nur speichern, nie im SQL abfragen) + Zeile in `docs/decisions/README.md`
-- [ ] `docs/models.md` neu: eine Sektion pro Tabelle (Spalten, Typen, Defaults, FKs) aus den Migrationen; Kopf: „Quelle sind die Migrationen in `app/migrations/`"
-- [ ] `docs/code-map.md`: `bin/dispatch` (Befehle aktualisieren), `Db/Transaction`, `Domain/Actor`, `Domain/DomainError`, `Domain/AuditRepository`, Migrationen 001–009
-- [ ] `AGENTS.md` → „Wo du mehr findest": Datenmodell-Zeile auf `docs/models.md` umstellen; „Lokal starten": PHP 8.5 und MySQL 8.4 nennen
+- [x] Umgebung einrichten (Entscheidungen oben), `app/.env.local` mit lokalen DB-Werten
+- [x] Migrationen und Klassen laut Tabelle
+- [x] ADR-008 „Zuschnitt Meilenstein 1 und lokale Umgebung" (Tabellen-Zuschnitt und warum; CLI nur lokal, `token:create` nach Meilenstein 3; lokal MySQL 8.4 + PHP 8.5 statt MariaDB; JSON nur speichern, nie im SQL abfragen) + Zeile in `docs/decisions/README.md`
+- [x] `docs/models.md` neu: eine Sektion pro Tabelle (Spalten, Typen, Defaults, FKs) aus den Migrationen; Kopf: „Quelle sind die Migrationen in `app/migrations/`"
+- [x] `docs/code-map.md`: `bin/dispatch` (Befehle aktualisieren), `Db/Transaction`, `Domain/Actor`, `Domain/DomainError`, `Domain/AuditRepository`, Migrationen 001–009
+- [x] `AGENTS.md` → „Wo du mehr findest": Datenmodell-Zeile auf `docs/models.md` umstellen; „Lokal starten": PHP 8.5 und MySQL 8.4 nennen
 
 ## Report-Back
+
+- PHP 8.5.12 per winget, `php.ini` mit den acht Erweiterungen; PATH (Benutzer) so umgestellt, dass 8.5 vor 8.3 steht. MySQL 8.4.9 per winget (erster Lauf scheiterte an der Rechteabfrage, zweiter ging durch). Das winget-Paket legt keinen Dienst und kein Datenverzeichnis an: Datenverzeichnis `C:\Users\sasch\mysql-dispatch\data` per `--initialize-insecure` angelegt, `mysqld` läuft als Hintergrundprozess (kein Dienst), bindet nur `127.0.0.1:3306`. Nach einem Neustart muss er neu gestartet werden: `mysqld --no-defaults --basedir="C:\Program Files\MySQL\MySQL Server 8.4" --datadir=C:\Users\sasch\mysql-dispatch\data --bind-address=127.0.0.1`.
+- `root` hat ein Passwort, Benutzer `dispatch` nur Rechte auf `dispatch_dev`; Werte in `app/.env.local` und `C:\Users\sasch\mysql-dispatch\pw.txt`.
+- Alle Abnahmepunkte geprüft: `migrate` listet 001–009, zweiter Lauf „Nichts zu tun.", 16 Tabellen + `schema_migrations`, `posts` ohne FK auf `queue_items`, `Transaction`-Rollback und `latest(1)` mit Array-Details, `hash-password` liefert `$2y$`, Hilfe mit Exit 1, `php -l` sauber.

@@ -25,7 +25,7 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `bridge/` | `dispatch/` | einziger PHP-Einstieg: `index.php` + `.htaccess` |
 | `web-root/.htaccess` | `.htaccess` | Wurzel-Regeln (ADR-003) |
 | — | `index.html`, `artikel/`, `assets/`, `media/`, … | vom Builder erzeugt, nie hochgeladen |
-| `bin/dispatch` | — | CLI, nur lokal (`hash-password`, `token:create`, `build`) |
+| `bin/dispatch` | — | CLI, nur lokal (`hash-password`, `migrate`, `seed`; `build` ab Meilenstein 2) |
 | `deploy.cmd`, `deploy.env.example`, `deploy-backup/` | — | Deploy (ADR-005); Vorlage für `deploy.env`; Sicherung der Wurzel-`.htaccess` (nicht im Git) |
 | `dev-router.php`, `dev.env.example` | — | lokaler Server `php -S` mit Brücke und Sperre, Vorlage für `app/.env.local` (ADR-006) |
 
@@ -41,14 +41,14 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |
 | `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`) |
 | `src/Auth/` | Deploy-Token (`DeployToken`), JWT, Login-Bremse, MCP-Tokens, Scopes |
-| `src/Db/` | PDO-Verbindung (`Connection`), Migrator |
-| `src/Domain/` | Services und Repositories je Domäne |
+| `src/Db/` | PDO-Verbindung (`Connection`), `Migrator`, `Transaction::run` (nur DML) |
+| `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll) |
 | `src/Site/` | Builder, Manifest, Template-Helfer `e()`, Suchindex, Feed, Sitemap |
 | `src/Util/` | Sanitizer, Formprüfung, HTTP-Client mit SSRF-Schutz, Bildvarianten, Zeit |
 | `templates/` | PHP-Templates der Website (Meilenstein 0: `placeholder.php`, `404.php`) |
 | `theme/` | `style.css`, `site.js`, `redaktion/` (nachgeladen); Meilenstein 0: `placeholder.css` |
 | `defaults/` | Startinhalte als Markdown |
-| `migrations/` | nummerierte SQL-Dateien |
+| `migrations/` | nummerierte SQL-Dateien; 001–009: Einstellungen, Dokumente, Kategorien, Medien, Artikel mit Quellen, Queue, Änderungsvorschläge, Statistik, Audit (Spalten: [`models.md`](models.md)) |
 | `storage/` | `manifest.json` (vom Builder geschriebene Dateien), `media/`, `logs/` — nur auf dem Server und lokal, nicht im Git |
 
 ## Faustregeln

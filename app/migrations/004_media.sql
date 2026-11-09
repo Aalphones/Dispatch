@@ -1,0 +1,21 @@
+CREATE TABLE media (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    uid CHAR(11) NOT NULL UNIQUE,
+    kind ENUM('image', 'video', 'audio', 'document') NOT NULL,
+    mime VARCHAR(100) NOT NULL,
+    ext VARCHAR(10) NOT NULL,
+    bytes INT UNSIGNED NOT NULL,
+    sha256 CHAR(64) NOT NULL UNIQUE,
+    width INT UNSIGNED NULL,
+    height INT UNSIGNED NULL,
+    variants JSON NOT NULL,
+    alt VARCHAR(500) NULL,
+    caption VARCHAR(1000) NULL,
+    credit VARCHAR(300) NULL,
+    license VARCHAR(120) NULL,
+    license_url VARCHAR(500) NULL,
+    source_url VARCHAR(1000) NULL,
+    origin ENUM('import', 'upload', 'owner') NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

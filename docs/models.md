@@ -1,0 +1,222 @@
+# Datenmodell — DISPATCH
+
+Quelle sind die Migrationen in `app/migrations/`. Alle Tabellen: InnoDB, `utf8mb4_unicode_ci`. Zeitspalten sind UTC, geschrieben mit `UTC_TIMESTAMP()`. JSON-Spalten werden nur gespeichert, nie im SQL abgefragt ([ADR-008](decisions/008-zuschnitt-meilenstein-1-lokale-umgebung.md)). `schema_migrations` (`filename` PK, `applied_at`) führt der Migrator selbst.
+
+Nicht in Meilenstein 1: `tokens` (M3), `login_attempts` (M4), `oauth_clients`, `oauth_codes` (M5).
+
+## settings (001)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `name` | VARCHAR(64) | PK |
+| `value` | JSON | |
+| `updated_at` | DATETIME | |
+
+## documents (002)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `doc_key` | VARCHAR(40) | PK |
+| `title` | VARCHAR(200) | |
+| `content` | MEDIUMTEXT | |
+| `public_slug` | VARCHAR(80) NULL | UNIQUE |
+| `revision` | INT UNSIGNED | Default 1 |
+| `updated_at` | DATETIME | |
+
+## document_revisions (002)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT |
+| `doc_key` | VARCHAR(40) | FK → `documents.doc_key` CASCADE |
+| `revision` | INT UNSIGNED | UNIQUE mit `doc_key` |
+| `content` | MEDIUMTEXT | |
+| `note` | VARCHAR(500) NULL | |
+| `actor` | VARCHAR(120) | |
+| `created_at` | DATETIME | |
+
+## categories (003)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `slug` | VARCHAR(80) | UNIQUE |
+| `name` | VARCHAR(120) | |
+| `description` | TEXT NULL | |
+| `parent_id` | INT UNSIGNED NULL | FK → `categories.id` RESTRICT |
+| `position` | INT | Default 0 |
+| `interest` | TINYINT UNSIGNED | Default 3 |
+| `keywords`, `avoid` | JSON | immer `[]` oder Liste |
+| `active` | TINYINT(1) | Default 1 |
+| `created_at`, `updated_at` | DATETIME | |
+
+## media (004)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `uid` | CHAR(11) | UNIQUE |
+| `kind` | ENUM | `image`, `video`, `audio`, `document` |
+| `mime` | VARCHAR(100) | |
+| `ext` | VARCHAR(10) | |
+| `bytes` | INT UNSIGNED | |
+| `sha256` | CHAR(64) | UNIQUE |
+| `width`, `height` | INT UNSIGNED NULL | |
+| `variants` | JSON | |
+| `alt` | VARCHAR(500) NULL | |
+| `caption` | VARCHAR(1000) NULL | |
+| `credit` | VARCHAR(300) NULL | |
+| `license` | VARCHAR(120) NULL | |
+| `license_url` | VARCHAR(500) NULL | |
+| `source_url` | VARCHAR(1000) NULL | |
+| `origin` | ENUM | `import`, `upload`, `owner` |
+| `created_at`, `updated_at` | DATETIME | |
+
+## posts (005)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `slug` | VARCHAR(120) | UNIQUE |
+| `title` | VARCHAR(200) | |
+| `subtitle` | VARCHAR(300) NULL | |
+| `kicker` | VARCHAR(80) NULL | |
+| `excerpt` | VARCHAR(400) NULL | |
+| `content_html` | MEDIUMTEXT | |
+| `status` | ENUM | `draft` (Default), `review`, `published`, `archived`; Index |
+| `tags` | JSON | |
+| `layout` | ENUM | `standard` (Default), `feature`, `longform`, `briefing` |
+| `accent` | CHAR(7) NULL | |
+| `cover_media_id` | INT UNSIGNED NULL | FK → `media.id` SET NULL |
+| `seo_title` | VARCHAR(200) NULL | |
+| `seo_description` | VARCHAR(300) NULL | |
+| `origin` | ENUM | `scheduled`, `queue`, `manual` (Default) |
+| `queue_item_id` | INT UNSIGNED NULL | Index, bewusst kein FK (Kreis mit `queue_items.post_id`) |
+| `depth` | ENUM | `standard` (Default), `deep` |
+| `editor_notes` | MEDIUMTEXT NULL | |
+| `review_note` | TEXT NULL | |
+| `ai_assisted` | TINYINT(1) | Default 1 |
+| `word_count` | INT UNSIGNED | Default 0 |
+| `revision` | INT UNSIGNED | Default 1 |
+| `published_revision` | INT UNSIGNED NULL | |
+| `published_at` | DATETIME NULL | |
+| `created_at`, `updated_at` | DATETIME | |
+
+## post_revisions (005)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT |
+| `post_id` | INT UNSIGNED | FK → `posts.id` CASCADE |
+| `revision` | INT UNSIGNED | UNIQUE mit `post_id` |
+| `snapshot` | JSON | |
+| `actor` | VARCHAR(120) | |
+| `created_at` | DATETIME | |
+
+## post_categories (005)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `post_id` | INT UNSIGNED | PK, FK → `posts.id` CASCADE |
+| `category_id` | INT UNSIGNED | PK, FK → `categories.id` RESTRICT |
+| `is_primary` | TINYINT(1) | Default 0 |
+
+## sources (005)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `post_id` | INT UNSIGNED | FK → `posts.id` CASCADE |
+| `ref` | VARCHAR(60) | UNIQUE mit `post_id` |
+| `position` | SMALLINT UNSIGNED | |
+| `kind` | ENUM | `web`, `news`, `study`, `official`, `dataset`, `book`, `interview`, `video`, `podcast`, `social`, `other` |
+| `title` | VARCHAR(500) | |
+| `url` | VARCHAR(2000) NULL | |
+| `publisher`, `author` | VARCHAR(300) NULL | |
+| `published` | VARCHAR(10) NULL | `YYYY`, `YYYY-MM` oder `YYYY-MM-DD` |
+| `accessed` | DATE NULL | |
+| `note` | TEXT NULL | |
+
+## queue_items (006)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `title` | VARCHAR(200) | |
+| `brief` | TEXT NULL | |
+| `links` | JSON | |
+| `status` | ENUM | `open` (Default), `claimed`, `review`, `done`, `failed`, `cancelled`; Index (`status`, `priority`, `created_at`) |
+| `priority` | TINYINT UNSIGNED | Default 2 |
+| `depth` | ENUM | `standard` (Default), `deep` |
+| `category_id` | INT UNSIGNED NULL | FK → `categories.id` SET NULL |
+| `claimed_by` | VARCHAR(120) NULL | |
+| `claim_expires` | DATETIME NULL | |
+| `post_id` | INT UNSIGNED NULL | FK → `posts.id` SET NULL |
+| `result_note` | TEXT NULL | |
+| `created_by` | VARCHAR(120) | |
+| `created_at`, `updated_at` | DATETIME | |
+
+## queue_media (006)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `queue_item_id` | INT UNSIGNED | PK, FK → `queue_items.id` CASCADE |
+| `media_id` | INT UNSIGNED | PK, FK → `media.id` CASCADE |
+| `note` | VARCHAR(500) NULL | |
+| `own_material` | TINYINT(1) | Default 0 |
+
+## changes (007)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `entity` | ENUM | `document`, `media`, `category`, `setting` |
+| `entity_key` | VARCHAR(120) | |
+| `payload` | JSON | |
+| `status` | ENUM | `pending` (Default), `applied`, `rejected`; Index |
+| `created_by` | VARCHAR(120) | |
+| `created_at` | DATETIME | |
+| `decided_at` | DATETIME NULL | |
+| `decided_by` | VARCHAR(120) NULL | |
+
+## stats_daily (008)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `day` | DATE | PK mit `path` |
+| `path` | VARCHAR(300) | PK mit `day` |
+| `post_id` | INT UNSIGNED NULL | |
+| `views`, `visitors`, `reads_half`, `reads_full` | INT UNSIGNED | Default 0 |
+| `engaged_seconds` | BIGINT UNSIGNED | Default 0 |
+
+## stats_dimensions (008)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT |
+| `day` | DATE | |
+| `path` | VARCHAR(300) | leer = seitenübergreifend |
+| `dimension` | ENUM | `referrer`, `utm`, `device`, `outbound`, `search` |
+| `value` | VARCHAR(300) | UNIQUE mit `day`, `path`, `dimension` |
+| `count` | INT UNSIGNED | Default 0 |
+| `extra` | JSON NULL | |
+
+## stats_visitors (008)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `day` | DATE | PK mit `visitor_hash` |
+| `visitor_hash` | CHAR(64) | PK mit `day` |
+| `hits_last_hour` | SMALLINT UNSIGNED | Default 0 |
+| `hour_started` | DATETIME | |
+
+## audit_log (009)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT |
+| `at` | DATETIME | Index |
+| `actor` | VARCHAR(120) | z. B. `owner`, `cli`, `mcp:<name>` |
+| `action` | VARCHAR(60) | `<domäne>.<verb>` |
+| `target` | VARCHAR(160) | `<domäne>:<schlüssel>` |
+| `details` | JSON NULL | leer → `NULL` |

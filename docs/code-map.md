@@ -44,7 +44,7 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `src/Db/` | PDO-Verbindung (`Connection`), `Migrator`, `Transaction::run`/`join` (nur DML) |
 | `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll); Einstellungen, Dokumente, Kategorien, Änderungsvorschläge (`SettingService`, `DocumentService`, `CategoryService`, `ChangeService` + Repositories); `Seeder` (Startinhalte) |
 | `src/Site/` | Builder, Manifest, Template-Helfer `e()`, Suchindex, Feed, Sitemap |
-| `src/Util/` | Sanitizer, Formprüfung, HTTP-Client mit SSRF-Schutz, Bildvarianten, Zeit |
+| `src/Util/` | `Env`, `Log`; `Sanitizer` + `SanitizeResult` (HTML-Whitelist, ADR-010); Formprüfung, HTTP-Client mit SSRF-Schutz, Bildvarianten, Zeit folgen |
 | `templates/` | PHP-Templates der Website (Meilenstein 0: `placeholder.php`, `404.php`) |
 | `theme/` | `style.css`, `site.js`, `redaktion/` (nachgeladen); Meilenstein 0: `placeholder.css` |
 | `defaults/` | Startinhalte als Markdown: `editorial_guidelines`, `preferences`, `about`, `imprint`, `privacy` (`Domain/Seeder` legt sie an) |

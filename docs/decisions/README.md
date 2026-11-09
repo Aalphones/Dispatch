@@ -13,3 +13,4 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 007 | [Strato-Probe: Diagnose-Route und Platzhalter über den Builder](007-diagnose-route-und-platzhalter-builder.md) | Akzeptiert |
 | 008 | [Zuschnitt Meilenstein 1 und lokale Umgebung](008-zuschnitt-meilenstein-1-lokale-umgebung.md) | Akzeptiert |
 | 009 | [Akteur, Inhaber-Rechte und Änderungsvorschläge](009-akteur-inhaber-rechte-aenderungsvorschlaege.md) | Akzeptiert |
+| 010 | [Sanitizer mit HTML5-Parser und Whitelist](010-sanitizer-html5-parser-whitelist.md) | Akzeptiert |

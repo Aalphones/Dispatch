@@ -24,7 +24,7 @@
 
 **Allowed:**
 - `random_bytes`, `hash`, `hash_hmac`, `hash_equals`, `password_hash`/`password_verify` — für Tokens, JWT (HS256 fest), signierte Links.
-- `DOMDocument` für den Sanitizer, GD für Bildvarianten, `curl` für den HTTP-Client mit SSRF-Schutz.
+- `Dom\HTMLDocument` (HTML5-Parser) für den Sanitizer — nicht `DOMDocument::loadHTML` (ADR-010), GD für Bildvarianten, `curl` für den HTTP-Client mit SSRF-Schutz.
 
 ## Regeln
 

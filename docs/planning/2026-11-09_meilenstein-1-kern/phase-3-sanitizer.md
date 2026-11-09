@@ -1,6 +1,6 @@
 # Phase 3 — Sanitizer
 
-**Rating:** heikel (Security: XSS auf derselben Domain wie der Redaktionsmodus) · **Status:** pending
+**Rating:** heikel (Security: XSS auf derselben Domain wie der Redaktionsmodus) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -52,51 +52,57 @@
 
 Scratchpad-Skript ruft `sanitize()` für jeden Fall und prüft die Ausgabe. **Für jeden Fall gilt zusätzlich:** Ausgabe enthält (Groß/klein egal) kein `<script`, kein `<iframe`, kein `<svg`, kein `<img`, kein `<style`, kein Attribut ` on…=`, kein `style=`, kein `javascript:`, `vbscript:`, `data:` in einem Attribut.
 
-- [ ] 1 `<script>alert(1)</script><p>ok</p>` → `<p>ok</p>`
-- [ ] 2 `<img src=x onerror=alert(1)>` → leer
-- [ ] 3 `<svg onload=alert(1)><circle/></svg>` → leer
-- [ ] 4 `<a href="javascript:alert(1)">x</a>` → `<a>x</a>`
-- [ ] 5 `<a href="JaVaScRiPt:alert(1)">x</a>` → `<a>x</a>`
-- [ ] 6 `<a href="java&#x0A;script:alert(1)">x</a>` → `<a>x</a>`
-- [ ] 7 `<a href=" &#14; javascript:alert(1)">x</a>` → `<a>x</a>`
-- [ ] 8 `<a href="data:text/html,<script>alert(1)</script>">x</a>` → `<a>x</a>`
-- [ ] 9 `<a href="vbscript:msgbox(1)">x</a>` → `<a>x</a>`
-- [ ] 10 `<a href="//evil.example/">x</a>` → `<a>x</a>`
-- [ ] 11 `<iframe src="https://evil.example"></iframe>` → leer
-- [ ] 12 `<object data="x"></object><embed src="x">` → leer
-- [ ] 13 `<form action="https://evil.example"><input name=a></form>` → leer
-- [ ] 14 `<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>` → kein `img`, kein `style`
-- [ ] 15 `<noscript><p title="</noscript><img src=x onerror=alert(1)>">` → kein `img`
-- [ ] 16 `<p style="background:url(javascript:alert(1))">x</p>` → `<p>x</p>`
-- [ ] 17 `<div onclick="alert(1)">x</div>` → `<div>x</div>`
-- [ ] 18 `<details open ontoggle=alert(1)><summary>s</summary></details>` → `<details open=""><summary>s</summary></details>`
-- [ ] 19 `<template><script>alert(1)</script></template>` → leer
-- [ ] 20 `<!--<script>alert(1)</script>-->` → leer
-- [ ] 21 `<base href="https://evil.example/"><meta http-equiv="refresh" content="0;url=https://evil.example">` → leer
-- [ ] 22 `<table background="javascript:alert(1)"><tr><td>x</td></tr></table>` → Tabelle ohne `background`
-- [ ] 23 `<scr<script>ipt>alert(1)</script>` → kein ausführbares `<script`
-- [ ] 24 `<figure data-media="javascript:alert(1)"></figure>` → `<figure></figure>`
-- [ ] 25 `<a href="https://example.org" target="_blank" rel="opener">x</a>` → nur `href` bleibt
-- [ ] 26 `<x-widget onclick=alert(1)><p>Text</p></x-widget>` → `<p>Text</p>`
+- [x] 1 `<script>alert(1)</script><p>ok</p>` → `<p>ok</p>`
+- [x] 2 `<img src=x onerror=alert(1)>` → leer
+- [x] 3 `<svg onload=alert(1)><circle/></svg>` → leer
+- [x] 4 `<a href="javascript:alert(1)">x</a>` → `<a>x</a>`
+- [x] 5 `<a href="JaVaScRiPt:alert(1)">x</a>` → `<a>x</a>`
+- [x] 6 `<a href="java&#x0A;script:alert(1)">x</a>` → `<a>x</a>`
+- [x] 7 `<a href=" &#14; javascript:alert(1)">x</a>` → `<a>x</a>`
+- [x] 8 `<a href="data:text/html,<script>alert(1)</script>">x</a>` → `<a>x</a>`
+- [x] 9 `<a href="vbscript:msgbox(1)">x</a>` → `<a>x</a>`
+- [x] 10 `<a href="//evil.example/">x</a>` → `<a>x</a>`
+- [x] 11 `<iframe src="https://evil.example"></iframe>` → leer
+- [x] 12 `<object data="x"></object><embed src="x">` → leer
+- [x] 13 `<form action="https://evil.example"><input name=a></form>` → leer
+- [x] 14 `<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>` → kein `img`, kein `style`
+- [x] 15 `<noscript><p title="</noscript><img src=x onerror=alert(1)>">` → kein `img`
+- [x] 16 `<p style="background:url(javascript:alert(1))">x</p>` → `<p>x</p>`
+- [x] 17 `<div onclick="alert(1)">x</div>` → `<div>x</div>`
+- [x] 18 `<details open ontoggle=alert(1)><summary>s</summary></details>` → `<details open=""><summary>s</summary></details>`
+- [x] 19 `<template><script>alert(1)</script></template>` → leer
+- [x] 20 `<!--<script>alert(1)</script>-->` → leer
+- [x] 21 `<base href="https://evil.example/"><meta http-equiv="refresh" content="0;url=https://evil.example">` → leer
+- [x] 22 `<table background="javascript:alert(1)"><tr><td>x</td></tr></table>` → Tabelle ohne `background`
+- [x] 23 `<scr<script>ipt>alert(1)</script>` → kein ausführbares `<script`
+- [x] 24 `<figure data-media="javascript:alert(1)"></figure>` → `<figure></figure>`
+- [x] 25 `<a href="https://example.org" target="_blank" rel="opener">x</a>` → nur `href` bleibt
+- [x] 26 `<x-widget onclick=alert(1)><p>Text</p></x-widget>` → `<p>Text</p>`
 
 **Erlaubtes bleibt erhalten:**
 
-- [ ] 27 `<h1>T</h1>` → `<h2>T</h2>` mit Hinweis
-- [ ] 28 `<aside class="callout warning x-evil"><p>v</p></aside>` → `class="callout warning"`, Hinweis zu `x-evil`
-- [ ] 29 `<p>Satz<a data-cite="destatis-2026,s3"></a></p>` → unverändert
-- [ ] 30 `<figure data-media="m0123456789" data-layout="wide"><figcaption>c</figcaption></figure>` → unverändert
-- [ ] 31 `<div class="gallery" data-media="m0123456789,mabcdefabcd"></div>` → unverändert
-- [ ] 32 `<figure data-embed="youtube" data-id="dQw4w9WgXcQ"></figure>` → unverändert
-- [ ] 33 `<a href="mailto:a@b.de">m</a>`, `<a href="#s1">a</a>`, `<a href="/artikel/x/">r</a>` → unverändert
-- [ ] 34 Tabelle mit `<th scope="col" colspan="2">` → unverändert; `colspan="999"` → entfernt
-- [ ] 35 Idempotenz: für alle Fälle 1–34 liefert ein zweiter Lauf dieselbe Ausgabe ohne Hinweise
-- [ ] 36 Umlaute und `&amp;`/`&lt;` im Text überstehen den Lauf unverändert (`<p>Größe &lt; 5 &amp; mehr</p>`)
+- [x] 27 `<h1>T</h1>` → `<h2>T</h2>` mit Hinweis
+- [x] 28 `<aside class="callout warning x-evil"><p>v</p></aside>` → `class="callout warning"`, Hinweis zu `x-evil`
+- [x] 29 `<p>Satz<a data-cite="destatis-2026,s3"></a></p>` → unverändert
+- [x] 30 `<figure data-media="m0123456789" data-layout="wide"><figcaption>c</figcaption></figure>` → unverändert
+- [x] 31 `<div class="gallery" data-media="m0123456789,mabcdefabcd"></div>` → unverändert
+- [x] 32 `<figure data-embed="youtube" data-id="dQw4w9WgXcQ"></figure>` → unverändert
+- [x] 33 `<a href="mailto:a@b.de">m</a>`, `<a href="#s1">a</a>`, `<a href="/artikel/x/">r</a>` → unverändert
+- [x] 34 Tabelle mit `<th scope="col" colspan="2">` → unverändert; `colspan="999"` → entfernt
+- [x] 35 Idempotenz: für alle Fälle 1–34 liefert ein zweiter Lauf dieselbe Ausgabe ohne Hinweise
+- [x] 36 Umlaute und `&amp;`/`&lt;` im Text überstehen den Lauf unverändert (`<p>Größe &lt; 5 &amp; mehr</p>`)
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle
-- [ ] Fallliste fahren, Ein- und Ausgabe je Fall im Report-Back (Pflicht nach `dod.md`)
-- [ ] ADR-010 „Sanitizer mit HTML5-Parser und Whitelist" (Alternative `DOMDocument`/libxml verworfen: anderer Parser als der Browser; Liste der Regeln steht im Code, nicht im ADR) + Zeile in `docs/decisions/README.md`
-- [ ] `docs/code-map.md`: `Util/Sanitizer`, `Util/SanitizeResult`
+- [x] Dateien laut Tabelle
+- [x] Fallliste fahren, Ein- und Ausgabe je Fall im Report-Back (Pflicht nach `dod.md`)
+- [x] ADR-010 „Sanitizer mit HTML5-Parser und Whitelist" (Alternative `DOMDocument`/libxml verworfen: anderer Parser als der Browser; Liste der Regeln steht im Code, nicht im ADR) + Zeile in `docs/decisions/README.md`
+- [x] `docs/code-map.md`: `Util/Sanitizer`, `Util/SanitizeResult`
 
 ## Report-Back
+
+Fallliste 1–36 (plus 4 Zusatzfälle: `<frameset>`, `<xmp>`, `data-media` an `div` ohne `gallery`, verschachtelte unbekannte Elemente) mit `php 8.5.12` gefahren: alle Fälle erfüllen Erwartung, Verbotsliste und Idempotenz (zweiter Lauf: gleiche Ausgabe, keine Hinweise). Skript: Scratchpad `xss.php`.
+
+- Abweichung: Fall 14/15 liefern leer (math bzw. noscript fallen samt Inhalt), Fall 23 liefert `ipt&gt;alert(1)` (Text, kein Tag).
+- `conventions/php.md` nannte `DOMDocument` für den Sanitizer; auf `DomHTMLDocument` geändert.
+- Elemente fremder Namensräume (SVG/MathML) werden zusätzlich immer samt Inhalt entfernt.

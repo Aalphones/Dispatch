@@ -50,6 +50,39 @@ Nicht in Meilenstein 1: `tokens` (M3), `login_attempts` (M4), `oauth_clients`, `
 | `active` | TINYINT(1) | Default 1 |
 | `created_at`, `updated_at` | DATETIME | |
 
+## Einstellungen (Tabelle `settings`)
+
+Werte stehen als JSON in `settings.value`; fehlt eine Zeile, gilt der Startwert. Der `Seeder` legt alle zwölf an (`php bin/dispatch seed`). Formvorgaben (`form_rules`, `publish_mode`, `stats_enabled`) stehen in `app/config.php`, nicht in der Tabelle; ein Änderungsversuch → `not_changeable`.
+
+| Schlüssel | Gruppe | Startwert | Prüfregel |
+|---|---|---|---|
+| `site_title` | öffentlich | `DISPATCH` | Text, 1–80 |
+| `site_tagline` | öffentlich | `Your agents. Your publication.` | Text, ≤ 120 |
+| `site_description` | öffentlich | `` | Text, ≤ 300 |
+| `author_name` | öffentlich | `` | Text, ≤ 120 |
+| `author_url` | öffentlich | `` | leer oder `http(s)://…`, ≤ 300 |
+| `accent` | öffentlich | `#b3261e` | `#rrggbb` |
+| `ai_disclosure` | öffentlich | `true` | bool |
+| `ai_disclosure_text` | öffentlich | Transparenztext (Wortlaut offen, jederzeit änderbar) | Text, ≤ 500 |
+| `language` | intern | `de` | `de` \| `en` |
+| `locale` | intern | `de_DE` | `xx_XX` |
+| `posts_per_page` | intern | `12` | Ganzzahl 1–100 |
+| `queue_claim_minutes` | intern | `180` | Ganzzahl 15–1440 |
+
+Texte werden getrimmt. Fehler: `invalid_value` (Feld in `details`), unbekannter Name `unknown_setting`.
+
+## Was öffentlich ist
+
+Änderung durch Nicht-Inhaber → Änderungsvorschlag (`changes`); durch den Inhaber → direkt ([ADR-009](decisions/009-akteur-inhaber-rechte-aenderungsvorschlaege.md)).
+
+| Domäne | Öffentlich | Intern (jeder Akteur direkt) |
+|---|---|---|
+| Einstellungen | `site_title`, `site_tagline`, `site_description`, `author_name`, `author_url`, `accent`, `ai_disclosure`, `ai_disclosure_text` | `language`, `locale`, `posts_per_page`, `queue_claim_minutes` |
+| Dokumente | `about` (`ueber`), `imprint` (`impressum`), `privacy` (`datenschutz`) | `editorial_guidelines`, `preferences` |
+| Kategorien | Anlegen; `slug`, `name`, `description`, `parent_id`, `position`, `active` | `interest`, `keywords`, `avoid` |
+
+Kategorien: nur zwei Ebenen (`parent_id` muss eine Kategorie ohne Elternteil sein); `slug` `[a-z0-9-]` ≤ 80 und eindeutig, `name` 1–120, `interest` 0–5, `keywords`/`avoid` Listen (≤ 30 Einträge à ≤ 60 Zeichen). Dokumente: Markdown ≤ 200 000 Zeichen; jede Änderung erhöht `revision` und schreibt `document_revisions`. Vorschlags-Schlüssel (`changes.entity_key`): Einstellungen `settings`, Dokumente der `doc_key`, Kategorien die ID oder `new`.
+
 ## media (004)
 
 | Spalte | Typ | Hinweis |

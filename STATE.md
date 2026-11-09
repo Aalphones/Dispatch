@@ -1,5 +1,5 @@
 # STATE
 
 **Aktiver Plan:** `docs/planning/2026-11-09_meilenstein-1-kern/`
-**Phase:** 2/8 — Einstellungen, Dokumente, Kategorien, Änderungsvorschläge, Startinhalte (pending)
-**Nächster Schritt:** `phase-2-einstellungen-dokumente-vorschlaege.md` lesen und umsetzen; Phase 1 abgeschlossen (lokal PHP 8.5 + MySQL 8.4 laufen, `mysqld` muss nach Neustart manuell gestartet werden)
+**Phase:** 3/8 — Sanitizer (pending)
+**Nächster Schritt:** `phase-3-sanitizer.md` lesen und umsetzen; Phase 2 abgeschlossen (Seeder, Einstellungen, Dokumente, Kategorien, Änderungsvorschläge; `mysqld` muss nach Neustart manuell gestartet werden)

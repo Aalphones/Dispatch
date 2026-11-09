@@ -41,13 +41,13 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |
 | `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`) |
 | `src/Auth/` | Deploy-Token (`DeployToken`), JWT, Login-Bremse, MCP-Tokens, Scopes |
-| `src/Db/` | PDO-Verbindung (`Connection`), `Migrator`, `Transaction::run` (nur DML) |
-| `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll) |
+| `src/Db/` | PDO-Verbindung (`Connection`), `Migrator`, `Transaction::run`/`join` (nur DML) |
+| `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll); Einstellungen, Dokumente, Kategorien, Änderungsvorschläge (`SettingService`, `DocumentService`, `CategoryService`, `ChangeService` + Repositories); `Seeder` (Startinhalte) |
 | `src/Site/` | Builder, Manifest, Template-Helfer `e()`, Suchindex, Feed, Sitemap |
 | `src/Util/` | Sanitizer, Formprüfung, HTTP-Client mit SSRF-Schutz, Bildvarianten, Zeit |
 | `templates/` | PHP-Templates der Website (Meilenstein 0: `placeholder.php`, `404.php`) |
 | `theme/` | `style.css`, `site.js`, `redaktion/` (nachgeladen); Meilenstein 0: `placeholder.css` |
-| `defaults/` | Startinhalte als Markdown |
+| `defaults/` | Startinhalte als Markdown: `editorial_guidelines`, `preferences`, `about`, `imprint`, `privacy` (`Domain/Seeder` legt sie an) |
 | `migrations/` | nummerierte SQL-Dateien; 001–009: Einstellungen, Dokumente, Kategorien, Medien, Artikel mit Quellen, Queue, Änderungsvorschläge, Statistik, Audit (Spalten: [`models.md`](models.md)) |
 | `storage/` | `manifest.json` (vom Builder geschriebene Dateien), `media/`, `logs/` — nur auf dem Server und lokal, nicht im Git |
 

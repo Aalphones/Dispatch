@@ -7,7 +7,7 @@ Ziel: Die Domänenschicht von DISPATCH steht — Datenbank-Schema, Einstellungen
 | # | Phase | Rating | Status |
 |---|---|---|---|
 | 1 | [Lokale Umgebung, Migrationen, CLI, Akteur und Protokoll](phase-1-umgebung-migrationen.md) | standard | complete |
-| 2 | [Einstellungen, Dokumente, Kategorien, Änderungsvorschläge, Startinhalte](phase-2-einstellungen-dokumente-vorschlaege.md) | heikel | pending |
+| 2 | [Einstellungen, Dokumente, Kategorien, Änderungsvorschläge, Startinhalte](phase-2-einstellungen-dokumente-vorschlaege.md) | heikel | complete |
 | 3 | [Sanitizer](phase-3-sanitizer.md) | heikel | pending |
 | 4 | [Medien: HTTP-Client mit SSRF-Schutz, Ablage, Bildvarianten](phase-4-medien.md) | heikel | pending |
 | 5 | [Artikel: Quellen, Kategorien, Revisionen](phase-5-artikel.md) | standard | pending |
@@ -19,7 +19,7 @@ Reihenfolge ist Pflicht: jede Phase baut auf den Klassen der vorigen auf.
 
 ## Kontrakt (gilt für alle Phasen)
 
-**Akteur.** `Dispatch\Domain\Actor` (final readonly, `public string $name`). Fabriken: `owner()` → `owner`, `cli()` → `cli`, `mcp(string $tokenName)` → `mcp:<name>`, `oauth(string $clientName)` → `oauth:<name>`. `isOwner(): bool` ist nur für `owner` wahr. Jede schreibende Service-Methode nimmt als **letzten** Parameter `Actor $actor`. Freigeben, Zurückgeben, Zurückziehen, Verwerfen, Vorschläge übernehmen oder ablehnen verlangen `isOwner()` — sonst `DomainError('owner_only', …)`.
+**Akteur.** `Dispatch\Domain\Actor` (final readonly, `public string $name`). Fabriken: `owner()` → `owner`, `cli()` → `cli`, `mcp(string $tokenName)` → `mcp:<name>`, `oauth(string $clientName)` → `oauth:<name>`. `deploy()` → `deploy` (Seeder beim Deploy, ab Phase 8). `isOwner(): bool` ist nur für `owner` wahr. Jede schreibende Service-Methode nimmt als **letzten** Parameter `Actor $actor`. Freigeben, Zurückgeben, Zurückziehen, Verwerfen, Vorschläge übernehmen oder ablehnen verlangen `isOwner()` — sonst `DomainError('owner_only', …)`.
 
 **Fachlicher Fehler.** `Dispatch\Domain\DomainError extends \RuntimeException` mit `public readonly string $errorCode` und `public readonly array $details` (Default `[]`). Konstruktor `(string $errorCode, string $message, array $details = [])`. Die Meldung ist ein deutscher Satz, der sagt, wie es richtig geht. MCP und API übersetzen ihn später (MCP: `isError: true`, API: 4xx).
 
@@ -27,7 +27,7 @@ Reihenfolge ist Pflicht: jede Phase baut auf den Klassen der vorigen auf.
 
 **Repositories.** `Dispatch\Domain\<X>Repository`, Konstruktor `(PDO $pdo)`, nur SQL, ausschließlich Prepared Statements, Zeilen als `array<string, mixed>`; JSON-Spalten werden im Repository mit `json_decode(…, true, 512, JSON_THROW_ON_ERROR)` gelesen und mit `json_encode(…, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)` geschrieben.
 
-**Transaktion.** `Dispatch\Db\Transaction::run(PDO $pdo, callable $work): mixed` — `beginTransaction`, `$work()`, `commit`; bei Ausnahme `rollBack` und weiterwerfen. Jede Service-Methode, die mehr als eine Zeile oder Tabelle schreibt, läuft darin — **inklusive** Audit-Eintrag.
+**Transaktion.** `Dispatch\Db\Transaction::run(PDO $pdo, callable $work): mixed` — `beginTransaction`, `$work()`, `commit`; bei Ausnahme `rollBack` und weiterwerfen. `Transaction::join(PDO, callable)` arbeitet in einer laufenden Transaktion mit, sonst wie `run` — Services nutzen `join`, damit `ChangeService::apply` Fach-Änderung, Statuswechsel und Audit atomar hält (ADR-009). Jede Service-Methode, die mehr als eine Zeile oder Tabelle schreibt, läuft darin — **inklusive** Audit-Eintrag.
 
 **Protokoll.** `Dispatch\Domain\AuditRepository::record(Actor $actor, string $action, string $target, array $details = []): void`. `action` ist `<domäne>.<verb>` (z. B. `post.create`, `change.apply`), `target` ist `<domäne>:<schlüssel>` (z. B. `post:12`, `setting:site_title`).
 

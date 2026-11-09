@@ -24,3 +24,5 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Scope | Rechtebereich eines Tokens: `blog:read`, `blog:write`, `blog:admin`, `offline_access`. |
 | CIMD | Client ID Metadata Document: Claude weist sich per URL auf ein Metadaten-Dokument aus, statt sich zu registrieren. |
 | Deploy-Token | `DISPATCH_DEPLOY_TOKEN`; erlaubt nur Migration und Rebuild nach dem Deploy. |
+| Akteur | Wer eine Änderung auslöst (`Actor`): `owner`, `cli`, `deploy`, `mcp:<name>`, `oauth:<name>`. Nur `owner` ist der Inhaber; der Name steht im Protokoll. |
+| Startinhalte | Markdown-Vorlagen in `app/defaults/` (Richtlinien, Präferenzen, Über, Impressum, Datenschutz); der Seeder legt sie an, überschreibt aber nie Vorhandenes. |

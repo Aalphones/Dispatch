@@ -1,6 +1,6 @@
 # Phase 2 — Einstellungen, Dokumente, Kategorien, Änderungsvorschläge, Startinhalte
 
-**Rating:** heikel (definiert, was ohne Login öffentlich wirken darf) · **Status:** pending
+**Rating:** heikel (definiert, was ohne Login öffentlich wirken darf) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -62,21 +62,25 @@ Festgehalten in ADR-009 „Akteur, Inhaber-Rechte und Änderungsvorschläge".
 
 Scratchpad-Skripte gegen `dispatch_dev`; jeder Fall mit Ergebnis im Report-Back.
 
-- [ ] `php bin/dispatch seed` → 12 Einstellungen und 5 Dokumente angelegt; zweiter Lauf → „Nichts zu tun."; ein vorher von Hand geänderter Dokumentinhalt bleibt nach erneutem `seed` unverändert.
-- [ ] `SettingService::set(['site_title' => 'X'], Actor::mcp('test'))` → `change_id` gesetzt, `get('site_title')` unverändert; `ChangeService::apply(id, Actor::owner())` → Wert `X`, Vorschlag `applied`, Audit-Einträge `change.propose`, `setting.set`, `change.apply`.
-- [ ] Gemischt `['site_title' => 'Y', 'posts_per_page' => 20]` durch `mcp:test` → `posts_per_page` sofort 20, `site_title` als Vorschlag.
-- [ ] `set(['min_words' => 100], Actor::owner())` → `not_changeable`; `set(['accent' => 'rot'], …)` → `invalid_value`; `set(['foo' => 1], …)` → `unknown_setting`.
-- [ ] `ChangeService::apply` mit `Actor::mcp('test')` → `owner_only`; zweites `apply` auf denselben Vorschlag → `not_pending`.
-- [ ] Ein Vorschlag, dessen Wert inzwischen ungültig ist (z. B. `parent_id` einer gelöschten Kategorie, von Hand per SQL vorbereitet) → `apply` wirft, Vorschlag bleibt `pending`, keine halbe Änderung in der DB.
-- [ ] `DocumentService::update('editorial_guidelines', …, Actor::mcp('test'))` → direkt, Revision 2, Zeile in `document_revisions`; `update('imprint', …, mcp)` → Vorschlag; mit Inhaber → direkt.
-- [ ] Kategorie anlegen durch `mcp:test` → Vorschlag `entity_key = 'new'`; nach `apply` existiert sie. `update(id, ['interest' => 5, 'name' => 'Neu'], mcp)` → `interest` sofort, `name` als Vorschlag. Kategorie als eigene Elternkategorie → `invalid_value`; dritte Ebene → `invalid_value`.
+- [x] `php bin/dispatch seed` → 12 Einstellungen und 5 Dokumente angelegt; zweiter Lauf → „Nichts zu tun."; ein vorher von Hand geänderter Dokumentinhalt bleibt nach erneutem `seed` unverändert.
+- [x] `SettingService::set(['site_title' => 'X'], Actor::mcp('test'))` → `change_id` gesetzt, `get('site_title')` unverändert; `ChangeService::apply(id, Actor::owner())` → Wert `X`, Vorschlag `applied`, Audit-Einträge `change.propose`, `setting.set`, `change.apply`.
+- [x] Gemischt `['site_title' => 'Y', 'posts_per_page' => 20]` durch `mcp:test` → `posts_per_page` sofort 20, `site_title` als Vorschlag.
+- [x] `set(['min_words' => 100], Actor::owner())` → `not_changeable`; `set(['accent' => 'rot'], …)` → `invalid_value`; `set(['foo' => 1], …)` → `unknown_setting`.
+- [x] `ChangeService::apply` mit `Actor::mcp('test')` → `owner_only`; zweites `apply` auf denselben Vorschlag → `not_pending`.
+- [x] Ein Vorschlag, dessen Wert inzwischen ungültig ist (z. B. `parent_id` einer gelöschten Kategorie, von Hand per SQL vorbereitet) → `apply` wirft, Vorschlag bleibt `pending`, keine halbe Änderung in der DB.
+- [x] `DocumentService::update('editorial_guidelines', …, Actor::mcp('test'))` → direkt, Revision 2, Zeile in `document_revisions`; `update('imprint', …, mcp)` → Vorschlag; mit Inhaber → direkt.
+- [x] Kategorie anlegen durch `mcp:test` → Vorschlag `entity_key = 'new'`; nach `apply` existiert sie. `update(id, ['interest' => 5, 'name' => 'Neu'], mcp)` → `interest` sofort, `name` als Vorschlag. Kategorie als eigene Elternkategorie → `invalid_value`; dritte Ebene → `invalid_value`.
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle
-- [ ] ADR-009 „Akteur, Inhaber-Rechte und Änderungsvorschläge" (Tabelle öffentlich/intern, gemischte Updates, Übernahme über die Fach-Services) + Zeile in `docs/decisions/README.md`
-- [ ] `docs/models.md`: Abschnitt „Einstellungen" (Schlüssel, Gruppe, Startwert, Prüfregel) und „Was öffentlich ist"
-- [ ] `docs/code-map.md`: `defaults/` (fünf Dateien), `Domain/Seeder`, neue Services/Repositories
-- [ ] `docs/glossary.md`: „Akteur", „Startinhalte"
+- [x] Dateien laut Tabelle
+- [x] ADR-009 „Akteur, Inhaber-Rechte und Änderungsvorschläge" (Tabelle öffentlich/intern, gemischte Updates, Übernahme über die Fach-Services) + Zeile in `docs/decisions/README.md`
+- [x] `docs/models.md`: Abschnitt „Einstellungen" (Schlüssel, Gruppe, Startwert, Prüfregel) und „Was öffentlich ist"
+- [x] `docs/code-map.md`: `defaults/` (fünf Dateien), `Domain/Seeder`, neue Services/Repositories
+- [x] `docs/glossary.md`: „Akteur", „Startinhalte"
 
 ## Report-Back
+
+Abnahme am 2026-11-09 per Skript gegen `dispatch_dev`: alle Fälle der Liste oben grün (zusätzlich: `reject`, Slug-Duplikat → `slug_taken`, Kategorie mit Kindern unter anderer Kategorie → `invalid_value`, `media` → `not_supported` bleibt `pending`, kein Audit-Rest bei fehlgeschlagenem `apply`).
+
+Abweichungen: `Actor::deploy()` ergänzt (Seeder beim Deploy); `Transaction::join` ergänzt; Startdokumente bekommen Revision 1 (Vermerk „Startinhalt“); `slug_taken` als eigener Fehlercode; Vorschlags-Schlüssel für Einstellungen ist `settings`.

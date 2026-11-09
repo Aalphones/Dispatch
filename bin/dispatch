@@ -5,6 +5,8 @@
 
 use Dispatch\Db\Connection;
 use Dispatch\Db\Migrator;
+use Dispatch\Domain\Actor;
+use Dispatch\Domain\Seeder;
 
 if (PHP_SAPI !== 'cli') {
     exit(1);
@@ -30,7 +32,7 @@ Aufruf: php bin/dispatch <befehl>
 Befehle:
   hash-password   liest eine Zeile von STDIN und gibt den Passwort-Hash aus
   migrate         wendet neue Migrationen aus app/migrations/ an
-  seed            legt Startinhalte an (folgt in Phase 2)
+  seed            legt fehlende Einstellungen und Startdokumente an (Vorhandenes bleibt)
 
 TXT;
 
@@ -57,7 +59,13 @@ switch ($command) {
         break;
 
     case 'seed':
-        echo 'Startinhalte: folgt in Phase 2.', PHP_EOL;
+        $created = (new Seeder(Connection::open(), $config))->run(Actor::cli());
+        if ($created === []) {
+            echo 'Nichts zu tun.', PHP_EOL;
+        }
+        foreach ($created as $key) {
+            echo $key, PHP_EOL;
+        }
         break;
 
     default:

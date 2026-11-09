@@ -20,6 +20,11 @@ final readonly class Actor
         return new self('cli');
     }
 
+    public static function deploy(): self
+    {
+        return new self('deploy');
+    }
+
     public static function mcp(string $tokenName): self
     {
         return new self('mcp:' . $tokenName);

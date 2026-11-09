@@ -20,6 +20,20 @@ return [
         'require_cover' => true,
         'require_image_license' => true,
     ],
+    'media' => [
+        'max_bytes' => 50 * 1024 * 1024,
+        'max_megapixels' => 50,
+        'variant_widths' => [480, 800, 1200, 1600, 2000],
+        'jpeg_quality' => 82,
+        'webp_quality' => 80,
+    ],
+    // allow_private nur lokal (dev.env.example), auf Strato nie gesetzt.
+    'http' => [
+        'connect_timeout' => 5,
+        'timeout' => 20,
+        'max_redirects' => 4,
+        'allow_private' => Env::get('DISPATCH_ALLOW_PRIVATE_IPS') === '1',
+    ],
     'publish_mode' => 'review',
     'stats_enabled' => true,
 ];

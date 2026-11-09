@@ -114,6 +114,7 @@ final class ChangeService
             'setting' => (new SettingService($this->pdo, $this->config))->applyChange($key, $payload),
             'document' => (new DocumentService($this->pdo, $this->config))->applyChange($key, $payload),
             'category' => (new CategoryService($this->pdo, $this->config))->applyChange($key, $payload),
+            'media' => (new MediaService($this->pdo, $this->config))->applyChange($key, $payload),
             default => throw new DomainError('not_supported', sprintf('Vorschläge für „%s“ gibt es noch nicht.', $entity), ['entity' => $entity]),
         };
     }
@@ -152,6 +153,11 @@ final class ChangeService
                 }
 
                 return array_intersect_key($category, $payload);
+
+            case 'media':
+                $media = (new MediaRepository($this->pdo))->findByUid($key);
+
+                return $media === null ? null : array_intersect_key($media, $payload);
         }
 
         return null;

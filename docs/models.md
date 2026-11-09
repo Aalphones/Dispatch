@@ -95,7 +95,7 @@ Kategorien: nur zwei Ebenen (`parent_id` muss eine Kategorie ohne Elternteil sei
 | `bytes` | INT UNSIGNED | |
 | `sha256` | CHAR(64) | UNIQUE |
 | `width`, `height` | INT UNSIGNED NULL | |
-| `variants` | JSON | |
+| `variants` | JSON | Bilder: `[{"w": 480, "files": ["480.webp", "480.jpg"]}, …]`, sonst `[]` |
 | `alt` | VARCHAR(500) NULL | |
 | `caption` | VARCHAR(1000) NULL | |
 | `credit` | VARCHAR(300) NULL | |
@@ -104,6 +104,8 @@ Kategorien: nur zwei Ebenen (`parent_id` muss eine Kategorie ohne Elternteil sei
 | `source_url` | VARCHAR(1000) NULL | |
 | `origin` | ENUM | `import`, `upload`, `owner` |
 | `created_at`, `updated_at` | DATETIME | |
+
+Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bilder werden immer neu kodiert (kein EXIF/GPS); `ext` ist `jpg`, `png` oder `webp` (GIF wird PNG), `bytes` die Größe von `original.<ext>`, `sha256` gehört den Eingangs-Bytes (Dublettenerkennung). Breiten 480/800/1200/1600/2000, nur bis zur Originalbreite; schmaler als 480 → eine Variante in Originalbreite. Metadaten sind beim Speichern optional; Vorschlags-Schlüssel (`changes.entity_key`) ist die `uid`. ADR-011.
 
 ## posts (005)
 

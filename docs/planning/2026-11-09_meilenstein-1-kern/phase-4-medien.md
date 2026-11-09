@@ -1,6 +1,6 @@
 # Phase 4 — Medien: HTTP-Client mit SSRF-Schutz, Ablage, Bildvarianten
 
-**Rating:** heikel (SSRF, Bildverarbeitung unter Speichergrenzen) · **Status:** pending
+**Rating:** heikel (SSRF, Bildverarbeitung unter Speichergrenzen) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -73,22 +73,32 @@ Festgehalten in ADR-011 „Medien: HTTP-Client mit SSRF-Schutz und Bildvarianten
 
 Scratchpad-Skripte gegen `dispatch_dev`. Für die SSRF-Fälle `allow_private` **aus** (Variable leer).
 
-- [ ] SSRF abgewiesen (`url_rejected`): `http://127.0.0.1/`, `http://localhost/`, `http://10.0.0.1/`, `http://192.168.1.1/`, `http://169.254.169.254/latest/meta-data/`, `http://[::1]/`, `http://[::ffff:127.0.0.1]/`, `http://0.0.0.0/`, `ftp://example.com/x`, `file:///etc/passwd`, `http://user:pw@example.com/`, `http://example.com:8080/`.
-- [ ] Redirect auf privat: lokal `php -S 127.0.0.1:9000` mit einem Skript, das per 302 auf `http://127.0.0.1:9000/x` leitet, ist nur mit `allow_private` erreichbar — **ohne** wird schon der erste Aufruf abgewiesen; zusätzlich mit `allow_private` an: Kette aus 5 Redirects → `too_many_redirects`.
-- [ ] Echte Bilder: `importFromUrl` einer Wikimedia-Commons-Datei (JPEG, > 2000 px) → Ordner mit `original.jpg` und `480/800/1200/1600/2000` je `.webp` + `.jpg`; `exif_read_data` auf `original.jpg` findet kein GPS/`Make`; zweiter Import derselben URL → `duplicate: true`, gleiche `uid`.
-- [ ] Ein Handyfoto mit `Orientation = 6` und GPS → Varianten stehen aufrecht, kein GPS in `original.jpg`.
-- [ ] PNG mit Transparenz (300 px breit) → genau eine Variante `300.webp` + `300.png`, Transparenz erhalten (im Browser auf dunklem Hintergrund ansehen).
-- [ ] SVG, HTML-Datei, als `.jpg` umbenannte HTML-Datei → `type_rejected`; Datei über `max_bytes` (lokal `max_bytes` kurz auf 1 MB setzen) → `too_large`; Bild mit 60 MP (per GD erzeugt) → `too_many_pixels`.
-- [ ] Speicher: 50-MP-JPEG (per GD erzeugt, 8660 × 5774) verarbeiten → `peak_bytes` im Report-Back; liegt er über 400 MB, `max_megapixels` auf den gemessenen sicheren Wert senken und in ADR-011 begründen.
-- [ ] `updateMeta` durch `mcp:test` auf ungenutztem Medium → direkt; Medium per SQL als Live-Nutzung vorbereitet (Revision mit `uid` im Snapshot, `published_revision` gesetzt) → Vorschlag; `ChangeService::apply` mit Inhaber → angewandt.
-- [ ] `filePath(uid, '../../.env')` → `not_found`.
+- [x] SSRF abgewiesen (`url_rejected`): `http://127.0.0.1/`, `http://localhost/`, `http://10.0.0.1/`, `http://192.168.1.1/`, `http://169.254.169.254/latest/meta-data/`, `http://[::1]/`, `http://[::ffff:127.0.0.1]/`, `http://0.0.0.0/`, `ftp://example.com/x`, `file:///etc/passwd`, `http://user:pw@example.com/`, `http://example.com:8080/`.
+- [x] Redirect auf privat: lokal `php -S 127.0.0.1:9000` mit einem Skript, das per 302 auf `http://127.0.0.1:9000/x` leitet, ist nur mit `allow_private` erreichbar — **ohne** wird schon der erste Aufruf abgewiesen; zusätzlich mit `allow_private` an: Kette aus 5 Redirects → `too_many_redirects`.
+- [x] Echte Bilder: `importFromUrl` einer Wikimedia-Commons-Datei (JPEG, > 2000 px) → Ordner mit `original.jpg` und `480/800/1200/1600/2000` je `.webp` + `.jpg`; `exif_read_data` auf `original.jpg` findet kein GPS/`Make`; zweiter Import derselben URL → `duplicate: true`, gleiche `uid`.
+- [x] Ein Handyfoto mit `Orientation = 6` und GPS → Varianten stehen aufrecht, kein GPS in `original.jpg`.
+- [x] PNG mit Transparenz (300 px breit) → genau eine Variante `300.webp` + `300.png`, Transparenz erhalten (im Browser auf dunklem Hintergrund ansehen).
+- [x] SVG, HTML-Datei, als `.jpg` umbenannte HTML-Datei → `type_rejected`; Datei über `max_bytes` (lokal `max_bytes` kurz auf 1 MB setzen) → `too_large`; Bild mit 60 MP (per GD erzeugt) → `too_many_pixels`.
+- [x] Speicher: 50-MP-JPEG (per GD erzeugt, 8660 × 5774) verarbeiten → `peak_bytes` im Report-Back; liegt er über 400 MB, `max_megapixels` auf den gemessenen sicheren Wert senken und in ADR-011 begründen.
+- [x] `updateMeta` durch `mcp:test` auf ungenutztem Medium → direkt; Medium per SQL als Live-Nutzung vorbereitet (Revision mit `uid` im Snapshot, `published_revision` gesetzt) → Vorschlag; `ChangeService::apply` mit Inhaber → angewandt.
+- [x] `filePath(uid, '../../.env')` → `not_found`.
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle
-- [ ] Abnahme fahren, SSRF-Fälle einzeln mit Ergebnis im Report-Back (`dod.md`)
-- [ ] ADR-011 „Medien: HTTP-Client mit SSRF-Schutz und Bildvarianten" (Festnageln per `CURLOPT_RESOLVE` und warum; Ports nur 80/443; Typ per `finfo`; immer neu kodieren; gemessener Speicherbedarf) + Zeile in `docs/decisions/README.md`
-- [ ] `docs/models.md`: `media.variants`-Format, Ablage-Layout
-- [ ] `docs/code-map.md`: `Util/HttpClient`, `Util/ImageProcessor`, `Domain/Media*`, `storage/media/`
+- [x] Dateien laut Tabelle
+- [x] Abnahme fahren, SSRF-Fälle einzeln mit Ergebnis im Report-Back (`dod.md`)
+- [x] ADR-011 „Medien: HTTP-Client mit SSRF-Schutz und Bildvarianten" (Festnageln per `CURLOPT_RESOLVE` und warum; Ports nur 80/443; Typ per `finfo`; immer neu kodieren; gemessener Speicherbedarf) + Zeile in `docs/decisions/README.md`
+- [x] `docs/models.md`: `media.variants`-Format, Ablage-Layout
+- [x] `docs/code-map.md`: `Util/HttpClient`, `Util/ImageProcessor`, `Domain/Media*`, `storage/media/`
 
 ## Report-Back
+
+- **SSRF (12 Fälle, `allow_private` aus):** alle `url_rejected` — `127.0.0.1`, `localhost`, `10.0.0.1`, `192.168.1.1`, `169.254.169.254`, `[::1]`, `[::ffff:127.0.0.1]`, `0.0.0.0`, `ftp://`, `file://`, `user:pw@`, Port 8080. Zusätzlich `http://2130706433/` abgewiesen.
+- **Redirect:** ohne `allow_private` schon der erste Aufruf abgewiesen; mit: Weiterleitung auf `/x` und relative Weiterleitung funktionieren, Kette aus 5 → `too_many_redirects`; 3-MB-Antwort bei 1 MB → `too_large`.
+- **Wikimedia-JPEG (3072×2048):** 5 Varianten × webp/jpg, `original.jpg` ohne Make/GPS, zweiter Import `duplicate: true`, gleiche uid; Spitze 54 MB.
+- **EXIF-Foto (Orientation 6, Make, GPS, per Hand gebaut):** 200×400, aufrecht (rote Ecke oben rechts), nach Neukodierung weder Make noch GPS noch Orientation.
+- **PNG 300 px mit Alpha:** genau `300.webp` + `300.png`, Alpha in beiden erhalten (Ecke 127, Mitte 0; per Pixelwert, nicht im Browser).
+- **Abgewiesen:** SVG, HTML, HTML als `.jpg` → `type_rejected`; 2 MB bei 1 MB → `too_large`; 60 MP → `too_many_pixels`.
+- **Speicher 50 MP:** 8660×5773 → Spitze 246 MB im Prozess (< 400 MB), 2,2 s; `max_megapixels` bleibt 50.
+- **Metadaten:** `mcp:test` auf ungenutztem Medium direkt; auf Live-Medium Vorschlag; `apply` als `mcp` → `owner_only`, als Inhaber angewandt; `filePath(uid, ../../.env)` → `not_found`.
+- **Abweichungen:** (1) Plan nennt 8660×5774 = 50,005 MP, das lehnt die eigene Grenze ab — getestet mit 8660×5773. (2) `allow_private` hebt auch die Port-Prüfung auf (sonst wäre `php -S :9000` nicht erreichbar). (3) HTTPS lokal braucht `curl.cainfo` (Windows-PHP ohne CA-Bundle). (4) `peak_bytes` steckt im `ImageResult`, nicht im Medien-Datensatz.

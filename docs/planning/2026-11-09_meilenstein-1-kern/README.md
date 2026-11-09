@@ -9,7 +9,7 @@ Ziel: Die Domänenschicht von DISPATCH steht — Datenbank-Schema, Einstellungen
 | 1 | [Lokale Umgebung, Migrationen, CLI, Akteur und Protokoll](phase-1-umgebung-migrationen.md) | standard | complete |
 | 2 | [Einstellungen, Dokumente, Kategorien, Änderungsvorschläge, Startinhalte](phase-2-einstellungen-dokumente-vorschlaege.md) | heikel | complete |
 | 3 | [Sanitizer](phase-3-sanitizer.md) | heikel | complete |
-| 4 | [Medien: HTTP-Client mit SSRF-Schutz, Ablage, Bildvarianten](phase-4-medien.md) | heikel | pending |
+| 4 | [Medien: HTTP-Client mit SSRF-Schutz, Ablage, Bildvarianten](phase-4-medien.md) | heikel | complete |
 | 5 | [Artikel: Quellen, Kategorien, Revisionen](phase-5-artikel.md) | standard | pending |
 | 6 | [Formprüfung und Freigabe-Übergänge](phase-6-formpruefung-freigabe.md) | heikel | pending |
 | 7 | [Queue mit Reservierung](phase-7-queue.md) | heikel | pending |

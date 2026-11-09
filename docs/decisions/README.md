@@ -14,3 +14,4 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 008 | [Zuschnitt Meilenstein 1 und lokale Umgebung](008-zuschnitt-meilenstein-1-lokale-umgebung.md) | Akzeptiert |
 | 009 | [Akteur, Inhaber-Rechte und Änderungsvorschläge](009-akteur-inhaber-rechte-aenderungsvorschlaege.md) | Akzeptiert |
 | 010 | [Sanitizer mit HTML5-Parser und Whitelist](010-sanitizer-html5-parser-whitelist.md) | Akzeptiert |
+| 011 | [Medien: HTTP-Client mit SSRF-Schutz und Bildvarianten](011-medien-http-client-ssrf-bildvarianten.md) | Akzeptiert |

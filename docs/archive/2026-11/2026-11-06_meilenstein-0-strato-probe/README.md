@@ -10,7 +10,7 @@ Ziel: DISPATCH steht auf der Wurzel von `https://quantum-canvas.de/` mit Brücke
 | 2 | [Wurzel-`.htaccess`](phase-2-wurzel-htaccess.md) | heikel | complete |
 | 3 | [Diagnose-Route, Deploy-Endpunkt, Platzhalter-Builder](phase-3-diagnose-deploy-endpunkt.md) | heikel | complete |
 | 4 | [`deploy.cmd` mit Rauchtest](phase-4-deploy-skript.md) | standard | complete |
-| 5 | [Probe auf Strato, Messwerte festhalten, Diagnose entfernen](phase-5-strato-probe.md) | standard | pending |
+| 5 | [Probe auf Strato, Messwerte festhalten, Diagnose entfernen](phase-5-strato-probe.md) | standard | complete |
 
 ## Kontrakt (Phase 3 liefert, Phase 4 und 5 verbrauchen)
 
@@ -19,7 +19,7 @@ Alle Antworten der Brücke sind JSON mit `Content-Type: application/json; charse
 | Methode + Pfad | Schutz | Antwort |
 |---|---|---|
 | `POST /dispatch/api/deploy` | Deploy-Token (s. u.) | 200 `{"migrations": ["<datei>", …], "built": ["index.html", "404.html", "assets/placeholder.<hash8>.css"]}` · 401 `unauthorized` · 500 `deploy_failed` mit Satz, welcher Schritt scheiterte |
-| `GET /dispatch/api/diag` | Deploy-Token | 200 `{"all_ok": bool, "checks": {"<name>": {"ok": bool, "value": …}}}` — nur bis Ende Phase 5 |
+| `GET /dispatch/api/diag` | Deploy-Token | 200 `{"all_ok": bool, "checks": {"<name>": {"ok": bool, "value": …}}}` — **entfernt in Phase 5** |
 | `* /dispatch/mcp` | — | immer 401 `{"error":"unauthorized","message":"MCP folgt in Meilenstein 3."}` mit Header `WWW-Authenticate: Bearer` (Platzhalter bis Meilenstein 3, damit der Rauchtest prüfbar ist) |
 | jeder andere Pfad unter `/dispatch/` und `/.well-known/oauth-*` | — | 404 `not_found` |
 
@@ -42,10 +42,21 @@ Alle Antworten der Brücke sind JSON mit `Content-Type: application/json; charse
 
 ## Summary
 
+DISPATCH läuft auf `https://quantum-canvas.de/` mit Brücke, gesperrtem Code-Ordner und eigener Wurzel-`.htaccess`. Erster Deploy und Rauchtest grün; alle 13 Diagnose-Prüfungen `ok`; die Messwerte stehen in `docs/knowledge/INDEX.md`; die Diagnose-Route ist entfernt (`/dispatch/api/diag` → 404). Finale Abnahme 1–5 belegt: Platzhalter 200 mit CSP und `max-age=300`, `/card/` und `/scanner/capture` mit unverändertem Header-Block, `/dispatch-app/.env` und `config.php` 403, `/dispatch/mcp` 401, `deploy.cmd` endet grün.
+
 ## Files touched
+
+`app/index.php`, `app/src/Api/DiagController.php` (gelöscht), `docs/knowledge/INDEX.md`, `docs/PROJECT.md`, `docs/code-map.md`, dieser Plan; in CardMaker `www-root/.htaccess` und ADR-020 (Nachtrag).
 
 ## Commits
 
+Blog: siehe Git-Verlauf nach `fb59273`. CardMaker: `829b04d`.
+
 ## Deviations from plan
 
+`NEIGHBOR_URLS` in `deploy.env` als relative Pfade (`/card/ /scanner/capture`) statt voller Adressen. Der Datenbank-Erfolgspfad aus Phase 3 (Migrator, zweiter Lauf `migrations: []`) ist belegt: Deploy lieferte `migrations: []`, Builder lieferte `index.html`, `404.html`, Asset.
+
 ## Follow-ups
+
+- CardMakers `deploy.env` darf `REMOTE_ROOT_PATH` nie setzen (sonst überschreibt dessen Deploy die Wurzel von DISPATCH); im ADR-020-Nachtrag vermerkt.
+- Authorization-Header kommt über `HTTP_AUTHORIZATION` an; kein Rückfall-Header nötig.

@@ -1,5 +1,5 @@
 # STATE
 
-**Aktiver Plan:** `docs/planning/2026-11-06_meilenstein-0-strato-probe/`
-**Phase:** 5/5 — Probe auf Strato, Messwerte festhalten, Diagnose entfernen (pending)
-**Nächster Schritt:** `phase-5-strato-probe.md` lesen; Voraussetzung: `deploy.env` vom Inhaber gefüllt
+**Aktiver Plan:** (kein aktiver Plan)
+**Zuletzt abgeschlossen:** Meilenstein 0 — Strato-Probe und Deploy-Skript (`docs/archive/2026-11/2026-11-06_meilenstein-0-strato-probe/`)
+**Nächster Schritt:** Meilenstein 1 planen (siehe `docs/PROJECT.md`)

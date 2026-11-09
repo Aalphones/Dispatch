@@ -1,6 +1,6 @@
 # Phase 5 — Probe auf Strato, Messwerte festhalten, Diagnose entfernen
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Schritt lesen)
 

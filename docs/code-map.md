@@ -39,7 +39,7 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `config.php` | Basis-URL, Pfade, Formvorgaben, reservierte Namen der obersten Ebene |
 | `src/Mcp/` | Protokoll (beide Generationen), Tool-Registry, `Tools/` |
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |
-| `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`), Diagnose (`DiagController`, nur bis Ende Meilenstein 0) |
+| `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`) |
 | `src/Auth/` | Deploy-Token (`DeployToken`), JWT, Login-Bremse, MCP-Tokens, Scopes |
 | `src/Db/` | PDO-Verbindung (`Connection`), Migrator |
 | `src/Domain/` | Services und Repositories je Domäne |

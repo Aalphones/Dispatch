@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Dispatch\Api\DeployController;
-use Dispatch\Api\DiagController;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
 
@@ -14,7 +13,6 @@ $request = Request::fromGlobals();
 // Pfad → [erlaubte Methode, Handler]; bekannter Pfad mit anderer Methode ergibt 405.
 $routes = [
     '/dispatch/api/deploy' => ['POST', static fn () => (new DeployController($config))->handle($request)],
-    '/dispatch/api/diag' => ['GET', static fn () => (new DiagController($config))->handle($request)],
 ];
 
 if (isset($routes[$request->path()])) {

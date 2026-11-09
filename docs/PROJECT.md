@@ -31,7 +31,7 @@ DISPATCH ist eine persönliche Blog-Engine in PHP, die wie ein Verlag arbeitet, 
 
 | Layer | Choice |
 |---|---|
-| Sprache | PHP 8.5, `declare(strict_types=1)` — dieselbe Version wie die Nachbar-Anwendung auf demselben Strato-Paket; Phase 0 bestätigt sie |
+| Sprache | PHP 8.5, `declare(strict_types=1)` — dieselbe Version wie die Nachbar-Anwendung auf demselben Strato-Paket; auf Strato gemessen: 8.5.12 (`cgi-fcgi`), siehe `docs/knowledge/INDEX.md` |
 | Framework | keins; eigener PSR-4-Autoloader (`Dispatch\` → `app/src/`) |
 | Datenbank | MySQL bei Strato, PDO, `utf8mb4`, InnoDB |
 | Öffentliche Website | statisches HTML aus PHP-Templates, ein CSS, ein kleines JS |
@@ -87,4 +87,3 @@ Abnahmen je Phase: Konzept → „Umsetzungsplan", ohne die dort genannten autom
 - Rhythmus der geplanten Aufgabe (Vorschlag: dreimal pro Woche).
 - Mindestwerte bestätigen: 3 Quellen und 600 Wörter, bei Tiefenrecherche 5 Quellen und 1200 Wörter.
 - Wortlaut des Transparenzhinweises.
-- Upload-Grenzen des Strato-Pakets (`upload_max_filesize`, `post_max_size`, `memory_limit`) — Phase 0 misst sie.

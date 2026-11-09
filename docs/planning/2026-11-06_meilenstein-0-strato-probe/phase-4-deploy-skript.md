@@ -1,6 +1,6 @@
 # Phase 4 — `deploy.cmd` mit Rauchtest
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -54,3 +54,7 @@ Ohne Server prüfbar — jeweils per `cmd /c "echo. | .\deploy.cmd <ziel>"` aus 
 - [ ] `README.md`: Abschnitt „Deploy" (Ziele, `deploy.env` anlegen, Fingerabdruck holen — Verweis auf die Vorlage)
 
 ## Report-Back
+
+Abnahme ohne Server bestanden: fehlende `deploy.env`, leere Pflichtwerte (je Wert eine Zeile), Ziel `foo`, `SFTP_HOSTKEY=*`, Syntaxfehler unter `app/` (Abbruch vor dem Schreiben von `app\.env`) — jeweils Exit 1. CRLF auf Platte geprüft; `git ls-files --eol` erst nach dem Commit aussagekräftig.
+
+Ungeprüft bis Phase 5 (braucht Server): Vorlauf mit Sicherung, Upload, Nachlauf, Rauchtest-Schleife (`:expect`), Token-Zeichenprüfung mit gültigem Token lief nur im Lint-Test mit.

@@ -26,7 +26,7 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `web-root/.htaccess` | `.htaccess` | Wurzel-Regeln (ADR-003) |
 | — | `index.html`, `artikel/`, `assets/`, `media/`, … | vom Builder erzeugt, nie hochgeladen |
 | `bin/dispatch` | — | CLI, nur lokal (`hash-password`, `token:create`, `build`) |
-| `deploy.cmd` | — | Deploy (ADR-005) |
+| `deploy.cmd`, `deploy.env.example`, `deploy-backup/` | — | Deploy (ADR-005); Vorlage für `deploy.env`; Sicherung der Wurzel-`.htaccess` (nicht im Git) |
 | `dev-router.php`, `dev.env.example` | — | lokaler Server `php -S` mit Brücke und Sperre, Vorlage für `app/.env.local` (ADR-006) |
 
 ## Ordner in `app/`

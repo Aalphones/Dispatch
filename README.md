@@ -30,7 +30,9 @@ Der Dev-Router bildet die `.htaccess`-Regeln nach; der Builder schreibt die Webs
 
 ### Deployen
 
-1. `deploy.env.example` nach `deploy.env` kopieren und ausfüllen (landet nicht im Git).
-2. `deploy.cmd` doppelklicken — oder `deploy.cmd app` bzw. `deploy.cmd root` für Teile.
+1. `deploy.env.example` nach `deploy.env` kopieren und ausfüllen (landet nicht im Git). Den SFTP-Fingerabdruck und den Erzeugungsbefehl für den Deploy-Token erklärt die Vorlage.
+2. `deploy.cmd` doppelklicken — oder `deploy.cmd app` (Code und Brücke) bzw. `deploy.cmd root` (nur Wurzel-`.htaccess`) für Teile.
+
+Vor dem Überschreiben sichert das Skript die vorhandene Wurzel-`.htaccess` nach `deploy-backup\root.htaccess`.
 
 Das Skript prüft, lädt nur die eigenen Ordner hoch, führt Migrationen und Rebuild aus und prüft danach, dass Blog, Sperre und Nachbar-Anwendungen antworten ([ADR-005](docs/decisions/005-deploy-skript.md)).

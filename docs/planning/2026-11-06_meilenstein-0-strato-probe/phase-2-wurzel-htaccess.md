@@ -1,6 +1,6 @@
 # Phase 2 — Wurzel-`.htaccess`
 
-**Rating:** heikel (eine Datei, die jede Anwendung der Domain betrifft) · **Status:** pending
+**Rating:** heikel (eine Datei, die jede Anwendung der Domain betrifft) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -69,14 +69,20 @@ Umlaute in Kommentaren bewusst als `ae/oe/ue` (Apache-Konfiguration, ASCII-siche
 
 Lokal gibt es kein Apache; die Wirkung prüft Phase 5 auf Strato. Hier:
 
-- [ ] Datei liegt unter `web-root/.htaccess`, Inhalt wie oben, LF-Zeilenenden (`.gitattributes` setzt `eol=lf`).
-- [ ] Gegenlesen jeder Regel gegen ADR-003: global nur HTTPS, `-Indexes`, `DirectoryIndex`; keine `/card/`-Weiterleitung; kein `SetEnv`; keine Regel ohne Nachbar-Ausnahme außer den drei globalen und der Discovery-Umschreibung.
-- [ ] Muster-Probe der Ausdrücke mit PHP im Scratchpad (`preg_match` mit denselben Mustern, Delimiter `#`): `/card/`, `/card`, `/api/x`, `/scanner/capture` → Nachbar; `/cardinal/`, `/`, `/artikel/x/`, `/assets/a.css` → kein Nachbar.
+- [x] Datei liegt unter `web-root/.htaccess`, Inhalt wie oben, LF-Zeilenenden (`.gitattributes` setzt `eol=lf`).
+- [x] Gegenlesen jeder Regel gegen ADR-003: global nur HTTPS, `-Indexes`, `DirectoryIndex`; keine `/card/`-Weiterleitung; kein `SetEnv`; keine Regel ohne Nachbar-Ausnahme außer den drei globalen und der Discovery-Umschreibung.
+- [x] Muster-Probe der Ausdrücke mit PHP im Scratchpad (`preg_match` mit denselben Mustern, Delimiter `#`): `/card/`, `/card`, `/api/x`, `/scanner/capture` → Nachbar; `/cardinal/`, `/`, `/artikel/x/`, `/assets/a.css` → kein Nachbar.
 
 ## Checkliste
 
-- [ ] `web-root/.htaccess` anlegen
-- [ ] Abnahme fahren, Ergebnis in „Report-Back"
-- [ ] `docs/code-map.md` prüfen (Zeile `web-root/.htaccess` existiert schon) — nichts zu tun, falls unverändert
+- [x] `web-root/.htaccess` anlegen
+- [x] Abnahme fahren, Ergebnis in „Report-Back"
+- [x] `docs/code-map.md` prüfen (Zeile `web-root/.htaccess` existiert schon) — nichts zu tun, falls unverändert
 
 ## Report-Back
+
+- `web-root/.htaccess` wortgleich nach Plan angelegt; 0 CR-Bytes, `git check-attr eol` = lf.
+- Muster-Probe mit PHP `preg_match`: alle 8 Fälle wie erwartet (`/card/`, `/card`, `/api/x`, `/scanner/capture` → Nachbar; `/cardinal/`, `/`, `/artikel/x/`, `/assets/a.css` → kein Nachbar).
+- Gegenlesen gegen ADR-003: global nur HTTPS, `-Indexes`, `DirectoryIndex`; keine `/card/`-Weiterleitung, kein `SetEnv`; alles übrige im Nachbar-Ausnahmeblock bzw. Discovery-Umschreibung.
+- 🟡 Die Wirkung (Header-Vererbung, `<If>`-Syntax auf der Strato-Apache-Version) ist lokal nicht prüfbar; Phase 5.
+- `docs/code-map.md`: Zeile existierte, unverändert.

@@ -1,0 +1,37 @@
+# Wurzel von quantum-canvas.de — gehoert DISPATCH (ADR-003), hochgeladen von DISPATCHs deploy.cmd.
+# Jede Regel hier vererbt sich in /card/, /api/, /backend/ (CardMaker) und /scanner/ (CamScanner).
+# Global nur HTTPS, -Indexes, DirectoryIndex; alles Blog-Spezifische nur in Bloecken, die die Nachbarn ausnehmen.
+Options -Indexes
+DirectoryIndex index.html
+
+RewriteEngine On
+
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# OAuth-Discovery liegt an der Wurzel, beantwortet wird sie von der Bruecke (ADR-001).
+RewriteRule ^\.well-known/oauth-(protected-resource|authorization-server)(/.*)?$ dispatch/index.php [L]
+
+# Blog-Regeln: nie fuer die Nachbarordner.
+<If "%{REQUEST_URI} !~ m#^/(card|api|backend|scanner)(/|$)#">
+    ErrorDocument 404 /404.html
+    <IfModule mod_headers.c>
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+        Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    </IfModule>
+</If>
+
+# Dateien unter /assets/ und /media/ tragen Versions-Hashes im Namen.
+<If "%{REQUEST_URI} =~ m#^/(assets|media)/#">
+    <IfModule mod_headers.c>
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </IfModule>
+</If>
+
+# HTML des Blogs kurz cachen, Nachbarn und Bruecke ausgenommen.
+<If "%{REQUEST_URI} !~ m#^/(card|api|backend|scanner|dispatch|dispatch-app)(/|$)# && %{REQUEST_URI} =~ m#(/|\.html)$#">
+    <IfModule mod_headers.c>
+        Header set Cache-Control "public, max-age=300"
+    </IfModule>
+</If>

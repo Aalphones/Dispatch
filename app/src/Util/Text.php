@@ -22,10 +22,16 @@ final class Text
 
     public static function wordCount(string $html): int
     {
+        return (int) preg_match_all(self::WORD_PATTERN, self::plain($html));
+    }
+
+    /** Klartext für Suche und Zählung: Tags entfernt, Entities dekodiert, Leerraum zusammengefasst. */
+    public static function plain(string $html): string
+    {
         $separated = (string) preg_replace(self::BLOCK_TAG_PATTERN, ' ', $html);
         $text = html_entity_decode(strip_tags($separated), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-        return (int) preg_match_all(self::WORD_PATTERN, $text);
+        return trim((string) preg_replace('/\s+/u', ' ', $text));
     }
 
     public static function slugify(string $text): string

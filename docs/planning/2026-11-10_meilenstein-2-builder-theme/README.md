@@ -10,7 +10,7 @@ Nicht in diesem Meilenstein: alles, was nach dem Login sichtbar ist (Meilenstein
 |---|---|---|---|
 | 1 | [Demo-Inhalte und Live-Lesepfad ergänzen](phase-1-demo-inhalte.md) | standard | complete |
 | 2 | [Builder-Kern: Sperre, Sammeln, Manifest, Medien, Layout](phase-2-builder-kern.md) | heikel | complete |
-| 3 | [Inhalt aufbereiten: Medien, Belege, Inhaltsverzeichnis, Markdown](phase-3-inhalt-markdown.md) | heikel | pending |
+| 3 | [Inhalt aufbereiten: Medien, Belege, Inhaltsverzeichnis, Markdown](phase-3-inhalt-markdown.md) | heikel | complete |
 | 4 | [Theme-CSS nach Entwurf](phase-4-theme-css.md) | standard | pending |
 | 5 | [Seiten: Start, Artikel, Kategorien, Schlagwort, Suche, Dokumente, 404](phase-5-seiten.md) | standard | pending |
 | 6 | [Skripte und Suchindex](phase-6-skripte-suche.md) | heikel | pending |

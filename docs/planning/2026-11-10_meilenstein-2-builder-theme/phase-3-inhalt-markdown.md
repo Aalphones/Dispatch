@@ -1,6 +1,6 @@
 # Phase 3 — Inhalt aufbereiten: Medien, Belege, Inhaltsverzeichnis, Markdown
 
-**Rating:** heikel (formt gespeichertes HTML um, das öffentlich ausgeliefert wird) · **Status:** pending
+**Rating:** heikel (formt gespeichertes HTML um, das öffentlich ausgeliefert wird) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -37,3 +37,5 @@
 - [ ] Doc: `docs/code-map.md` → `src/Site/` um `ContentRenderer`, `src/Util/` um `Markdown` ergänzen.
 
 ## Report-Back
+
+AK 1–11 belegt mit `php bin/demo/pruefe-inhalt.php` (14 Demo-Artikel, XSS-Fälle, Impressum). Abweichungen: HTML-Kommentare im Markdown werden entfernt (die Impressum-Vorlage enthält einen internen Hinweis, der sonst öffentlich stünde); `Text::plain()` neu, `wordCount` nutzt es; `varianten()` und `picture()` stehen als Funktionen in `functions.php`.

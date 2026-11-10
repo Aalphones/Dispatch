@@ -206,6 +206,14 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 | `note` | VARCHAR(500) NULL | |
 | `own_material` | TINYINT(1) | Default 0 |
 
+**Queue-Ablauf** (`QueueService`):
+
+- **Status:** `open` → `claimed` (Reservierung) → `review` (Artikel eingereicht) → `done` (Artikel freigegeben). Daneben `failed` (Agent gibt mit Begründung auf), `cancelled` (Inhaber zieht zurück; nur aus `open`/`claimed` und nur ohne verknüpften Artikel).
+- **Reservierung:** ein einziges `UPDATE … WHERE id = ? AND (status = 'open' OR (status = 'claimed' AND claim_expires <= UTC_TIMESTAMP()))`; `rowCount() = 1` heißt reserviert, sonst `already_claimed`. Dauer = Einstellung `queue_claim_minutes`. Ohne `id` werden bis zu 5 Kandidaten nach Priorität, Alter, `id` der Reihe nach versucht.
+- **Ablauf:** kein Hintergrundprozess. `get`/`list` geben einen abgelaufenen Claim als `open` aus (`effective_status`; `status` bleibt der Rohzustand der Zeile). Wer arbeiten darf, entscheidet `claimed_by` im Rohzustand, nicht die Uhr: abgelaufen und nicht neu reserviert → der bisherige Agent darf weiter; neu reserviert → `not_claimant`.
+- **Verknüpfung mit Artikeln** (gleiche Transaktion): `PostService::create` mit `queue_item_id` (Auftrag muss reserviert sein, vom Akteur oder Inhaber) setzt `origin = queue`, `depth` des Auftrags und `queue_items.post_id`; `submit` → `review`; `approve` → `done`; `discard` → `open` mit `post_id`, `claimed_by`, `claim_expires` = NULL. `returnToAgent` und `unpublish` lassen den Auftrag stehen. `release` (zurück auf `open`/`failed`) ist bei verknüpftem Artikel gesperrt (`has_post`) — erst verwerfen.
+- **Eigenes Material:** `own_material` an einem Anhang setzt beim Anlegen am Medium leeres `credit` = `author_name` und leere `license` = „Eigenes Material“.
+
 ## changes (007)
 
 | Spalte | Typ | Hinweis |

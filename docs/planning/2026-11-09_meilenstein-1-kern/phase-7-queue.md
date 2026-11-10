@@ -1,6 +1,6 @@
 # Phase 7 — Queue mit Reservierung
 
-**Rating:** heikel (gleichzeitige Agentenläufe) · **Status:** pending
+**Rating:** heikel (gleichzeitige Agentenläufe) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -54,19 +54,24 @@ WHERE id = ? AND (status = 'open' OR (status = 'claimed' AND claim_expires <= UT
 
 Scratchpad-Skripte gegen `dispatch_dev`.
 
-- [ ] **Zwei gleichzeitige Agenten:** Skript `claim.php <id> <name> <startzeit>` wartet per `time_sleep_until(<startzeit>)` und ruft dann `claim(id, Actor::mcp(name))`. Zwei Prozesse per `Start-Process php` mit derselben Startzeit (+3 s) auf denselben offenen Auftrag, 20 Durchläufe → in **jedem** Durchlauf genau ein Erfolg und ein `already_claimed`; Zählung im Report-Back.
-- [ ] Ohne `id`: drei offene Aufträge mit Priorität 3, 1, 2 → erster `claim()` bekommt Priorität 1, zweiter Priorität 2.
-- [ ] Ablauf: `queue_claim_minutes` per Setting auf 15, Reservierung per SQL auf `claim_expires = UTC_TIMESTAMP() - INTERVAL 1 MINUTE` setzen → `get()` zeigt `effective_status = open`; Agent B reserviert neu; Agent A (`create` mit `queue_item_id`) → `not_claimant`.
-- [ ] Abgelaufen, aber nicht neu reserviert → Agent A legt den Artikel an, reicht ein → Auftrag `review`; Inhaber gibt frei → Auftrag `done`.
-- [ ] `release(…, 'failed', null)` → Fehler (Begründung fehlt); mit Begründung → `failed`, `result_note` gesetzt; `release` durch fremden Agenten → `not_claimant`.
-- [ ] `discard` eines Queue-Artikels → Auftrag wieder `open`, `post_id` leer.
-- [ ] `add` mit `own_material` an einem Medium ohne `credit` → `credit` = `author_name`, `license` = „Eigenes Material".
+- [x] **Zwei gleichzeitige Agenten:** Skript `claim.php <id> <name> <startzeit>` wartet per `time_sleep_until(<startzeit>)` und ruft dann `claim(id, Actor::mcp(name))`. Zwei Prozesse per `Start-Process php` mit derselben Startzeit (+3 s) auf denselben offenen Auftrag, 20 Durchläufe → in **jedem** Durchlauf genau ein Erfolg und ein `already_claimed`; Zählung im Report-Back.
+- [x] Ohne `id`: drei offene Aufträge mit Priorität 3, 1, 2 → erster `claim()` bekommt Priorität 1, zweiter Priorität 2.
+- [x] Ablauf: `queue_claim_minutes` per Setting auf 15, Reservierung per SQL auf `claim_expires = UTC_TIMESTAMP() - INTERVAL 1 MINUTE` setzen → `get()` zeigt `effective_status = open`; Agent B reserviert neu; Agent A (`create` mit `queue_item_id`) → `not_claimant`.
+- [x] Abgelaufen, aber nicht neu reserviert → Agent A legt den Artikel an, reicht ein → Auftrag `review`; Inhaber gibt frei → Auftrag `done`.
+- [x] `release(…, 'failed', null)` → Fehler (Begründung fehlt); mit Begründung → `failed`, `result_note` gesetzt; `release` durch fremden Agenten → `not_claimant`.
+- [x] `discard` eines Queue-Artikels → Auftrag wieder `open`, `post_id` leer.
+- [x] `add` mit `own_material` an einem Medium ohne `credit` → `credit` = `author_name`, `license` = „Eigenes Material".
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle
-- [ ] Abnahme fahren, Ergebnisse im Report-Back
-- [ ] `docs/models.md`: Queue-Status, Reservierung, Verknüpfung mit Artikeln
-- [ ] `docs/code-map.md`: `Domain/Queue*`
+- [x] Dateien laut Tabelle
+- [x] Abnahme fahren, Ergebnisse im Report-Back
+- [x] `docs/models.md`: Queue-Status, Reservierung, Verknüpfung mit Artikeln
+- [x] `docs/code-map.md`: `Domain/Queue*`
 
 ## Report-Back
+
+- **Zwei-Prozess-Test:** 20 von 20 Durchläufen mit genau einem Erfolg und einem `already_claimed` (zwei `php`-Prozesse, gleiche Startzeit +3 s).
+- Alle übrigen Abnahmepunkte grün (Priorität 1/2/3, Ablauf mit Neu-Reservierung, `not_claimant`, `release`, `discard`, `own_material`).
+- **Ergänzungen zum Plan:** `release`/`cancel` sind bei verknüpftem Artikel gesperrt (`has_post`), sonst bliebe ein Entwurf auf einem offenen Auftrag hängen. `create` gegen nicht reservierten Auftrag → `not_claimed`. Die Übergänge `markReview`/`markDone`/`reopen` wirken nur aus passenden Zuständen, damit ein erneut eingereichter, schon erledigter Artikel den Auftrag nicht zurücksetzt. `cancel` nur durch den Inhaber (`owner_only`).
+- `QueueRepository::findForUpdate` zusätzlich zur Planliste: sperrt die Auftragszeile in den Übergängen.

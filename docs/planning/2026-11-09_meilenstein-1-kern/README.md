@@ -12,7 +12,7 @@ Ziel: Die Domänenschicht von DISPATCH steht — Datenbank-Schema, Einstellungen
 | 4 | [Medien: HTTP-Client mit SSRF-Schutz, Ablage, Bildvarianten](phase-4-medien.md) | heikel | complete |
 | 5 | [Artikel: Quellen, Kategorien, Revisionen](phase-5-artikel.md) | standard | complete |
 | 6 | [Formprüfung und Freigabe-Übergänge](phase-6-formpruefung-freigabe.md) | heikel | complete |
-| 7 | [Queue mit Reservierung](phase-7-queue.md) | heikel | pending |
+| 7 | [Queue mit Reservierung](phase-7-queue.md) | heikel | complete |
 | 8 | [Deploy mit Startinhalten, Abnahme auf Strato, Doku](phase-8-deploy-abschluss.md) | standard | pending |
 
 Reihenfolge ist Pflicht: jede Phase baut auf den Klassen der vorigen auf.

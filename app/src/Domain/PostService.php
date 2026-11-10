@@ -59,6 +59,7 @@ final class PostService
     private CategoryRepository $categories;
     private MediaRepository $media;
     private AuditRepository $audit;
+    private QueueService $queue;
     private Sanitizer $sanitizer;
     private FormCheck $formCheck;
 
@@ -69,6 +70,7 @@ final class PostService
         $this->categories = new CategoryRepository($pdo);
         $this->media = new MediaRepository($pdo);
         $this->audit = new AuditRepository($pdo);
+        $this->queue = new QueueService($pdo, $config);
         $this->sanitizer = new Sanitizer();
         $this->formCheck = new FormCheck();
     }
@@ -85,14 +87,24 @@ final class PostService
             }
         }
 
+        $queueItemId = $this->extractQueueItemId($input);
         $normalized = $this->normalize(array_replace(self::CREATE_DEFAULTS, $input), null, $actor);
 
-        return Transaction::join($this->pdo, function () use ($normalized, $actor): array {
+        return Transaction::join($this->pdo, function () use ($normalized, $queueItemId, $actor): array {
             $columns = $normalized['columns'];
+            if ($queueItemId !== null) {
+                $item = $this->queue->assertClaimant($queueItemId, $actor);
+                $columns['origin'] = 'queue';
+                $columns['queue_item_id'] = $queueItemId;
+                $columns['depth'] = $item['depth'];
+            }
             $columns['slug'] ??= $this->uniqueSlug(Text::slugify($columns['title']));
             $columns['status'] = 'draft';
             $columns['revision'] = 1;
             $postId = $this->posts->insert($columns);
+            if ($queueItemId !== null) {
+                $this->queue->linkPost($queueItemId, $postId);
+            }
 
             $this->posts->replaceCategories($postId, $normalized['categories'] ?? []);
             $this->posts->replaceSources($postId, $normalized['sources'] ?? []);
@@ -262,6 +274,7 @@ final class PostService
 
             $this->assertFormOk($id);
             $this->posts->setStatus($id, ['status' => 'review']);
+            $this->queueAfter($post, 'markReview');
             $this->audit->record($actor, 'post.submit', 'post:' . $id, ['revision' => (int) $post['revision']]);
 
             return $this->get($id);
@@ -286,6 +299,7 @@ final class PostService
                 'touch_published_at' => true,
                 'review_note' => null,
             ]);
+            $this->queueAfter($post, 'markDone');
             $this->audit->record($actor, 'post.approve', 'post:' . $id, ['revision' => (int) $post['revision']]);
 
             return $this->get($id);
@@ -351,6 +365,7 @@ final class PostService
             }
 
             $this->posts->delete($id);
+            $this->queueAfter($post, 'reopen');
             $this->audit->record($actor, 'post.discard', 'post:' . $id, ['title' => $post['title'], 'slug' => $post['slug']]);
         });
     }
@@ -374,6 +389,44 @@ final class PostService
         }
 
         return $post;
+    }
+
+    /**
+     * Zieht den verknüpften Queue-Auftrag in derselben Transaktion nach.
+     *
+     * @param array<string, mixed> $post
+     * @param 'markReview'|'markDone'|'reopen' $transition
+     */
+    private function queueAfter(array $post, string $transition): void
+    {
+        if ($post['queue_item_id'] !== null) {
+            $this->queue->{$transition}((int) $post['queue_item_id']);
+        }
+    }
+
+    /**
+     * `queue_item_id` gehört nicht zu den Artikel-Feldern: Nur das Anlegen kennt es, und es setzt dann `origin = queue`.
+     *
+     * @param array<string, mixed> $input wird um den Schlüssel bereinigt
+     */
+    private function extractQueueItemId(array &$input): ?int
+    {
+        if (!array_key_exists('queue_item_id', $input)) {
+            return null;
+        }
+        $value = $input['queue_item_id'];
+        unset($input['queue_item_id']);
+        if ($value === null) {
+            return null;
+        }
+        if (!is_int($value) || $value < 1) {
+            throw $this->invalid('queue_item_id', 'muss die Nummer eines Auftrags sein');
+        }
+        if (array_key_exists('origin', $input)) {
+            throw $this->invalid('origin', 'darf zusammen mit queue_item_id nicht gesetzt werden — die Queue bestimmt ihn');
+        }
+
+        return $value;
     }
 
     private function assertFormOk(int $id): void

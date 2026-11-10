@@ -1,6 +1,7 @@
 # Phase 5 — Tools: Medien, Statistik, Website; Resources und Prompts
 
 Rating: standard
+Status: complete
 
 ## Kontext (vorher lesen)
 
@@ -23,13 +24,21 @@ Rating: standard
 
 ## Checkliste
 
-- [ ] `Mcp/ImageBlocks.php`: `public static function forMedia(MediaService $m, array $media, int $max = 6): array` → `['blocks' => list<array>, 'skipped' => list<string>]`. Datei-Wahl je Bild: größte Variante mit `w ≤ 1024` im Format `jpg` oder `png`; gibt es keine, das Original, wenn `width ≤ 1024` und `mime` ∈ jpeg/png/webp; sonst überspringen. Pfad über `MediaService::filePath`.
-- [ ] `QueueTools::claim_queue_item` um Bild-Blöcke ergänzen (Anhänge mit `kind = image`), Text-JSON um `images_not_shown`.
-- [ ] `Mcp/Tools/MediaTools.php`: `import_media_from_url`, `upload_media` (`base64_decode(…, true)`; ungültig → `invalid_argument`), `update_media`, `list_media`, `get_media`.
-- [ ] `Mcp/Tools/StatsTools.php`: `get_stats`, `get_post_stats`.
-- [ ] `Mcp/Tools/SiteTools.php`: `rebuild_site` → `(new Builder($config, $pdo))->build()`; läuft gerade ein Build (Sperre), Meldung als `isError` `build_locked` (Ausnahme-Typ aus `Builder::build` übernehmen).
-- [ ] `Mcp/Resources.php`: `list(): array`, `templates(): array`, `read(string $uri): array` (Inhalte `[{uri, mimeType, text}]`); Dokumente über `DocumentService::get`, Artikel über `PostService::get` (wie `get_post` mit HTML). In `McpController` verdrahten, Scope `blog:read`.
-- [ ] `Mcp/Prompts.php`: `list(): array`, `get(string $name, array $args): array` → `{description, messages: [{role: "user", content: {type: "text", text}}]}`. `redaktion_geplant` = „Rufe get_editorial_brief(mode=\"scheduled\") auf und folge dem Workflow.“ + Inhalt `workflow-scheduled.md`; `redaktion_queue` analog mit `queue`; `thema_einreichen` = „Setze dieses Thema mit add_to_queue auf die Queue: <thema>. Frage nach Priorität und Tiefe nur, wenn der Text sie nicht nennt.“ Fehlendes `thema` → `-32602`.
-- [ ] Doku: `docs/code-map.md` (`ImageBlocks`, `Resources`, `Prompts`, übrige Tools-Klassen).
+- [x] `Mcp/ImageBlocks.php`: `public static function forMedia(MediaService $m, array $media, int $max = 6): array` → `['blocks' => list<array>, 'skipped' => list<string>]`. Datei-Wahl je Bild: größte Variante mit `w ≤ 1024` im Format `jpg` oder `png`; gibt es keine, das Original, wenn `width ≤ 1024` und `mime` ∈ jpeg/png/webp; sonst überspringen. Pfad über `MediaService::filePath`.
+- [x] `QueueTools::claim_queue_item` um Bild-Blöcke ergänzen (Anhänge mit `kind = image`), Text-JSON um `images_not_shown`.
+- [x] `Mcp/Tools/MediaTools.php`: `import_media_from_url`, `upload_media` (`base64_decode(…, true)`; ungültig → `invalid_argument`), `update_media`, `list_media`, `get_media`.
+- [x] `Mcp/Tools/StatsTools.php`: `get_stats`, `get_post_stats`.
+- [x] `Mcp/Tools/SiteTools.php`: `rebuild_site` → `(new Builder($config, $pdo))->build()`; läuft gerade ein Build (Sperre), Meldung als `isError` `build_locked` (Ausnahme-Typ aus `Builder::build` übernehmen).
+- [x] `Mcp/Resources.php`: `list(): array`, `templates(): array`, `read(string $uri): array` (Inhalte `[{uri, mimeType, text}]`); Dokumente über `DocumentService::get`, Artikel über `PostService::get` (wie `get_post` mit HTML). In `McpController` verdrahten, Scope `blog:read`.
+- [x] `Mcp/Prompts.php`: `list(): array`, `get(string $name, array $args): array` → `{description, messages: [{role: "user", content: {type: "text", text}}]}`. `redaktion_geplant` = „Rufe get_editorial_brief(mode=\"scheduled\") auf und folge dem Workflow.“ + Inhalt `workflow-scheduled.md`; `redaktion_queue` analog mit `queue`; `thema_einreichen` = „Setze dieses Thema mit add_to_queue auf die Queue: <thema>. Frage nach Priorität und Tiefe nur, wenn der Text sie nicht nennt.“ Fehlendes `thema` → `-32602`.
+- [x] Doku: `docs/code-map.md` (`ImageBlocks`, `Resources`, `Prompts`, übrige Tools-Klassen).
 
 ## Report-Back
+
+Phase 5 fertig: alle 7 AK lokal per Skript gegen `php -S` belegt (Testtokens widerrufen). `tools/list` mit read+write = 30 Tools, mit `blog:admin` (update_document, save_category, update_settings) = 33.
+
+- AK1: Bild 1600×1200 → Block 800×600 (PNG), Hochformat 1200×2000 → 480×800; `view: false` ohne Block; Nicht-Bilder nur Metadaten mit `note`.
+- AK2: Auftrag mit 8 Bildern → 6 Bild-Blöcke, `images_not_shown` nennt 2 UIDs.
+- AK3: Wikimedia-Import klappte (mit `curl.cainfo` auf das CA-Bündel von Git); `127.0.0.1` → `url_rejected`; SVG → `type_rejected`; ungültiges Base64 → `invalid_argument`.
+- AK4/5/6: wie beschrieben; unbekannte Resource und fehlendes `thema` → `-32602`.
+- Abweichung: der Fehlercode bei laufendem Build heißt `build_busy` (Code des Builders), nicht `build_locked`. `images_not_shown` fehlt im JSON, wenn alle Bilder gezeigt wurden.

@@ -9,6 +9,7 @@ use Dispatch\Domain\Actor;
 use Dispatch\Domain\DomainError;
 use Dispatch\Domain\MediaService;
 use Dispatch\Domain\QueueService;
+use Dispatch\Mcp\ImageBlocks;
 use Dispatch\Mcp\Registry;
 use Dispatch\Mcp\Schema;
 use Dispatch\Mcp\Tool;
@@ -80,14 +81,19 @@ final class QueueTools
         $registry->add(new Tool(
             'claim_queue_item',
             'Auftrag reservieren',
-            'Reserviert einen Auftrag für die eingestellte Frist (Standard 180 Minuten) und liefert Titel, Auftragstext, Links und die angehängten Medien. Ohne id kommt der wichtigste und älteste offene Auftrag, mit id genau dieser. Beispiel: {"id": 7}. Danach recherchieren und mit create_post (queue_item_id) schreiben; gelingt das nicht, gibt release_queue_item ihn zurück.',
+            'Reserviert einen Auftrag für die eingestellte Frist (Standard 180 Minuten) und liefert Titel, Auftragstext, Links und die angehängten Medien; Bild-Anhänge kommen als Bilder mit (höchstens 6, weitere stehen in images_not_shown und lassen sich mit get_media ansehen). Ohne id kommt der wichtigste und älteste offene Auftrag, mit id genau dieser. Beispiel: {"id": 7}. Danach recherchieren und mit create_post (queue_item_id) schreiben; gelingt das nicht, gibt release_queue_item ihn zurück.',
             Schema::object(['id' => Schema::integer('Nummer des Auftrags; ohne Angabe der nächste offene')]),
             Tool::annotations('Auftrag reservieren', 'W'),
             Scopes::WRITE,
-            static function (array $args, Actor $actor) use ($queue): ToolResult {
+            static function (array $args, Actor $actor) use ($queue, $media): ToolResult {
                 $item = $queue->claim(isset($args['id']) ? (int) $args['id'] : null, $actor);
+                $images = ImageBlocks::forMedia($media, $item['media']);
+                $data = ['item' => $item];
+                if ($images['skipped'] !== []) {
+                    $data['images_not_shown'] = $images['skipped'];
+                }
 
-                return ToolResult::json(['item' => $item]);
+                return ToolResult::json($data, $images['blocks']);
             }
         ));
 

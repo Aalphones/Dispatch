@@ -16,6 +16,7 @@ use Dispatch\Domain\PostService;
 use Dispatch\Domain\QueueService;
 use Dispatch\Domain\SettingService;
 use Dispatch\Domain\SiteInfoService;
+use Dispatch\Domain\StatsService;
 use Dispatch\Domain\TokenService;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
@@ -23,9 +24,12 @@ use Dispatch\Mcp\Tools\BriefingTools;
 use Dispatch\Mcp\Tools\CategoryTools;
 use Dispatch\Mcp\Tools\ChangeTools;
 use Dispatch\Mcp\Tools\DocumentTools;
+use Dispatch\Mcp\Tools\MediaTools;
 use Dispatch\Mcp\Tools\PostTools;
 use Dispatch\Mcp\Tools\QueueTools;
 use Dispatch\Mcp\Tools\SettingTools;
+use Dispatch\Mcp\Tools\SiteTools;
+use Dispatch\Mcp\Tools\StatsTools;
 use Dispatch\Util\Log;
 use PDO;
 use stdClass;
@@ -46,10 +50,10 @@ final class McpController
     }
 
     /**
-     * Services einmal pro Anfrage; Phase 5 ergänzt die für Statistik und Website.
+     * Services einmal pro Anfrage; `pdo` und `config` brauchen die Website-Tools für den Builder.
      *
      * @param array<string, mixed> $config
-     * @return array<string, object>
+     * @return array<string, mixed>
      */
     public static function services(PDO $pdo, array $config): array
     {
@@ -64,6 +68,9 @@ final class McpController
             'media' => new MediaService($pdo, $config),
             'briefing' => new BriefingService($pdo, $config),
             'site_info' => new SiteInfoService($pdo, $config),
+            'stats' => new StatsService($pdo),
+            'pdo' => $pdo,
+            'config' => $config,
         ];
     }
 
@@ -156,7 +163,7 @@ final class McpController
      * @param array<string, mixed> $message
      * @param array{version: string, modern: bool} $era
      * @param array{id: int, name: string, scopes: list<string>} $auth
-     * @param array<string, object> $services
+     * @param array<string, mixed> $services
      * @return array<string, mixed>|stdClass
      */
     private function dispatch(array $message, array $era, array $auth, array $services): array|stdClass
@@ -170,10 +177,11 @@ final class McpController
             'ping' => new stdClass(),
             'tools/list' => $this->listTools($era, $auth, $services),
             'tools/call' => $this->callTool($params, $auth, $services),
-            'resources/list' => $this->readOnlyList($auth, ['resources' => []], $era),
-            'resources/templates/list' => $this->readOnlyList($auth, ['resourceTemplates' => []], $era),
-            'prompts/list' => $this->readOnlyList($auth, ['prompts' => []], $era),
-            'resources/read', 'prompts/get' => $this->unknownReadable($method, $params, $auth),
+            'resources/list' => $this->readOnlyList($auth, static fn (): array => ['resources' => self::resources($services)->list()], $era),
+            'resources/templates/list' => $this->readOnlyList($auth, static fn (): array => ['resourceTemplates' => self::resources($services)->templates()], $era),
+            'resources/read' => $this->readResource($params, $auth, $services, $era),
+            'prompts/list' => $this->readOnlyList($auth, static fn (): array => ['prompts' => (new Prompts())->list()], $era),
+            'prompts/get' => $this->getPrompt($params, $auth),
             default => throw new ProtocolError(
                 ProtocolError::METHOD_NOT_FOUND,
                 sprintf('Unbekannte Methode „%s“.', $method),
@@ -236,7 +244,7 @@ final class McpController
     /**
      * @param array{version: string, modern: bool} $era
      * @param array{id: int, name: string, scopes: list<string>} $auth
-     * @param array<string, object> $services
+     * @param array<string, mixed> $services
      * @return array<string, mixed>
      */
     private function listTools(array $era, array $auth, array $services): array
@@ -252,7 +260,7 @@ final class McpController
     /**
      * @param array<string, mixed> $params
      * @param array{id: int, name: string, scopes: list<string>} $auth
-     * @param array<string, object> $services
+     * @param array<string, mixed> $services
      * @return array<string, mixed>
      */
     private function callTool(array $params, array $auth, array $services): array
@@ -267,32 +275,64 @@ final class McpController
     }
 
     /**
-     * Resources und Prompts brauchen blog:read; ihre Inhalte füllt Phase 5.
+     * Resources und Prompts brauchen blog:read.
      *
      * @param array{id: int, name: string, scopes: list<string>} $auth
-     * @param array<string, mixed> $list
+     * @param callable(): array<string, mixed> $list
      * @param array{version: string, modern: bool} $era
      * @return array<string, mixed>
      */
-    private function readOnlyList(array $auth, array $list, array $era): array
+    private function readOnlyList(array $auth, callable $list, array $era): array
     {
         self::requireReadScope($auth);
 
-        return self::cacheable($list, $era);
+        return self::cacheable($list(), $era);
     }
 
     /**
      * @param array<string, mixed> $params
      * @param array{id: int, name: string, scopes: list<string>} $auth
-     * @return never
+     * @param array<string, mixed> $services
+     * @param array{version: string, modern: bool} $era
+     * @return array<string, mixed>
      */
-    private function unknownReadable(string $method, array $params, array $auth): never
+    private function readResource(array $params, array $auth, array $services, array $era): array
     {
         self::requireReadScope($auth);
-        $subject = $method === 'resources/read' ? 'Resource' : 'Prompt';
-        $key = (string) ($params['uri'] ?? $params['name'] ?? '');
+        $uri = $params['uri'] ?? null;
+        if (!is_string($uri) || $uri === '') {
+            throw new ProtocolError(ProtocolError::INVALID_PARAMS, 'resources/read braucht params.uri (Text), z. B. "dispatch://style-guide".');
+        }
 
-        throw new ProtocolError(ProtocolError::INVALID_PARAMS, sprintf('%s „%s“ ist unbekannt.', $subject, $key));
+        return self::cacheable(['contents' => self::resources($services)->read($uri)], $era);
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @param array{id: int, name: string, scopes: list<string>} $auth
+     * @return array<string, mixed>
+     */
+    private function getPrompt(array $params, array $auth): array
+    {
+        self::requireReadScope($auth);
+        $name = $params['name'] ?? null;
+        $arguments = $params['arguments'] ?? [];
+        if (!is_string($name) || !is_array($arguments)) {
+            throw new ProtocolError(ProtocolError::INVALID_PARAMS, 'prompts/get braucht params.name (Text) und optional params.arguments (Objekt).');
+        }
+
+        return (new Prompts())->get($name, $arguments);
+    }
+
+    /** @param array<string, mixed> $services */
+    private static function resources(array $services): Resources
+    {
+        /** @var DocumentService $documents */
+        $documents = $services['documents'];
+        /** @var PostService $posts */
+        $posts = $services['posts'];
+
+        return new Resources($documents, $posts);
     }
 
     /** @param array{id: int, name: string, scopes: list<string>} $auth */
@@ -327,7 +367,7 @@ final class McpController
         return $result + ['ttlMs' => self::CACHE_TTL_MS, 'cacheScope' => 'private'];
     }
 
-    /** @param array<string, object> $services */
+    /** @param array<string, mixed> $services */
     private static function registry(array $services): Registry
     {
         $registry = new Registry();
@@ -338,6 +378,9 @@ final class McpController
         ChangeTools::register($registry, $services);
         QueueTools::register($registry, $services);
         PostTools::register($registry, $services);
+        MediaTools::register($registry, $services);
+        StatsTools::register($registry, $services);
+        SiteTools::register($registry, $services);
 
         return $registry;
     }

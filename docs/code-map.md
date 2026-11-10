@@ -15,7 +15,7 @@ Eine Domäne `<x>` (post, source, media, queue, category, document, change, sett
 | Migration | `app/migrations/NNN_<x>.sql` |
 | Redaktionsmodus | `app/theme/redaktion/<x>.js` |
 
-Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, article, category, tag, archive, search, page, preview, consent, 404).
+Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, article, category, categories, tag, search, document, 404) und `app/templates/partials/` (card, pagination, breadcrumbs); Aufbau je Seitentyp: `Builder::collect<Seitentyp>()`.
 
 ## Repo → Server
 

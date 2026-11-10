@@ -1,6 +1,6 @@
 # Phase 5 — Seiten: Start, Artikel, Kategorien, Schlagwort, Suche, Dokumente, 404
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -41,9 +41,13 @@
 
 ## Checkliste
 
-- [ ] Partials `card.php`, `pagination.php`, `breadcrumbs.php` (Liste von `{name, url}`) in `templates/partials/`.
-- [ ] Templates aus der Tabelle; Builder-Methoden `collectHome`, `collectArticles`, `collectCategories` (Einzel- und Übersichtsseite), `collectTags`, `collectSearch`, `collectDocuments`, `collectNotFound`.
-- [ ] Layout-Varianten `feature`/`briefing`/`longform` als Klasse am `<article>` (`artikel layout-{layout}`) und CSS-Ergänzung in `style.css` (Abschnitt „Layouts").
-- [ ] Doc: `docs/code-map.md` → Zeile „Seitentypen der öffentlichen Website" auf die tatsächlichen Template-Namen aktualisieren (home, article, category, categories, tag, search, document, 404, partials/).
+- [x] Partials `card.php`, `pagination.php`, `breadcrumbs.php` (Liste von `{name, url}`) in `templates/partials/`.
+- [x] Templates aus der Tabelle; Builder-Methoden `collectHome`, `collectArticles`, `collectCategories` (Einzel- und Übersichtsseite), `collectTags`, `collectSearch`, `collectDocuments`, `collectNotFound`.
+- [x] Layout-Varianten `feature`/`briefing`/`longform` als Klasse am `<article>` (`artikel layout-{layout}`) und CSS-Ergänzung in `style.css` (Abschnitt „Layouts").
+- [x] Doc: `docs/code-map.md` → Zeile „Seitentypen der öffentlichen Website" auf die tatsächlichen Template-Namen aktualisieren (home, article, category, categories, tag, search, document, 404, partials/).
 
 ## Report-Back
+
+**Ergebnis:** Alle Seitentypen entstehen aus den Live-Daten (`Builder::collect…`, Templates, Partials `card`/`pagination`/`breadcrumbs`). Belegt am lokalen Build: AK 1 (15 Live-Artikel lokal = 1 Aufmacher + 12 Karten, `seite/2/` mit 2 — 14 + Testrelikt), AK 2 (jede Seite genau eine `h1`, `h1.name` nur auf der Startseite; kein `img` ohne `alt`), AK 3 (`data-seite`, `data-post-id`, `data-post-slug`, `data-category-id` im Quelltext), AK 5, AK 6 (Layouts feature/briefing/longform in den Demo-Daten vorhanden, Dropcap bei longform gesetzt), AK 7 (leerer Bestand per Transaktion in Scratch-Verzeichnis gebaut: „Noch keine Artikel erschienen.", keine Seitenzahlen, Fuß ohne Schlagwörter, Kategorien mit Verlauf und „0 Artikel"; dabei Fehler in `categories.php` mit `newest_post_id = null` gefunden und behoben). Zweiter Build: `geschrieben: 0`.
+**Offen (nicht belegt):** AK 4 (ohne JavaScript im Browser) und die optische Prüfung der Layouts in 390/820/1400 px — kein Browser in dieser Sitzung. `style.css` jetzt 44 441 Byte (Budget 48 000). Inhaltsverzeichnis-Sprünge nutzen reine Anker, ohne Skript prüfbar nur im Browser.
+**Abweichung:** `.text details` traf auch `.iv-mobil` (Rahmen, doppelter Pfeil) — Selektoren auf `:not(.iv-mobil)` eingeschränkt. Symbole (`.ico`) fehlen, weil das Layout keine SVG-Sprite enthält.

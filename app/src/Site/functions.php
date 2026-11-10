@@ -98,6 +98,34 @@ function picture(array $media, string $sizes, bool $eager = false, string $class
         . '" ' . $loading . ' decoding="async"></picture>';
 }
 
+/** Dachzeile über Titeln: das Stichwort des Artikels, sonst „Hauptkategorie · Unterkategorie“. */
+function dachzeile(array $post): string
+{
+    $kicker = trim((string) $post['kicker']);
+    if ($kicker !== '') {
+        return $kicker;
+    }
+
+    $category = $post['primary_category'];
+    if ($category === null) {
+        return '';
+    }
+    $parentName = '';
+    foreach ($post['categories'] as $candidate) {
+        if ($candidate['slug'] === $category['parent_slug']) {
+            $parentName = $candidate['name'] . ' · ';
+        }
+    }
+
+    return $parentName . $category['name'];
+}
+
+/** „7 Quellen“ / „1 Quelle“. */
+function quellenText(int $count): string
+{
+    return $count . ($count === 1 ? ' Quelle' : ' Quellen');
+}
+
 /** Adresse einer Listenseite; Seite 1 hat nie `seite/1/`. */
 function seitenUrl(string $basis, int $number): string
 {

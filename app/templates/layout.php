@@ -22,6 +22,8 @@ $canonical = (string) ($meta['canonical'] ?? '');
 $robots = (string) ($meta['robots'] ?? 'index, follow');
 $activeCategory = (string) ($meta['activeCategory'] ?? '');
 $scripts = (array) ($meta['scripts'] ?? []);
+// Die Seitenvorlage trägt die einzige h1; nur auf der ersten Startseite ist das der Seitenname im Kopf.
+$nameTag = ($meta['nameAlsH1'] ?? false) === true ? 'h1' : 'p';
 
 $mainCategories = [];
 foreach ($site->categories as $category) {
@@ -67,7 +69,7 @@ $topTags = array_slice($site->tags, 0, 10);
       </div>
     </div>
   </div>
-  <div class="titelkopf wrap"><p class="name"><a href="/"><?= e($siteTitle) ?></a></p></div>
+  <div class="titelkopf wrap"><<?= $nameTag ?> class="name"><a href="/"><?= e($siteTitle) ?></a></<?= $nameTag ?>></div>
   <nav class="nav" aria-label="Kategorien">
     <ul>
 <?php foreach ($mainCategories as $category) { ?>
@@ -85,6 +87,7 @@ $topTags = array_slice($site->tags, 0, 10);
 <footer class="fuss">
   <div class="wrap">
     <div class="spalten">
+<?php if ($topTags !== []) { ?>
       <section aria-labelledby="fh-tags">
         <h2 id="fh-tags">Häufige Schlagwörter</h2>
         <ul class="chips">
@@ -93,6 +96,7 @@ $topTags = array_slice($site->tags, 0, 10);
 <?php } ?>
         </ul>
       </section>
+<?php } ?>
       <section aria-labelledby="fh-seiten">
         <h2 id="fh-seiten"><?= e($siteTitle) ?></h2>
         <nav aria-labelledby="fh-seiten"><a href="/ueber/">Über</a><a href="/kategorien/">Alle Kategorien</a><a href="/feed.xml">RSS-Feed</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>

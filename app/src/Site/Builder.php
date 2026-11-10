@@ -6,9 +6,12 @@ namespace Dispatch\Site;
 
 use Dispatch\Domain\DomainError;
 use Dispatch\Util\Log;
+use Dispatch\Util\Markdown;
 use PDO;
 use RuntimeException;
 use Throwable;
+
+use function Dispatch\Site\seitenUrl;
 
 /**
  * Erzeugt die statische Website in `web_root` (ADR-014). Die Wurzel teilen sich CardMaker und
@@ -18,6 +21,16 @@ final class Builder
 {
     private const LOCK_NAME = 'dispatch_build';
     private const LOCK_TIMEOUT = 30;
+    private const RELATED_POSTS = 3;
+    private const NOT_FOUND_POSTS = 3;
+    private const COMPANION_TAGS = 8;
+
+    /** Dokumentadressen, die der Builder schreibt (`builder_top_level`), mit ihrem `robots`-Wert. */
+    private const DOCUMENT_ROBOTS = [
+        'ueber' => 'index, follow',
+        'impressum' => 'noindex, follow',
+        'datenschutz' => 'noindex, follow',
+    ];
 
     private SiteData $site;
 
@@ -91,33 +104,411 @@ final class Builder
      */
     private function collect(array $assetFiles): array
     {
-        return $assetFiles + $this->collectHome() + $this->collectNotFound();
+        return $assetFiles
+            + $this->collectHome()
+            + $this->collectArticles()
+            + $this->collectCategories()
+            + $this->collectTags()
+            + $this->collectSearch()
+            + $this->collectDocuments()
+            + $this->collectNotFound();
+    }
+
+    /** Startseite: Seite 1 mit Aufmacher und `posts_per_page` Karten, danach `seite/{n}/`. @return array<string, string> */
+    private function collectHome(): array
+    {
+        $posts = $this->site->posts;
+        $feature = $posts[0] ?? null;
+        $pages = $this->paginate(array_slice($posts, 1));
+        $total = count($pages);
+        $siteTitle = (string) $this->site->settings['site_title'];
+
+        $files = [];
+        foreach ($pages as $index => $cards) {
+            $number = $index + 1;
+            $url = seitenUrl('/', $number);
+            $title = $siteTitle;
+            if ($number > 1) {
+                $title = 'Ältere Artikel – Seite ' . $number . ' · ' . $siteTitle;
+            }
+
+            $files[$this->pageFile($url)] = $this->page('home', [
+                'aufmacher' => $number === 1 ? $feature : null,
+                'posts' => $cards,
+                'seite' => $number,
+                'gesamt' => $total,
+            ], [
+                'title' => $title,
+                'description' => (string) $this->site->settings['site_description'],
+                'canonical' => $url,
+                'robots' => 'index, follow',
+                'bodyPage' => 'start',
+                'nameAlsH1' => $number === 1,
+            ]);
+        }
+
+        return $files;
     }
 
     /** @return array<string, string> */
-    private function collectHome(): array
+    private function collectArticles(): array
     {
-        $html = $this->page('home', ['posts' => $this->site->posts], [
-            'title' => (string) $this->site->settings['site_title'],
-            'description' => (string) $this->site->settings['site_description'],
-            'canonical' => '/',
+        $renderer = new ContentRenderer();
+        $categories = $this->categoriesBySlug();
+
+        $files = [];
+        foreach ($this->site->posts as $position => $post) {
+            $rendered = $renderer->render($post, $this->site);
+            $rendered['html'] = $this->applyLayoutDefaults($rendered['html'], (string) $post['layout']);
+
+            $primary = $post['primary_category'];
+            $activeCategory = '';
+            if ($primary !== null) {
+                $activeCategory = (string) ($primary['parent_slug'] ?? $primary['slug']);
+            }
+
+            $description = trim((string) $post['seo_description']);
+            if ($description === '') {
+                $description = trim((string) $post['excerpt']);
+            }
+            $title = trim((string) $post['seo_title']);
+            if ($title === '') {
+                $title = $post['title'] . ' · ' . $this->site->settings['site_title'];
+            }
+
+            $files[$this->pageFile($post['url'])] = $this->page('article', [
+                'post' => $post,
+                'rendered' => $rendered,
+                'krumen' => $this->breadcrumbs($primary, $categories),
+                'related' => $this->relatedPosts($post),
+                'older' => $this->site->posts[$position + 1] ?? null,
+                'newer' => $position > 0 ? $this->site->posts[$position - 1] : null,
+            ], [
+                'title' => $title,
+                'description' => $description,
+                'canonical' => $post['url'],
+                'robots' => 'index, follow',
+                'bodyPage' => 'artikel',
+                'activeCategory' => $activeCategory,
+                'ogType' => 'article',
+                'ogImage' => $post['cover'],
+                'scripts' => [$this->assetUrls['artikel']],
+            ]);
+        }
+
+        return $files;
+    }
+
+    /** Einzelseiten aller Kategorien (mit Seitenzahlen) und die Übersicht. @return array<string, string> */
+    private function collectCategories(): array
+    {
+        $categories = $this->categoriesBySlug();
+        $siteTitle = (string) $this->site->settings['site_title'];
+
+        $files = [];
+        foreach ($this->site->categories as $category) {
+            $pages = $this->paginate($this->postsInCategory($category));
+            $krumen = $this->breadcrumbs($category, $categories);
+            foreach ($pages as $index => $cards) {
+                $number = $index + 1;
+                $url = seitenUrl($category['url'], $number);
+                $files[$this->pageFile($url)] = $this->page('category', [
+                    'category' => $category,
+                    'krumen' => $krumen,
+                    'posts' => $cards,
+                    'seite' => $number,
+                    'gesamt' => count($pages),
+                ], [
+                    'title' => $category['name'] . ' · ' . $siteTitle,
+                    'description' => (string) $category['description'],
+                    'canonical' => $url,
+                    'robots' => 'index, follow',
+                    'bodyPage' => 'kategorie',
+                    'activeCategory' => (string) ($category['parent_slug'] ?? $category['slug']),
+                ]);
+            }
+        }
+
+        return $files + $this->collectCategoryOverview();
+    }
+
+    /** @return array<string, string> */
+    private function collectCategoryOverview(): array
+    {
+        $mainCategories = [];
+        foreach ($this->site->categories as $category) {
+            if ($category['parent_id'] === null) {
+                $mainCategories[] = $category;
+            }
+        }
+
+        $postsById = [];
+        foreach ($this->site->posts as $post) {
+            $postsById[$post['id']] = $post;
+        }
+
+        $html = $this->page('categories', [
+            'mainCategories' => $mainCategories,
+            'postsById' => $postsById,
+            'subCategoryCount' => count($this->site->categories) - count($mainCategories),
+            'postCount' => count($this->site->posts),
+        ], [
+            'title' => 'Alle Kategorien · ' . $this->site->settings['site_title'],
+            'description' => 'Alle Ressorts und Unterkategorien im Überblick.',
+            'canonical' => '/kategorien/',
             'robots' => 'index, follow',
-            'bodyPage' => 'start',
+            'bodyPage' => 'kategorien',
         ]);
 
-        return ['index.html' => $html];
+        return ['kategorien/index.html' => $html];
+    }
+
+    /** @return array<string, string> */
+    private function collectTags(): array
+    {
+        $files = [];
+        foreach ($this->site->tags as $tag) {
+            // Ein Name ohne verwertbare Zeichen ergäbe `tag//` — den gibt es als Adresse nicht.
+            if ($tag['slug'] === '') {
+                continue;
+            }
+
+            $tagged = $this->postsWithTag($tag['slug']);
+            $pages = $this->paginate($tagged);
+            foreach ($pages as $index => $cards) {
+                $number = $index + 1;
+                $url = seitenUrl($tag['url'], $number);
+                $files[$this->pageFile($url)] = $this->page('tag', [
+                    'tag' => $tag,
+                    'companions' => $this->companionTags($tag['slug'], $tagged),
+                    'posts' => $cards,
+                    'total' => count($tagged),
+                    'seite' => $number,
+                    'gesamt' => count($pages),
+                ], [
+                    'title' => '#' . $tag['name'] . ' · ' . $this->site->settings['site_title'],
+                    'description' => 'Alle Artikel zum Schlagwort „' . $tag['name'] . '“.',
+                    'canonical' => $url,
+                    'robots' => 'index, follow',
+                    'bodyPage' => 'tag',
+                ]);
+            }
+        }
+
+        return $files;
+    }
+
+    /** Statische Hülle: Filter, Treffer und Seitenzahlen füllt `suche.js` im Browser. @return array<string, string> */
+    private function collectSearch(): array
+    {
+        $html = $this->page('search', [], [
+            'title' => 'Suche · ' . $this->site->settings['site_title'],
+            'canonical' => '/suche/',
+            'robots' => 'noindex, follow',
+            'bodyPage' => 'suche',
+        ]);
+
+        return ['suche/index.html' => $html];
+    }
+
+    /** @return array<string, string> */
+    private function collectDocuments(): array
+    {
+        $files = [];
+        foreach ($this->site->documents as $publicSlug => $document) {
+            $publicSlug = (string) $publicSlug;
+            if (!isset(self::DOCUMENT_ROBOTS[$publicSlug])) {
+                Log::error('Dokument mit unbekannter Adresse übersprungen', ['public_slug' => $publicSlug]);
+
+                continue;
+            }
+
+            $files[$publicSlug . '/index.html'] = $this->page('document', [
+                'title' => $document['title'],
+                'html' => Markdown::toHtml($document['markdown']),
+            ], [
+                'title' => $document['title'] . ' · ' . $this->site->settings['site_title'],
+                'canonical' => $document['url'],
+                'robots' => self::DOCUMENT_ROBOTS[$publicSlug],
+                'bodyPage' => 'dokument',
+            ]);
+        }
+
+        return $files;
     }
 
     /** @return array<string, string> */
     private function collectNotFound(): array
     {
-        $html = $this->page('404', [], [
-            'title' => 'Nicht gefunden · ' . $this->site->settings['site_title'],
+        $html = $this->page('404', ['posts' => array_slice($this->site->posts, 0, self::NOT_FOUND_POSTS)], [
+            'title' => 'Seite nicht gefunden · ' . $this->site->settings['site_title'],
             'robots' => 'noindex',
             'bodyPage' => 'fehler',
         ]);
 
         return ['404.html' => $html];
+    }
+
+    /**
+     * Teilt Artikel in Seiten zu `posts_per_page`; ohne Artikel bleibt eine leere Seite 1.
+     *
+     * @param list<array<string, mixed>> $posts
+     * @return list<list<array<string, mixed>>>
+     */
+    private function paginate(array $posts): array
+    {
+        $perPage = max(1, (int) $this->site->settings['posts_per_page']);
+        $pages = array_chunk($posts, $perPage);
+        if ($pages === []) {
+            return [[]];
+        }
+
+        return $pages;
+    }
+
+    /** `/kategorie/a/` → `kategorie/a/index.html`, `/` → `index.html` */
+    private function pageFile(string $url): string
+    {
+        return ltrim($url, '/') . 'index.html';
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private function categoriesBySlug(): array
+    {
+        $bySlug = [];
+        foreach ($this->site->categories as $category) {
+            $bySlug[$category['slug']] = $category;
+        }
+
+        return $bySlug;
+    }
+
+    /**
+     * Start › (Eltern ›) Kategorie; ohne Kategorie nur der Start.
+     *
+     * @param array<string, mixed>|null $category
+     * @param array<string, array<string, mixed>> $categories
+     * @return list<array{name: string, url: string}>
+     */
+    private function breadcrumbs(?array $category, array $categories): array
+    {
+        $krumen = [['name' => 'Start', 'url' => '/']];
+        if ($category === null) {
+            return $krumen;
+        }
+
+        $parent = $categories[(string) $category['parent_slug']] ?? null;
+        if ($parent !== null) {
+            $krumen[] = ['name' => $parent['name'], 'url' => $parent['url']];
+        }
+        $krumen[] = ['name' => $category['name'], 'url' => $category['url']];
+
+        return $krumen;
+    }
+
+    /**
+     * Artikel einer Kategorie; die Oberkategorie zählt die Artikel ihrer Unterkategorien mit (wie `post_count`).
+     *
+     * @param array<string, mixed> $category
+     * @return list<array<string, mixed>>
+     */
+    private function postsInCategory(array $category): array
+    {
+        return array_values(array_filter(
+            $this->site->posts,
+            static function (array $post) use ($category): bool {
+                foreach ($post['categories'] as $assigned) {
+                    if ($assigned['slug'] === $category['slug'] || $assigned['parent_slug'] === $category['slug']) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        ));
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function postsWithTag(string $tagSlug): array
+    {
+        return array_values(array_filter(
+            $this->site->posts,
+            static fn (array $post): bool => in_array($tagSlug, array_column($post['tags'], 'slug'), true)
+        ));
+    }
+
+    /**
+     * Die Schlagwörter, die in diesen Artikeln am häufigsten mitvorkommen.
+     *
+     * @param list<array<string, mixed>> $tagged
+     * @return list<array{name: string, slug: string, together: int}>
+     */
+    private function companionTags(string $tagSlug, array $tagged): array
+    {
+        $companions = [];
+        foreach ($tagged as $post) {
+            foreach ($post['tags'] as $other) {
+                if ($other['slug'] === $tagSlug || $other['slug'] === '') {
+                    continue;
+                }
+                if (!isset($companions[$other['slug']])) {
+                    $companions[$other['slug']] = ['name' => $other['name'], 'slug' => $other['slug'], 'together' => 0];
+                }
+                $companions[$other['slug']]['together']++;
+            }
+        }
+
+        $list = array_values($companions);
+        usort($list, static fn (array $left, array $right): int => [$right['together'], mb_strtolower($left['name'])] <=> [$left['together'], mb_strtolower($right['name'])]);
+
+        return array_slice($list, 0, self::COMPANION_TAGS);
+    }
+
+    /**
+     * „Mehr dazu“: zuerst gleiche Hauptkategorie, dann die meisten gemeinsamen Schlagwörter, dann die neuesten.
+     *
+     * @param array<string, mixed> $post
+     * @return list<array<string, mixed>>
+     */
+    private function relatedPosts(array $post): array
+    {
+        $primarySlug = $post['primary_category']['slug'] ?? null;
+        $tagSlugs = array_column($post['tags'], 'slug');
+
+        $candidates = [];
+        foreach ($this->site->posts as $position => $other) {
+            if ($other['id'] === $post['id']) {
+                continue;
+            }
+            $isSameCategory = $primarySlug !== null && ($other['primary_category']['slug'] ?? null) === $primarySlug;
+            $sharedTags = count(array_intersect($tagSlugs, array_column($other['tags'], 'slug')));
+            $candidates[] = ['rank' => [$isSameCategory ? 0 : 1, -$sharedTags, $position], 'post' => $other];
+        }
+        usort($candidates, static fn (array $left, array $right): int => $left['rank'] <=> $right['rank']);
+
+        return array_map(
+            static fn (array $candidate): array => $candidate['post'],
+            array_slice($candidates, 0, self::RELATED_POSTS)
+        );
+    }
+
+    /** `longform` bekommt den Initialbuchstaben, wenn der Agent keinen gesetzt hat. */
+    private function applyLayoutDefaults(string $html, string $layout): string
+    {
+        if ($layout !== 'longform' || str_contains($html, 'dropcap')) {
+            return $html;
+        }
+
+        return (string) preg_replace_callback(
+            '/<p(?: class="([^"]*)")?>/',
+            static function (array $match): string {
+                $classes = trim(($match[1] ?? '') . ' dropcap');
+
+                return '<p class="' . $classes . '">';
+            },
+            $html,
+            1
+        );
     }
 
     /**
@@ -181,6 +572,18 @@ final class Builder
             'meta' => $meta,
             'baseUrl' => rtrim((string) $this->config['base_url'], '/'),
         ]);
+    }
+
+    /**
+     * Teilvorlage aus `templates/partials/`; Seitenvorlagen rufen sie als `$this->partial(…)`.
+     *
+     * @param array<string, mixed> $vars
+     */
+    public function partial(string $name, array $vars): string
+    {
+        $shared = ['site' => $this->site, 'assets' => $this->assetUrls];
+
+        return $this->render((string) $this->config['app_dir'] . '/templates/partials/' . $name . '.php', $vars + $shared);
     }
 
     /** @param array<string, mixed> $variables */

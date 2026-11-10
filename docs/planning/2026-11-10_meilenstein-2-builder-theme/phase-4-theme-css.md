@@ -1,6 +1,6 @@
 # Phase 4 — Theme-CSS nach Entwurf
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete (AK 2–6 Browser-Sicht offen)
 
 ## Kontext (vor dem ersten Edit lesen)
 

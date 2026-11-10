@@ -6,6 +6,7 @@ use Dispatch\Api\DeployController;
 use Dispatch\Api\TokenController;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
+use Dispatch\Mcp\McpController;
 
 $config = require __DIR__ . '/bootstrap.php';
 
@@ -25,12 +26,9 @@ if (isset($routes[$request->path()])) {
     $handler();
 }
 
-match (true) {
-    $request->path() === '/dispatch/mcp' => Response::error(
-        'unauthorized',
-        'MCP folgt in Meilenstein 3.',
-        401,
-        ['WWW-Authenticate' => 'Bearer']
-    ),
-    default => Response::error('not_found', 'Diesen Pfad gibt es hier nicht.', 404),
-};
+// Der MCP-Controller prüft die Methode selbst (405 mit Allow: POST) und antwortet in JSON-RPC.
+if ($request->path() === '/dispatch/mcp') {
+    (new McpController($config))->handle($request);
+}
+
+Response::error('not_found', 'Diesen Pfad gibt es hier nicht.', 404);

@@ -19,7 +19,7 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 013 | [Aufbau der öffentlichen Website und verbindlicher Entwurf](013-website-aufbau-und-entwurf.md) | Akzeptiert |
 | 014 | [Builder: Vollbau, Sperre, Manifest, Markdown](014-builder-vollbau-manifest.md) | Akzeptiert |
 | 015 | [Theme: Budgets und Skriptmodule](015-theme-budgets-skriptmodule.md) | Akzeptiert |
-| 016 | _reserviert (Phase 2)_ | — |
+| 016 | [MCP-Protokollschicht und Registry](016-mcp-protokollschicht-und-registry.md) | Akzeptiert |
 | 017 | [MCP-Tokens, Scopes und Wege zum Anlegen](017-mcp-tokens-und-scopes.md) | Akzeptiert |
 | 018 | _reserviert (Phase 3)_ | — |
 | 019 | [Reaktionen „Mehr davon / Weniger“](019-reaktionen-mehr-davon-weniger.md) | Akzeptiert |

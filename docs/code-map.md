@@ -36,12 +36,13 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 |---|---|
 | `bootstrap.php` | Autoloader, `.env` laden, Fehler-Handler; liefert die Konfiguration |
 | `index.php` | Router: `/dispatch/mcp` → Mcp, `/dispatch/api/*` → Api, `/dispatch/oauth/*` und `/.well-known/oauth-*` → OAuth |
-| `src/Http/` | `Request`, `Response` (JSON-Antworten, Fehlerformat) |
+| `src/Http/` | `Request` (inkl. `body()`), `Response` (`json`, `raw`, `empty`, `error`) |
 | `config.php` | Basis-URL, Pfade, Formvorgaben, reservierte Namen der obersten Ebene |
-| `src/Mcp/` | Protokoll (beide Generationen), Tool-Registry, `Tools/` |
+| `src/Mcp/` | `McpController` (Endpunkt, Dispatch, Services je Anfrage), `Protocol` (Versionserkennung, Header-Abgleich), `ProtocolError`, `Registry`/`Tool`/`ToolResult` (Tools, Scope- und Argumentprüfung), `Tools/<X>Tools.php` (bisher `DocumentTools`) |
+| `mcp/` | Texte für Agenten als Dateien (`instructions.md`; Phase 4 ergänzt Stilführer und Workflows) |
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |
 | `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`), Token-Endpunkt für `--remote` (`TokenController`) |
-| `src/Auth/` | Deploy-Token (`DeployToken`), Scopes (`Scopes`), JWT, Login-Bremse |
+| `src/Auth/` | Deploy-Token (`DeployToken`), MCP-Anmeldung (`McpAuth`), Scopes (`Scopes`), JWT, Login-Bremse |
 | `src/Db/` | PDO-Verbindung (`Connection`), `Migrator`, `Transaction::run`/`join` (nur DML) |
 | `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll); Einstellungen, Dokumente, Kategorien, Änderungsvorschläge (`SettingService`, `DocumentService`, `CategoryService`, `ChangeService` + Repositories); Medien (`MediaService`, `MediaRepository`); Artikel mit Quellen, Kategorien und Revisionen (`PostService`, `PostRepository`); Queue mit Reservierung (`QueueService`, `QueueRepository`); MCP-Tokens (`TokenService`, `TokenRepository`); Reaktionen „Mehr davon / Weniger“ (`ReactionService`, `ReactionRepository`); `Seeder` (Startinhalte) |
 | `src/Site/` | `SiteData` (Live-Stand einmal pro Lauf geladen), `Builder` (`build()` mit `GET_LOCK`, Sammeln im Speicher, Schreiben, Medienkopie, Löschen über das Manifest; `assertWritable`), `Assets` (Theme-Dateien als `assets/<name>.<hash>.<ext>`), `Manifest`, `ContentRenderer` (Artikel-HTML → responsive `<picture>`, Galerien, Zwei-Klick-Einbettungen, Beleg-Fußnoten, h2-IDs, Kurz-gesagt-Titel; nur DOM-API), Template-Helfer in `functions.php` (`e`, `datum`, `seitenUrl`, `varianten`, `picture`); `SearchIndex` (JSON-Suchindex nach Kontrakt, Ablage `assets/suchindex.<hash>.json`); `Seo` (Theme-Farbe, OpenGraph, JSON-LD, Vorschaubild `shareImage`), `Feed` (RSS 2.0, `absolut()` in `functions.php`), `Sitemap`; `robots.txt` entsteht in `Builder::collectTechnical()` |

@@ -8,9 +8,21 @@ final class Request
 {
     private const BEARER_PREFIX = 'Bearer ';
 
+    private ?string $body = null;
+
     /** @param array<string, mixed> $server */
     private function __construct(private readonly array $server)
     {
+    }
+
+    /** php://input lässt sich nur einmal lesen, deshalb wird der Body gemerkt. */
+    public function body(): string
+    {
+        if ($this->body === null) {
+            $this->body = (string) file_get_contents('php://input');
+        }
+
+        return $this->body;
     }
 
     public static function fromGlobals(): self

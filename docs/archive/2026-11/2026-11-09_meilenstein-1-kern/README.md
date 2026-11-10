@@ -13,7 +13,7 @@ Ziel: Die Domänenschicht von DISPATCH steht — Datenbank-Schema, Einstellungen
 | 5 | [Artikel: Quellen, Kategorien, Revisionen](phase-5-artikel.md) | standard | complete |
 | 6 | [Formprüfung und Freigabe-Übergänge](phase-6-formpruefung-freigabe.md) | heikel | complete |
 | 7 | [Queue mit Reservierung](phase-7-queue.md) | heikel | complete |
-| 8 | [Deploy mit Startinhalten, Abnahme auf Strato, Doku](phase-8-deploy-abschluss.md) | standard | pending |
+| 8 | [Deploy mit Startinhalten, Abnahme auf Strato, Doku](phase-8-deploy-abschluss.md) | standard | complete |
 
 Reihenfolge ist Pflicht: jede Phase baut auf den Klassen der vorigen auf.
 
@@ -50,10 +50,23 @@ Reihenfolge ist Pflicht: jede Phase baut auf den Klassen der vorigen auf.
 
 ## Summary
 
+Die Domänenschicht steht: 9 Migrationen (16 Tabellen), Akteur/Fehler/Transaktion/Protokoll, Einstellungen, Dokumente, Kategorien, Änderungsvorschläge, Startinhalte, Sanitizer, Medien mit SSRF-Schutz und Bildvarianten, Artikel mit Quellen und Revisionen, Formprüfung und Statusmaschine, Queue mit atomarer Reservierung. Der Deploy-Endpunkt legt Startinhalte an; auf Strato am 2026-11-10 ausgeliefert (9 Migrationen, 17 Startinhalte, zweiter Lauf leer, Rauchtest grün).
+
 ## Files touched
+
+`app/src/Domain/`, `app/src/Util/`, `app/src/Db/`, `app/src/Api/DeployController.php`, `app/migrations/001–009`, `app/defaults/`, `bin/dispatch`, `docs/` (models, code-map, PROJECT, knowledge/INDEX, ADR-008 bis ADR-012).
 
 ## Commits
 
+1be5b80, 85bd9ca, 0fe3108, 8b91d2c, e82d27b, 09891d0, d9f9e28, 202ae66
+
 ## Deviations from plan
+
+- Abnahme „frische `dispatch_dev`“: der App-Benutzer darf keine Datenbank anlegen; stattdessen wurden alle Tabellen gelöscht und der Deploy-Endpunkt lokal darüber laufen gelassen.
+- Header-Block von `/card/` und `/scanner/capture` nicht erneut Byte-genau verglichen; geprüft wurden Status 200 und der Rauchtest von `deploy.cmd`.
+
+## Follow-ups
+
+- Meilenstein 2 (Builder und Theme) planen.
 
 ## Follow-ups

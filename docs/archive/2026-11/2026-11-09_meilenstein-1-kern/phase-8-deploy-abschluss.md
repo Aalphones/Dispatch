@@ -1,6 +1,6 @@
 # Phase 8 — Deploy mit Startinhalten, Abnahme auf Strato, Doku
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -28,16 +28,18 @@
 
 ## Abnahme (Phase)
 
-- [ ] Lokal: `POST /dispatch/api/deploy` gegen den Dev-Router auf frischer `dispatch_dev` → 200 mit 9 Migrationen, 17 `seeded`-Einträgen, Platzhalter-Dateien; zweiter Aufruf → `migrations: []`, `seeded: []`.
-- [ ] Lokal: Durchstich aus README → „Finale Abnahme" Punkt 2 als ein Skript (Medium importieren → Artikel → Formprüfung → einreichen → freigeben → `livePosts()`), Ausgabe im Report-Back.
-- [ ] Strato (nach Go): `deploy.cmd` → grün; Antwort des Endpunkts zeigt 9 Migrationen und 17 Startinhalte; zweiter `deploy.cmd app` → `migrations: []`, `seeded: []`.
-- [ ] Strato: `https://quantum-canvas.de/` Platzhalter 200; `/card/` und `/scanner/capture` 200 mit unverändertem Header-Block; `/dispatch-app/.env` 403; `/dispatch-app/defaults/imprint.md` und `/dispatch-app/migrations/005_post.sql` 403.
-- [ ] `git status` sauber bis auf Absicht; CI grün.
+- [x] Lokal: `POST /dispatch/api/deploy` gegen den Dev-Router auf frischer `dispatch_dev` → 200 mit 9 Migrationen, 17 `seeded`-Einträgen, Platzhalter-Dateien; zweiter Aufruf → `migrations: []`, `seeded: []`.
+- [x] Lokal: Durchstich aus README → „Finale Abnahme" Punkt 2 als ein Skript (Medium importieren → Artikel → Formprüfung → einreichen → freigeben → `livePosts()`), Ausgabe im Report-Back.
+- [x] Strato (nach Go): `deploy.cmd` → grün; Antwort des Endpunkts zeigt 9 Migrationen und 17 Startinhalte; zweiter `deploy.cmd app` → `migrations: []`, `seeded: []`.
+- [x] Strato: `https://quantum-canvas.de/` Platzhalter 200; `/card/` und `/scanner/capture` 200 mit unverändertem Header-Block; `/dispatch-app/.env` 403; `/dispatch-app/defaults/imprint.md` und `/dispatch-app/migrations/005_post.sql` 403.
+- [x] `git status` sauber bis auf Absicht; CI grün.
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle
-- [ ] Abnahme fahren (Strato-Teil erst nach Go)
-- [ ] Plan archivieren nach `docs/archive/2026-11/` (bzw. Monat des Abschlusses), README-Bottom-Sektionen füllen, `STATE.md` aktualisieren (nächster Schritt: Meilenstein 2 planen)
+- [x] Dateien laut Tabelle
+- [x] Abnahme fahren (Strato-Teil erst nach Go)
+- [x] Plan archivieren nach `docs/archive/2026-11/` (bzw. Monat des Abschlusses), README-Bottom-Sektionen füllen, `STATE.md` aktualisieren (nächster Schritt: Meilenstein 2 planen)
 
 ## Report-Back
+
+Lokal: Deploy-Endpunkt 200 mit 9 Migrationen und 17 `seeded`, zweiter Aufruf leer; Durchstich (Medium → Artikel → Formprüfung → einreichen → freigeben → `livePosts()`) grün. Strato (Go des Inhabers): `deploy.cmd` grün, 9/17, zweiter Lauf leer; `/`, `/card/`, `/scanner/capture` 200; `/dispatch-app/.env`, `defaults/imprint.md`, `migrations/005_post.sql` 403. Offen: Header-Block der Nachbarn nicht Byte-genau verglichen. Nebenwirkung: Testdaten (Artikel, Kategorie, Medium) bleiben in der lokalen `dispatch_dev`.

@@ -11,7 +11,7 @@ Nicht in diesem Meilenstein: OAuth und `resource_metadata` im 401 (Meilenstein 5
 | 1 | [Tokens, Scopes, Reaktionen und Token-Wege](phase-1-tokens-reaktionen.md) | standard | complete |
 | 2 | [Protokollschicht, Anmeldung, Tool-Registry, Durchstich](phase-2-protokoll.md) | heikel | complete |
 | 3 | [Domänen-Ergänzungen: Artikel, Medien, Statistik, Briefing](phase-3-domaene.md) | heikel | complete |
-| 4 | [Tools: Kontext, Queue, Artikel; Anweisungen und Workflows](phase-4-tools-redaktion.md) | standard | pending |
+| 4 | [Tools: Kontext, Queue, Artikel; Anweisungen und Workflows](phase-4-tools-redaktion.md) | standard | complete |
 | 5 | [Tools: Medien, Statistik, Website; Resources und Prompts](phase-5-tools-medien-resources.md) | standard | pending |
 | 6 | [Strato, Abnahme mit echten Clients, Doku](phase-6-strato-abschluss.md) | standard | pending |
 

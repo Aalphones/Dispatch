@@ -7,11 +7,25 @@ namespace Dispatch\Mcp;
 use Dispatch\Auth\McpAuth;
 use Dispatch\Auth\Scopes;
 use Dispatch\Db\Connection;
+use Dispatch\Domain\BriefingService;
+use Dispatch\Domain\CategoryService;
+use Dispatch\Domain\ChangeService;
 use Dispatch\Domain\DocumentService;
+use Dispatch\Domain\MediaService;
+use Dispatch\Domain\PostService;
+use Dispatch\Domain\QueueService;
+use Dispatch\Domain\SettingService;
+use Dispatch\Domain\SiteInfoService;
 use Dispatch\Domain\TokenService;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
+use Dispatch\Mcp\Tools\BriefingTools;
+use Dispatch\Mcp\Tools\CategoryTools;
+use Dispatch\Mcp\Tools\ChangeTools;
 use Dispatch\Mcp\Tools\DocumentTools;
+use Dispatch\Mcp\Tools\PostTools;
+use Dispatch\Mcp\Tools\QueueTools;
+use Dispatch\Mcp\Tools\SettingTools;
 use Dispatch\Util\Log;
 use PDO;
 use stdClass;
@@ -32,7 +46,7 @@ final class McpController
     }
 
     /**
-     * Services einmal pro Anfrage; Phase 4/5 ergänzen die übrigen.
+     * Services einmal pro Anfrage; Phase 5 ergänzt die für Statistik und Website.
      *
      * @param array<string, mixed> $config
      * @return array<string, object>
@@ -42,6 +56,14 @@ final class McpController
         return [
             'documents' => new DocumentService($pdo, $config),
             'tokens' => new TokenService($pdo),
+            'categories' => new CategoryService($pdo, $config),
+            'settings' => new SettingService($pdo, $config),
+            'changes' => new ChangeService($pdo, $config),
+            'queue' => new QueueService($pdo, $config),
+            'posts' => new PostService($pdo, $config),
+            'media' => new MediaService($pdo, $config),
+            'briefing' => new BriefingService($pdo, $config),
+            'site_info' => new SiteInfoService($pdo, $config),
         ];
     }
 
@@ -309,7 +331,13 @@ final class McpController
     private static function registry(array $services): Registry
     {
         $registry = new Registry();
+        BriefingTools::register($registry, $services);
         DocumentTools::register($registry, $services);
+        CategoryTools::register($registry, $services);
+        SettingTools::register($registry, $services);
+        ChangeTools::register($registry, $services);
+        QueueTools::register($registry, $services);
+        PostTools::register($registry, $services);
 
         return $registry;
     }

@@ -2,6 +2,8 @@
 
 Rating: standard
 
+Status: complete
+
 ## Kontext (vorher lesen)
 
 - `README.md` dieses Plans → Kontrakt: „Endpunkt“ (Tool-Ergebnis, Fehler), „Tool-Katalog“.
@@ -22,15 +24,36 @@ Rating: standard
 
 ## Checkliste
 
-- [ ] `McpController::services` vervollständigen (alle Einträge aus Phase 2, Checkliste „Services einmal pro Anfrage“).
-- [ ] `Mcp/Tools/BriefingTools.php`: `get_editorial_brief` (setzt `workflow` = Inhalt von `app/mcp/workflow-<mode>.md`), `get_style_guide` (Inhalt `app/mcp/style-guide.md` als `{"style_guide": "<Markdown>"}`).
-- [ ] `Mcp/Tools/DocumentTools.php`: `get_document`, `update_document`.
-- [ ] `Mcp/Tools/CategoryTools.php`: `list_categories` (Kategorien + `categoryStats`), `save_category` (Argument `parent` = Slug → `parent_id` über `CategoryService::get`; übrige Felder in der Form, die `CategoryService::normalizeForCreate`/`normalize` erwartet).
-- [ ] `Mcp/Tools/SettingTools.php`: `get_site_info`, `update_settings`. `Mcp/Tools/ChangeTools.php`: `list_changes` (`all` → `ChangeService::list(null)`).
-- [ ] `Mcp/Tools/QueueTools.php`: `list_queue`, `add_to_queue`, `claim_queue_item`, `release_queue_item`. `add_to_queue`: Anhänge der Reihe nach in Medien verwandeln (`url` → `MediaService::importFromUrl`, `data_base64` + `filename` → `MediaService::store(…, 'upload', …)`, `uid` → unverändert), dann `QueueService::add` mit `media: [{uid, note, own_material}]` und `category` (Slug) in der Form, die `normalizeNew` erwartet. `claim_queue_item` gibt Bild-Anhänge in dieser Phase noch ohne Bild-Blöcke zurück (Phase 5 ergänzt `ImageBlocks`).
-- [ ] `Mcp/Tools/PostTools.php`: `list_posts`, `search_posts`, `get_post` (`include_html` Default `false` → `content_html` weglassen; Antwort mit Quellen, Kategorien, `review_note`, Formprüfung nicht enthalten), `create_post`, `update_post` (Antworten: Artikel + `sanitizer_notes` + `form_check` mit `errors`, `warnings`, `metrics` — Felder so übernehmen, wie `PostService::create`/`update` und `FormCheckResult` sie liefern), `validate_post`, `submit_post`, `withdraw_post`, `delete_post`, `list_post_revisions`, `restore_post_revision`. Kein `preview_url` (ADR-018).
-- [ ] `app/mcp/workflow-scheduled.md`, `workflow-queue.md`, `workflow-returned.md`: die drei Abläufe aus dem Fachkonzept → „Redaktions-Workflows“ als nummerierte Schritte mit den echten Tool-Namen dieses Katalogs; Feuilleton → DISPATCH; Schritt „Vorschau-Link“ ersetzen durch „Artikel-ID und Titel“; im Queue-Ablauf: „Video und Audio: nur Metadaten, Inhalt aus dem Auftragstext entnehmen“; im Ablauf `returned`: „nur ändern, was `review_note` verlangt“. Am Ende jedes Ablaufs der Abschlussbericht (Titel, Artikel-ID, Zahl der Quellen, offene Punkte).
-- [ ] `app/mcp/style-guide.md`: erlaubte HTML-Elemente und Klassen (aus `Sanitizer`), Medien-Syntax (`data-media`, Galerien, `data-embed` — aus `ContentRenderer`), Belegsyntax mit `ref`, Layouts (`standard, feature, longform, briefing`) mit je einem Satz, Akzentfarbe `#rrggbb`, Pflichtangaben laut `FormCheck` mit Regelcode. Jede Angabe muss im Code belegt sein; nichts erfinden, was Sanitizer oder Renderer nicht kennen.
-- [ ] Doku: `docs/code-map.md` (Tools-Klassen, `app/mcp/`-Texte).
+- [x] `McpController::services` vervollständigen (alle Einträge aus Phase 2, Checkliste „Services einmal pro Anfrage“).
+- [x] `Mcp/Tools/BriefingTools.php`: `get_editorial_brief` (setzt `workflow` = Inhalt von `app/mcp/workflow-<mode>.md`), `get_style_guide` (Inhalt `app/mcp/style-guide.md` als `{"style_guide": "<Markdown>"}`).
+- [x] `Mcp/Tools/DocumentTools.php`: `get_document`, `update_document`.
+- [x] `Mcp/Tools/CategoryTools.php`: `list_categories` (Kategorien + `categoryStats`), `save_category` (Argument `parent` = Slug → `parent_id` über `CategoryService::get`; übrige Felder in der Form, die `CategoryService::normalizeForCreate`/`normalize` erwartet).
+- [x] `Mcp/Tools/SettingTools.php`: `get_site_info`, `update_settings`. `Mcp/Tools/ChangeTools.php`: `list_changes` (`all` → `ChangeService::list(null)`).
+- [x] `Mcp/Tools/QueueTools.php`: `list_queue`, `add_to_queue`, `claim_queue_item`, `release_queue_item`. `add_to_queue`: Anhänge der Reihe nach in Medien verwandeln (`url` → `MediaService::importFromUrl`, `data_base64` + `filename` → `MediaService::store(…, 'upload', …)`, `uid` → unverändert), dann `QueueService::add` mit `media: [{uid, note, own_material}]` und `category` (Slug) in der Form, die `normalizeNew` erwartet. `claim_queue_item` gibt Bild-Anhänge in dieser Phase noch ohne Bild-Blöcke zurück (Phase 5 ergänzt `ImageBlocks`).
+- [x] `Mcp/Tools/PostTools.php`: `list_posts`, `search_posts`, `get_post` (`include_html` Default `false` → `content_html` weglassen; Antwort mit Quellen, Kategorien, `review_note`, Formprüfung nicht enthalten), `create_post`, `update_post` (Antworten: Artikel + `sanitizer_notes` + `form_check` mit `errors`, `warnings`, `metrics` — Felder so übernehmen, wie `PostService::create`/`update` und `FormCheckResult` sie liefern), `validate_post`, `submit_post`, `withdraw_post`, `delete_post`, `list_post_revisions`, `restore_post_revision`. Kein `preview_url` (ADR-018).
+- [x] `app/mcp/workflow-scheduled.md`, `workflow-queue.md`, `workflow-returned.md`: die drei Abläufe aus dem Fachkonzept → „Redaktions-Workflows“ als nummerierte Schritte mit den echten Tool-Namen dieses Katalogs; Feuilleton → DISPATCH; Schritt „Vorschau-Link“ ersetzen durch „Artikel-ID und Titel“; im Queue-Ablauf: „Video und Audio: nur Metadaten, Inhalt aus dem Auftragstext entnehmen“; im Ablauf `returned`: „nur ändern, was `review_note` verlangt“. Am Ende jedes Ablaufs der Abschlussbericht (Titel, Artikel-ID, Zahl der Quellen, offene Punkte).
+- [x] `app/mcp/style-guide.md`: erlaubte HTML-Elemente und Klassen (aus `Sanitizer`), Medien-Syntax (`data-media`, Galerien, `data-embed` — aus `ContentRenderer`), Belegsyntax mit `ref`, Layouts (`standard, feature, longform, briefing`) mit je einem Satz, Akzentfarbe `#rrggbb`, Pflichtangaben laut `FormCheck` mit Regelcode. Jede Angabe muss im Code belegt sein; nichts erfinden, was Sanitizer oder Renderer nicht kennen.
+- [x] Doku: `docs/code-map.md` (Tools-Klassen, `app/mcp/`-Texte).
 
 ## Report-Back
+
+Alle 24 Tools lokal per Skript (`ak.cjs`, JSON-RPC gegen `php -S`, Token mit passenden Scopes) einmal erfolgreich und einmal mit typischem Fehler (`isError: true`) aufgerufen. Fehlerfälle ungültige/unbekannte Eingaben, `confirm_required`, `not_changeable`, unbekannte ID.
+
+- `get_editorial_brief`: ok, `workflow` je Modus gefüllt. Fehler: ungültiger `mode`.
+- `get_style_guide`: ok, `{"style_guide": …}`.
+- `list_documents` / `get_document`: ok. Fehler: unbekannter Schlüssel.
+- `update_document`: `about` → Vorschlag (`change_id`), `preferences` → direkt mit Revision. Fehler: unbekannter Schlüssel.
+- `list_categories`: ok, mit Statistik und `parent`-Slug. `save_category`: ok (anlegen/ändern). Fehler: unbekannter Eltern-Slug.
+- `get_site_info`: ok. `update_settings`: öffentlich → `change_id`; `min_sources` → `not_changeable`.
+- `list_changes`: ok (`pending|applied|rejected|all`). Fehler: ungültiger Status.
+- `list_queue`: ok. `add_to_queue`: Anhänge `url`, `data_base64`, `uid` ok; fehlerhafter Anhang bricht vor dem Auftrag ab (Queue vorher 2 / nachher 4 nach zwei gültigen Aufträgen, keiner nach dem Fehler).
+- `claim_queue_item` ok; Fehler: Auftrag schon reserviert/unbekannt. `release_queue_item` ok (`failed`); Fehler: ungültiger Status.
+- `list_posts`, `search_posts`, `get_post` (id oder Slug, `include_html` aus), `create_post`, `update_post`, `validate_post`, `submit_post`, `withdraw_post`, `list_post_revisions`, `restore_post_revision`: ok; Fehler je Tool u. a. unbekannte ID, `too_few_sources`.
+- `delete_post`: ohne `confirm: true` → `confirm_required`, Artikel bleibt; mit `confirm` gelöscht.
+
+AK 1–6 erfüllt. Abweichungen:
+
+- `release_queue_item` kennt nur `open|failed` (der Service kennt `cancelled` für diesen Weg nicht).
+- Kategorien im Artikel als Slug-Liste (erster = Hauptkategorie), Titelbild als `cover_media_uid`.
+- Artikelantworten ohne `content_html` (nur mit `include_html`), ohne `preview_url`.
+- `add_to_queue`-Anhang `data_base64` kommt als Herkunft `upload` an; eigenes Material braucht darum `source_url` oder wird als eigenes Material markiert (siehe FINDINGS).

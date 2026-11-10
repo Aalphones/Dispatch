@@ -38,8 +38,8 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `index.php` | Router: `/dispatch/mcp` → Mcp, `/dispatch/api/*` → Api, `/dispatch/oauth/*` und `/.well-known/oauth-*` → OAuth |
 | `src/Http/` | `Request` (inkl. `body()`), `Response` (`json`, `raw`, `empty`, `error`) |
 | `config.php` | Basis-URL, Pfade, Formvorgaben, reservierte Namen der obersten Ebene |
-| `src/Mcp/` | `McpController` (Endpunkt, Dispatch, Services je Anfrage), `Protocol` (Versionserkennung, Header-Abgleich), `ProtocolError`, `Registry`/`Tool`/`ToolResult` (Tools, Scope- und Argumentprüfung), `Tools/<X>Tools.php` (bisher `DocumentTools`) |
-| `mcp/` | Texte für Agenten als Dateien (`instructions.md`; Phase 4 ergänzt Stilführer und Workflows) |
+| `src/Mcp/` | `McpController` (Endpunkt, Dispatch, Services je Anfrage), `Protocol` (Versionserkennung, Header-Abgleich), `ProtocolError`, `Registry`/`Tool`/`ToolResult` (Tools, Scope- und Argumentprüfung), `Schema` (Hilfen für JSON-Schemas der Tools), `Tools/<X>Tools.php` (`BriefingTools`, `DocumentTools`, `CategoryTools`, `SettingTools`, `ChangeTools`, `QueueTools`, `PostTools`) |
+| `mcp/` | Texte für Agenten als Dateien: `instructions.md`, `style-guide.md` (Artikel-HTML), `workflow-scheduled.md`, `workflow-queue.md`, `workflow-returned.md` (vom `get_editorial_brief` je nach Modus mitgeliefert) |
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |
 | `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`), Token-Endpunkt für `--remote` (`TokenController`) |
 | `src/Auth/` | Deploy-Token (`DeployToken`), MCP-Anmeldung (`McpAuth`), Scopes (`Scopes`), JWT, Login-Bremse |

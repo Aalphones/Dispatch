@@ -81,7 +81,7 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 
 0. **Strato-Probe und Deploy-Skript:** Brücke, gesperrter Code-Ordner, Wurzel-`.htaccess`, Diagnose-Route (PHP-Version, Erweiterungen, Authorization-Header, MySQL, ausgehendes HTTPS, GD mit WebP), `deploy.cmd` mit Rauchtest der Nachbarn. Bis der Builder läuft (Meilenstein 2), zeigt `/` eine statische Platzhalter-Seite mit Name und Unterzeile; die Weiterleitung nach `/card/` entfällt schon jetzt.
 1. **Kern (erledigt):** Migrationen, Domänen-Services, Sanitizer, Formprüfung, Medien, Queue, Statistik-Tabellen, Audit-Log, CLI `bin/dispatch`.
-2. **Builder und Theme:** alle Seitentypen nach Entwurf, Suche mit additiven Filtern, Fokusmodus, Feed, Sitemap, Manifest-Aufräumen (Plan: `docs/planning/2026-11-10_meilenstein-2-builder-theme/`).
+2. **Builder und Theme (erledigt):** alle Seitentypen nach Entwurf, Suche mit additiven Filtern, Fokusmodus, Feed, Sitemap, Manifest-Aufräumen (Plan: `docs/planning/2026-11-10_meilenstein-2-builder-theme/`).
 3. **MCP-Server mit Tokens.** Das Briefing enthält zusätzlich die „Mehr davon / Weniger"-Reaktionen des Inhabers.
 4. **Redaktions-API und Redaktionsmodus** nach Entwurf, inklusive Interessen-Dialog, „Mehr davon / Weniger" und Anmerkungen an Stellen der Vorschau.
 5. **OAuth 2.1** für die Claude-Apps.

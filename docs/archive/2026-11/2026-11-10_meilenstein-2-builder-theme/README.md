@@ -14,7 +14,7 @@ Nicht in diesem Meilenstein: alles, was nach dem Login sichtbar ist (Meilenstein
 | 4 | [Theme-CSS nach Entwurf](phase-4-theme-css.md) | standard | complete |
 | 5 | [Seiten: Start, Artikel, Kategorien, Schlagwort, Suche, Dokumente, 404](phase-5-seiten.md) | standard | complete |
 | 6 | [Skripte und Suchindex](phase-6-skripte-suche.md) | heikel | complete |
-| 7 | [Feed, Sitemap, SEO, Deploy und Abschluss](phase-7-feed-seo-abschluss.md) | standard | pending |
+| 7 | [Feed, Sitemap, SEO, Deploy und Abschluss](phase-7-feed-seo-abschluss.md) | standard | complete |
 
 Reihenfolge ist Pflicht.
 
@@ -68,10 +68,21 @@ Reihenfolge ist Pflicht.
 
 ## Summary
 
+`php bin/dispatch build` erzeugt die komplette Website (Start, Artikel, Kategorien, Schlagwörter, Suche mit Index, Dokumente, 404, Feed, Sitemap, `robots.txt`) in `web_root`; Löschen läuft nur über das Manifest. Live auf quantum-canvas.de im Leer-Zustand; Lighthouse lokal 100 in allen Kategorien.
+
 ## Files touched
+
+`app/src/Site/` (Builder, SiteData, Assets, Manifest, ContentRenderer, SearchIndex, Seo, Feed, Sitemap, functions), `app/templates/`, `app/theme/` (style.css, site.js, suche.js, artikel.js), `bin/dispatch`, `app/config.php`, Doku.
 
 ## Commits
 
+87f8c3f, 78f55e8, 3b15a04, ac3e92b, 380ff07, 0464613, 5ae305e (Phase 7).
+
 ## Deviations from plan
 
+`suche.js` für das Budget gekürzt (kein Chip zum Entfernen des Suchworts, keine Ergebniszahl, keine „Alle Filter entfernen“-Schaltfläche, keine Auslassungspunkte im Pager). Beschreibung fällt ohne `site_description` auf die Unterzeile zurück.
+
 ## Follow-ups
+
+- Nicht belegt: W3C-Feed-Validator (Inhalt eintippen), Rich-Results-Test (braucht öffentliche Adresse mit Artikeln), Browser-Sicht 390/820/1400 px hell/dunkel für alle Seitentypen, interaktive Skripte (Vorschläge, Pfeiltasten, Fokusmodus, Lightbox, Video).
+- Lokale Datenbank enthält ein Testrelikt (`durchstich-90e257`, Kategorie `test-90e257`).

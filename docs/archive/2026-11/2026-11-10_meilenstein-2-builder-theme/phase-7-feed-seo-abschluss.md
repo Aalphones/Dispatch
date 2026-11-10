@@ -1,6 +1,6 @@
 # Phase 7 — Feed, Sitemap, SEO, Deploy und Abschluss
 
-**Rating:** standard · **Status:** pending
+**Rating:** standard · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -22,12 +22,14 @@
 
 ## Checkliste
 
-- [ ] `Site/Seo.php`: `meta(array $page, SiteData $data): array` und `jsonLd…`-Methoden; `layout.php` gibt Meta und JSON-LD aus.
-- [ ] `Site/Feed.php`, `Site/Sitemap.php`, `robots.txt` in `Builder::collectTechnical()`; Hilfsfunktion `absolut(string $html, string $baseUrl): string` per `Dom\HTMLDocument` (Attribute `src`, `href`, `srcset` mit führendem `/`).
-- [ ] Lighthouse-Lauf lokal: `npx lighthouse http://localhost:8080/ --preset=desktop` und mit `--form-factor=mobile` für Startseite und einen Longform-Artikel (Ergebnis-Zahlen ins Report-Back). Ohne lokalen Chrome: `npx -y @puppeteer/browsers install chrome@stable` in einen Ordner außerhalb des Repos, Pfad per `CHROME_PATH`. Unter 95 → Ursache beheben (meist Kontrast, fehlende Maße, Render-Blocker), nicht die Messung wiederholen, bis es passt.
-- [ ] Deploy: `deploy.cmd`; danach Startseite, ein Artikel, `/kategorien/`, `/suche/?q=…`, `/feed.xml`, `/sitemap.xml`, `/robots.txt`, eine unbekannte Adresse (404-Seite mit Status 404) per `curl -sI` und im Browser; `/card/`, `/scanner/capture`, `/dispatch-app/.env` (403) wie vorher.
-- [ ] Auf Strato gibt es keine Demo-Daten (CLI läuft nur lokal) — die Live-Seite zeigt den echten, anfangs leeren Bestand im Leer-Zustand aus Phase 5 (AK 7); die Suche läuft mit leerem Index ohne Konsolenfehler.
-- [ ] Doc: `docs/code-map.md` (Site/Seo, Feed, Sitemap), `docs/PROJECT.md` → Meilenstein 2 „(erledigt)", `docs/knowledge/INDEX.md` → Lighthouse-Werte und Build-Dauer auf Strato, `AGENTS.md` → „Lokal starten" um `php bin/dispatch build`.
-- [ ] Plan archivieren nach `docs/archive/2026-11/` (Ablauf `mode-implementing`), STATE.md auf den nächsten Schritt „Meilenstein 3 planen".
+- [x] `Site/Seo.php`: `meta(array $page, SiteData $data): array` und `jsonLd…`-Methoden; `layout.php` gibt Meta und JSON-LD aus.
+- [x] `Site/Feed.php`, `Site/Sitemap.php`, `robots.txt` in `Builder::collectTechnical()`; Hilfsfunktion `absolut(string $html, string $baseUrl): string` per `Dom\HTMLDocument` (Attribute `src`, `href`, `srcset` mit führendem `/`).
+- [x] Lighthouse-Lauf lokal: `npx lighthouse http://localhost:8080/ --preset=desktop` und mit `--form-factor=mobile` für Startseite und einen Longform-Artikel (Ergebnis-Zahlen ins Report-Back). Ohne lokalen Chrome: `npx -y @puppeteer/browsers install chrome@stable` in einen Ordner außerhalb des Repos, Pfad per `CHROME_PATH`. Unter 95 → Ursache beheben (meist Kontrast, fehlende Maße, Render-Blocker), nicht die Messung wiederholen, bis es passt.
+- [x] Deploy: `deploy.cmd`; danach Startseite, ein Artikel, `/kategorien/`, `/suche/?q=…`, `/feed.xml`, `/sitemap.xml`, `/robots.txt`, eine unbekannte Adresse (404-Seite mit Status 404) per `curl -sI` und im Browser; `/card/`, `/scanner/capture`, `/dispatch-app/.env` (403) wie vorher.
+- [x] Auf Strato gibt es keine Demo-Daten (CLI läuft nur lokal) — die Live-Seite zeigt den echten, anfangs leeren Bestand im Leer-Zustand aus Phase 5 (AK 7); die Suche läuft mit leerem Index ohne Konsolenfehler.
+- [x] Doc: `docs/code-map.md` (Site/Seo, Feed, Sitemap), `docs/PROJECT.md` → Meilenstein 2 „(erledigt)", `docs/knowledge/INDEX.md` → Lighthouse-Werte und Build-Dauer auf Strato, `AGENTS.md` → „Lokal starten" um `php bin/dispatch build`.
+- [x] Plan archivieren nach `docs/archive/2026-11/` (Ablauf `mode-implementing`), STATE.md auf den nächsten Schritt „Meilenstein 3 planen".
 
 ## Report-Back
+
+AK 1–5 belegt (Kopf, OpenGraph, JSON-LD parsebar, Feed/Sitemap wohlgeformt und ohne relative Adressen, `robots.txt`). Auf Strato lag vorher keine `robots.txt` (404). Lighthouse lokal 100/100/100/100 auf Startseite und Longform-Artikel, Desktop und Mobil. Deploy grün, `/card/` und `/scanner/capture` byte-gleich. Nicht geprüft: W3C-Feed-Validator, Rich-Results-Test, Browser-Sicht 390/820/1400 px hell/dunkel auf allen Seitentypen.

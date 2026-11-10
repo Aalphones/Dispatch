@@ -66,11 +66,14 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 | PHP 8.3, PHPUnit, Tests in den Abnahmen | PHP 8.5, keine automatisierten Tests, Abnahme per Handprüfung (ADR-004) |
 | Deployment per SFTP oder `git pull` | `deploy.cmd` mit Nachprüfung (ADR-005) |
 | `/` auf der Domain | bisher Weiterleitung nach `/card/`, künftig die Startseite des Blogs |
+| Tabellen `tokens`, `login_attempts` und die OAuth-Tabellen schon im Kern | `tokens` → Meilenstein 3, `login_attempts` → Meilenstein 4, OAuth-Tabellen → Meilenstein 5; Meilenstein 1 legt nur Migrationen 001–009 an |
+| CLI mit `token:create` | `bin/dispatch` ohne `token:create` (Tokens entstehen mit Meilenstein 3) |
+| Formprüfung im Artikel-Service | reine Klasse `Util\FormCheck` ohne Datenbankzugriff (ADR-012) |
 
 ## Meilensteine
 
 0. **Strato-Probe und Deploy-Skript:** Brücke, gesperrter Code-Ordner, Wurzel-`.htaccess`, Diagnose-Route (PHP-Version, Erweiterungen, Authorization-Header, MySQL, ausgehendes HTTPS, GD mit WebP), `deploy.cmd` mit Rauchtest der Nachbarn. Bis der Builder läuft (Meilenstein 2), zeigt `/` eine statische Platzhalter-Seite mit Name und Unterzeile; die Weiterleitung nach `/card/` entfällt schon jetzt.
-1. **Kern:** Migrationen, Domänen-Services, Sanitizer, Formprüfung, Medien, Queue, Statistik-Tabellen, Audit-Log, CLI `bin/dispatch`.
+1. **Kern (erledigt):** Migrationen, Domänen-Services, Sanitizer, Formprüfung, Medien, Queue, Statistik-Tabellen, Audit-Log, CLI `bin/dispatch`.
 2. **Builder und Theme:** alle Seitentypen, Suche, Feed, Sitemap, Manifest-Aufräumen.
 3. **MCP-Server mit Tokens.**
 4. **Redaktions-API und Redaktionsmodus.**

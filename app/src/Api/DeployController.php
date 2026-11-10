@@ -7,6 +7,8 @@ namespace Dispatch\Api;
 use Dispatch\Auth\DeployToken;
 use Dispatch\Db\Connection;
 use Dispatch\Db\Migrator;
+use Dispatch\Domain\Actor;
+use Dispatch\Domain\Seeder;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
 use Dispatch\Site\Builder;
@@ -32,9 +34,11 @@ final class DeployController
 
         $migrations = $this->step('migrationen', fn (): array => (new Migrator($pdo, (string) $this->config['app_dir'] . '/migrations'))->run());
 
+        $seeded = $this->step('startinhalte', fn (): array => (new Seeder($pdo, $this->config))->run(Actor::deploy()));
+
         $built = $this->step('bauen', fn (): array => (new Builder($this->config))->buildPlaceholder());
 
-        Response::json(['migrations' => $migrations, 'built' => $built]);
+        Response::json(['migrations' => $migrations, 'seeded' => $seeded, 'built' => $built]);
     }
 
     /**

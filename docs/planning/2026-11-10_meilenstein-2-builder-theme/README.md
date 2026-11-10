@@ -13,7 +13,7 @@ Nicht in diesem Meilenstein: alles, was nach dem Login sichtbar ist (Meilenstein
 | 3 | [Inhalt aufbereiten: Medien, Belege, Inhaltsverzeichnis, Markdown](phase-3-inhalt-markdown.md) | heikel | complete |
 | 4 | [Theme-CSS nach Entwurf](phase-4-theme-css.md) | standard | complete |
 | 5 | [Seiten: Start, Artikel, Kategorien, Schlagwort, Suche, Dokumente, 404](phase-5-seiten.md) | standard | complete |
-| 6 | [Skripte und Suchindex](phase-6-skripte-suche.md) | heikel | pending |
+| 6 | [Skripte und Suchindex](phase-6-skripte-suche.md) | heikel | complete |
 | 7 | [Feed, Sitemap, SEO, Deploy und Abschluss](phase-7-feed-seo-abschluss.md) | standard | pending |
 
 Reihenfolge ist Pflicht.

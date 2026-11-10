@@ -63,6 +63,7 @@ $topTags = array_slice($site->tags, 0, 10);
           <label class="suche-feld">
             <input id="suchfeld" name="q" type="search" placeholder="Suchen …" autocomplete="off" aria-label="Artikel, Kategorien und Schlagwörter durchsuchen" aria-controls="panel" aria-keyshortcuts="Control+K /">
             <kbd class="taste">Strg K</kbd>
+            <button type="button" class="suche-zu" id="suche-zu">Abbrechen</button>
           </label>
           <div class="panel" id="panel" role="listbox" aria-label="Vorschläge"></div>
         </form>

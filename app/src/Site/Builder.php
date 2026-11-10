@@ -37,6 +37,9 @@ final class Builder
     /** @var array<string, string> Name → URL der Theme-Dateien, vom laufenden Bau gesetzt */
     private array $assetUrls = [];
 
+    /** @var array<int, array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string}> Post-ID → Ergebnis des ContentRenderer */
+    private array $rendered = [];
+
     /** @param array<string, mixed> $config */
     public function __construct(
         private readonly array $config,
@@ -53,7 +56,7 @@ final class Builder
 
         try {
             $this->site = SiteData::load($this->pdo, $this->config);
-            $assets = Assets::collect($this->config);
+            $assets = $this->collectAssets();
             $this->assetUrls = $assets['urls'];
 
             $files = $this->collect($assets['files']);
@@ -94,6 +97,31 @@ final class Builder
             'deleted' => $deleted,
             'ms' => (int) round((hrtime(true) - $startedAt) / 1_000_000),
         ];
+    }
+
+    /**
+     * Theme-Dateien plus Suchindex. Der Index braucht nur die aufbereiteten Artikeltexte, nicht die fertigen
+     * Seiten — so steht seine Adresse fest, bevor `layout.php` sie einsetzt.
+     *
+     * @return array{files: array<string, string>, urls: array<string, string>}
+     */
+    private function collectAssets(): array
+    {
+        $assets = Assets::collect($this->config);
+
+        $renderer = new ContentRenderer();
+        foreach ($this->site->posts as $post) {
+            $rendered = $renderer->render($post, $this->site);
+            $rendered['html'] = $this->applyLayoutDefaults($rendered['html'], (string) $post['layout']);
+            $this->rendered[$post['id']] = $rendered;
+        }
+
+        $index = SearchIndex::build($this->site, $this->rendered);
+        $path = Assets::hashedPath('suchindex', 'json', $index);
+        $assets['files'][$path] = $index;
+        $assets['urls']['suchindex'] = '/' . $path;
+
+        return $assets;
     }
 
     /**
@@ -153,13 +181,11 @@ final class Builder
     /** @return array<string, string> */
     private function collectArticles(): array
     {
-        $renderer = new ContentRenderer();
         $categories = $this->categoriesBySlug();
 
         $files = [];
         foreach ($this->site->posts as $position => $post) {
-            $rendered = $renderer->render($post, $this->site);
-            $rendered['html'] = $this->applyLayoutDefaults($rendered['html'], (string) $post['layout']);
+            $rendered = $this->rendered[$post['id']];
 
             $primary = $post['primary_category'];
             $activeCategory = '';

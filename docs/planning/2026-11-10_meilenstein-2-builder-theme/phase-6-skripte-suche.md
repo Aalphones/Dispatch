@@ -1,6 +1,6 @@
 # Phase 6 — Skripte und Suchindex
 
-**Rating:** heikel (Suche mit Normalisierung und Gewichtung; DOM-Ausgabe aus Daten ohne XSS) · **Status:** pending
+**Rating:** heikel (Suche mit Normalisierung und Gewichtung; DOM-Ausgabe aus Daten ohne XSS) · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -33,10 +33,10 @@
 
 ## Checkliste
 
-- [ ] `Site/SearchIndex.php`: `build(SiteData $data, array $rendered): string` (JSON nach Kontrakt; `$rendered` = Ergebnisse des `ContentRenderer` je Post-ID für `h` und `c`); `JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR`. Builder: Index in `collect()` nach den Artikeln erzeugen, als `assets/suchindex.{h}.json` ablegen, URL in `$assets['suchindex']` und `layout.php` (`data-suchindex`).
-- [ ] `theme/site.js`: Tastenkürzel; beim ersten `focus` auf `#suchfeld` (oder Kürzel) `import(document.documentElement.dataset.suche)` und `start(feld)` des Moduls aufrufen; `ResizeObserver` auf `.nav` → `--nav-h`; Plattform-Text der `.taste` (`⌘ K` auf Apple, sonst `Strg K`).
-- [ ] `theme/suche.js` (exportiert `start(feld)` und `seite()`): Index einmal per `fetch` laden und vorbereiten (normalisierte Felder je Artikel cachen); Vorschau-Panel; auf `/suche/` (`document.body.dataset.seite === 'suche'`) `seite()` ausführen. `site.js` ruft auf der Suchseite `seite()` sofort.
-- [ ] `theme/artikel.js`: Inhaltsverzeichnis (IntersectionObserver auf `.text h2[id]`, `rootMargin: '-15% 0px -70% 0px'`, Marker per `transform`), Fokusmodus (`body.fokus`, `requestFullscreen` mit `.catch`, Esc, `fullscreenchange`, Maus-Sichtbarkeit wie Entwurf), Lightbox (ein `<dialog class="lightbox">` per Skript anlegen; größte Variante aus dem `srcset` der `source[type="image/webp"]`), Einbettungen, Seitenspalte neben `full`-Bildern.
-- [ ] Doc: `docs/code-map.md` → `theme/`-Zeile mit den drei Modulen und `Site/SearchIndex`.
+- [x] `Site/SearchIndex.php`: `build(SiteData $data, array $rendered): string` (JSON nach Kontrakt; `$rendered` = Ergebnisse des `ContentRenderer` je Post-ID für `h` und `c`); `JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR`. Builder: Index in `collect()` nach den Artikeln erzeugen, als `assets/suchindex.{h}.json` ablegen, URL in `$assets['suchindex']` und `layout.php` (`data-suchindex`).
+- [x] `theme/site.js`: Tastenkürzel; beim ersten `focus` auf `#suchfeld` (oder Kürzel) `import(document.documentElement.dataset.suche)` und `start(feld)` des Moduls aufrufen; `ResizeObserver` auf `.nav` → `--nav-h`; Plattform-Text der `.taste` (`⌘ K` auf Apple, sonst `Strg K`).
+- [x] `theme/suche.js` (exportiert `start(feld)` und `seite()`): Index einmal per `fetch` laden und vorbereiten (normalisierte Felder je Artikel cachen); Vorschau-Panel; auf `/suche/` (`document.body.dataset.seite === 'suche'`) `seite()` ausführen. `site.js` ruft auf der Suchseite `seite()` sofort.
+- [x] `theme/artikel.js`: Inhaltsverzeichnis (IntersectionObserver auf `.text h2[id]`, `rootMargin: '-15% 0px -70% 0px'`, Marker per `transform`), Fokusmodus (`body.fokus`, `requestFullscreen` mit `.catch`, Esc, `fullscreenchange`, Maus-Sichtbarkeit wie Entwurf), Lightbox (ein `<dialog class="lightbox">` per Skript anlegen; größte Variante aus dem `srcset` der `source[type="image/webp"]`), Einbettungen, Seitenspalte neben `full`-Bildern.
+- [x] Doc: `docs/code-map.md` → `theme/`-Zeile mit den drei Modulen und `Site/SearchIndex`.
 
 ## Report-Back

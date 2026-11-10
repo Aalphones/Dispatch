@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Dispatch\Domain;
 
 use Dispatch\Db\Transaction;
+use Dispatch\Util\FormCheck;
+use Dispatch\Util\FormCheckResult;
 use Dispatch\Util\Sanitizer;
 use Dispatch\Util\Text;
 use PDO;
@@ -38,6 +40,7 @@ final class PostService
     private const ORIGINS = ['scheduled', 'manual'];
     private const SOURCE_KINDS = ['web', 'news', 'study', 'official', 'dataset', 'book', 'interview', 'video', 'podcast', 'social', 'other'];
 
+    private const REVIEW_NOTE_MAX_LENGTH = 2000;
     private const TITLE_MAX_LENGTH = 200;
     private const SLUG_MAX_LENGTH = 120;
     private const SLUG_PATTERN = '/^[a-z0-9]+(-[a-z0-9]+)*$/';
@@ -57,15 +60,17 @@ final class PostService
     private MediaRepository $media;
     private AuditRepository $audit;
     private Sanitizer $sanitizer;
+    private FormCheck $formCheck;
 
     /** @param array<string, mixed> $config */
-    public function __construct(private readonly PDO $pdo, array $config)
+    public function __construct(private readonly PDO $pdo, private readonly array $config)
     {
         $this->posts = new PostRepository($pdo);
         $this->categories = new CategoryRepository($pdo);
         $this->media = new MediaRepository($pdo);
         $this->audit = new AuditRepository($pdo);
         $this->sanitizer = new Sanitizer();
+        $this->formCheck = new FormCheck();
     }
 
     /**
@@ -233,6 +238,171 @@ final class PostService
         }
 
         return $snapshot;
+    }
+
+    /** Prüft den Arbeitsstand gegen die Formvorgaben; schreibt nichts. */
+    public function validate(int $id): FormCheckResult
+    {
+        $snapshot = $this->snapshot($id);
+        $mediaByUid = $this->media->findManyByUid(FormCheck::mediaUids($snapshot));
+
+        return $this->formCheck->check($snapshot, $mediaByUid, $this->posts->liveTitles($id), (array) $this->config['form_rules']);
+    }
+
+    /** @return array<string, mixed> der Artikel nach dem Übergang */
+    public function submit(int $id, Actor $actor): array
+    {
+        return Transaction::join($this->pdo, function () use ($id, $actor): array {
+            $post = $this->lockedPost($id);
+            $hasUnpublishedChanges = $post['published_revision'] !== null && (int) $post['revision'] > (int) $post['published_revision'];
+            $isAllowed = $post['status'] === 'draft' || ($post['status'] === 'published' && $hasUnpublishedChanges);
+            if (!$isAllowed) {
+                throw $this->invalidTransition($post, 'submit');
+            }
+
+            $this->assertFormOk($id);
+            $this->posts->setStatus($id, ['status' => 'review']);
+            $this->audit->record($actor, 'post.submit', 'post:' . $id, ['revision' => (int) $post['revision']]);
+
+            return $this->get($id);
+        });
+    }
+
+    /** @return array<string, mixed> */
+    public function approve(int $id, Actor $actor): array
+    {
+        $this->requireOwner($actor, 'freigeben');
+
+        return Transaction::join($this->pdo, function () use ($id, $actor): array {
+            $post = $this->lockedPost($id);
+            if ($post['status'] !== 'review') {
+                throw $this->invalidTransition($post, 'approve');
+            }
+
+            $this->assertFormOk($id);
+            $this->posts->setStatus($id, [
+                'status' => 'published',
+                'published_revision' => (int) $post['revision'],
+                'touch_published_at' => true,
+                'review_note' => null,
+            ]);
+            $this->audit->record($actor, 'post.approve', 'post:' . $id, ['revision' => (int) $post['revision']]);
+
+            return $this->get($id);
+        });
+    }
+
+    /** @return array<string, mixed> */
+    public function returnToAgent(int $id, string $note, Actor $actor): array
+    {
+        $this->requireOwner($actor, 'zurückgeben');
+        $note = trim($note);
+        if ($note === '' || mb_strlen($note) > self::REVIEW_NOTE_MAX_LENGTH) {
+            throw $this->invalid('note', sprintf('muss 1 bis %d Zeichen lang sein und sagen, was zu ändern ist', self::REVIEW_NOTE_MAX_LENGTH));
+        }
+
+        return Transaction::join($this->pdo, function () use ($id, $note, $actor): array {
+            $post = $this->lockedPost($id);
+            if ($post['status'] !== 'review') {
+                throw $this->invalidTransition($post, 'return');
+            }
+
+            $this->posts->setStatus($id, ['status' => 'draft', 'review_note' => $note]);
+            $this->audit->record($actor, 'post.return', 'post:' . $id, ['revision' => (int) $post['revision']]);
+
+            return $this->get($id);
+        });
+    }
+
+    /** @return array<string, mixed> */
+    public function unpublish(int $id, Actor $actor): array
+    {
+        $this->requireOwner($actor, 'zurückziehen');
+
+        return Transaction::join($this->pdo, function () use ($id, $actor): array {
+            $post = $this->lockedPost($id);
+            $isAllowed = $post['status'] === 'published'
+                || ($post['status'] === 'review' && $post['published_revision'] !== null);
+            if (!$isAllowed) {
+                throw $this->invalidTransition($post, 'unpublish');
+            }
+
+            // published_revision bleibt als Nachweis, was zuletzt online war; livePosts() schließt archivierte aus.
+            $this->posts->setStatus($id, ['status' => 'archived']);
+            $this->audit->record($actor, 'post.unpublish', 'post:' . $id, ['published_revision' => (int) $post['published_revision']]);
+
+            return $this->get($id);
+        });
+    }
+
+    /** Löscht einen nie veröffentlichten Artikel samt Revisionen, Quellen und Kategorie-Zuordnungen. */
+    public function discard(int $id, Actor $actor): void
+    {
+        $this->requireOwner($actor, 'verwerfen');
+
+        Transaction::join($this->pdo, function () use ($id, $actor): void {
+            $post = $this->lockedPost($id);
+            if ($post['published_revision'] !== null) {
+                throw new DomainError(
+                    'invalid_transition',
+                    'Aus Status ' . $post['status'] . ' geht discard nicht: Der Artikel war schon veröffentlicht, und Veröffentlichtes wird zurückgezogen (unpublish), nicht gelöscht.',
+                    ['id' => $id, 'status' => $post['status'], 'action' => 'discard']
+                );
+            }
+
+            $this->posts->delete($id);
+            $this->audit->record($actor, 'post.discard', 'post:' . $id, ['title' => $post['title'], 'slug' => $post['slug']]);
+        });
+    }
+
+    /**
+     * Die Artikel der Website: Snapshots der freigegebenen Revisionen.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function live(): array
+    {
+        return $this->posts->livePosts();
+    }
+
+    /** @return array<string, mixed> Zeile gesperrt bis zum Transaktionsende */
+    private function lockedPost(int $id): array
+    {
+        $post = $this->posts->findForUpdate($id);
+        if ($post === null) {
+            throw $this->notFound($id);
+        }
+
+        return $post;
+    }
+
+    private function assertFormOk(int $id): void
+    {
+        $result = $this->validate($id);
+        if (!$result->ok()) {
+            throw new DomainError(
+                'form_errors',
+                sprintf('Die Formprüfung hat %d Fehler. Behebe sie und reiche erneut ein.', count($result->errors)),
+                ['result' => $result->toArray()]
+            );
+        }
+    }
+
+    private function requireOwner(Actor $actor, string $action): void
+    {
+        if (!$actor->isOwner()) {
+            throw new DomainError('owner_only', sprintf('Nur der Inhaber darf einen Artikel %s.', $action));
+        }
+    }
+
+    /** @param array<string, mixed> $post */
+    private function invalidTransition(array $post, string $action): DomainError
+    {
+        return new DomainError(
+            'invalid_transition',
+            sprintf('Aus Status %s geht %s nicht.', $post['status'], $action),
+            ['id' => (int) $post['id'], 'status' => $post['status'], 'action' => $action]
+        );
     }
 
     /**

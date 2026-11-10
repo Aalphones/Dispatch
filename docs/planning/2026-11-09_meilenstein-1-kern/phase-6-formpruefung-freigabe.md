@@ -1,6 +1,6 @@
 # Phase 6 — Formprüfung und Freigabe-Übergänge
 
-**Rating:** heikel (Statusmaschine trägt die Regel „nichts ohne Freigabe online") · **Status:** pending
+**Rating:** heikel (Statusmaschine trägt die Regel „nichts ohne Freigabe online") · **Status:** complete
 
 ## Kontext (vor dem ersten Edit lesen)
 
@@ -97,10 +97,16 @@ Scratchpad-Skripte gegen `dispatch_dev`.
 
 ## Checkliste
 
-- [ ] Dateien laut Tabelle
-- [ ] Abnahme fahren, Fallliste mit Ergebnis im Report-Back (`dod.md`)
-- [ ] ADR-012 „Artikel-Statusmaschine und Live-Lesepfad" (Tabelle oben; warum `published_revision` beim Zurückziehen bleibt; `livePosts()` als einzige Quelle) + Zeile in `docs/decisions/README.md`
-- [ ] `docs/models.md`: Statusmaschine, Live-Lesepfad
-- [ ] `docs/code-map.md`: `Util/FormCheck*`
+- [x] Dateien laut Tabelle
+- [x] Abnahme fahren, Fallliste mit Ergebnis im Report-Back (`dod.md`)
+- [x] ADR-012 „Artikel-Statusmaschine und Live-Lesepfad" (Tabelle oben; warum `published_revision` beim Zurückziehen bleibt; `livePosts()` als einzige Quelle) + Zeile in `docs/decisions/README.md`
+- [x] `docs/models.md`: Statusmaschine, Live-Lesepfad
+- [x] `docs/code-map.md`: `Util/FormCheck*`
 
 ## Report-Back
+
+- Ergebnis: `Util/FormCheck`, `FormCheckResult`, Statusmaschine und `livePosts()` stehen; alle Abnahmepunkte per Skript grün (35 Formfälle einzeln, alle Übergänge, `owner_only` für `mcp:test` und `cli`, Live-Stand bleibt bis zur erneuten Freigabe alt, `published_at` bleibt).
+- Metrics gültiger Artikel (von Hand nachgezählt): words 650 (3 Wörter `<h2>` + 647 Füllwörter), reading_minutes 4, sources 3, cited_sources 3, citations 3, source_domains 3, images 2, minimums {600, 3}.
+- Abweichung: `data-cite` erlaubt der Sanitizer nur an `<a>` — Tests nutzen `<a data-cite="…"></a>`.
+- Zusatz: `PostRepository::findForUpdate()` (Zeilensperre je Übergang), `setStatus` kennt `touch_published_at` für `COALESCE(published_at, UTC_TIMESTAMP())`; `liveTitles()` liest Titel des Live-Snapshots, nicht des Arbeitsstands; `FormCheck::mediaUids()` ist öffentlich, `PostService` nutzt es.
+- 🟡 Lücke im Entwurf: ein Artikel, der nach `returnToAgent` wieder `draft` ist, aber Live-Revision hat, lässt sich nicht direkt zurückziehen (Tabelle erlaubt `unpublish` nur aus `published` und `review`); Weg: `submit`, dann `unpublish`. In ADR-012 vermerkt.

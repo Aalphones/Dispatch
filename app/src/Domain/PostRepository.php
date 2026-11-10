@@ -201,6 +201,98 @@ final class PostRepository
         return $statement->fetchAll();
     }
 
+    /**
+     * Der Live-Stand aller veröffentlichten Artikel — die einzige Quelle für die Website.
+     * Der Snapshot der freigegebenen Revision, nie der Arbeitsstand.
+     *
+     * @return list<array<string, mixed>> Snapshot plus `published_at`, neueste zuerst
+     */
+    public function livePosts(): array
+    {
+        $statement = $this->pdo->query(
+            "SELECT r.snapshot, p.published_at FROM posts p
+             JOIN post_revisions r ON r.post_id = p.id AND r.revision = p.published_revision
+             WHERE p.published_revision IS NOT NULL AND p.status <> 'archived'
+             ORDER BY p.published_at DESC, p.id DESC"
+        );
+
+        $posts = [];
+        foreach ($statement->fetchAll() as $row) {
+            $snapshot = json_decode((string) $row['snapshot'], true, 512, JSON_THROW_ON_ERROR);
+            $snapshot['published_at'] = $row['published_at'];
+            $posts[] = $snapshot;
+        }
+
+        return $posts;
+    }
+
+    /**
+     * Titel der Live-Stände (nicht des Arbeitsstands), gleiche Bedingung wie `livePosts()`.
+     *
+     * @return list<string>
+     */
+    public function liveTitles(?int $exceptId): array
+    {
+        $statement = $this->pdo->prepare(
+            "SELECT r.snapshot FROM posts p
+             JOIN post_revisions r ON r.post_id = p.id AND r.revision = p.published_revision
+             WHERE p.published_revision IS NOT NULL AND p.status <> 'archived' AND p.id <> ?"
+        );
+        $statement->execute([$exceptId ?? 0]);
+
+        $titles = [];
+        foreach ($statement->fetchAll() as $row) {
+            $snapshot = json_decode((string) $row['snapshot'], true, 512, JSON_THROW_ON_ERROR);
+            $titles[] = (string) $snapshot['title'];
+        }
+
+        return $titles;
+    }
+
+    /** Sperrt die Zeile bis zum Ende der Transaktion, damit zwei Übergänge sich nicht überholen. */
+    public function findForUpdate(int $id): ?array
+    {
+        $statement = $this->pdo->prepare('SELECT * FROM posts WHERE id = ? FOR UPDATE');
+        $statement->execute([$id]);
+        $row = $statement->fetch();
+
+        return $row === false ? null : $this->decode($row);
+    }
+
+    /**
+     * Statuswechsel: nur `status`, `review_note`, `published_revision`; `touch_published_at => true`
+     * setzt `published_at` einmalig auf jetzt (UTC) und lässt einen vorhandenen Wert stehen.
+     *
+     * @param array<string, mixed> $fields
+     */
+    public function setStatus(int $id, array $fields): void
+    {
+        $assignments = [];
+        $values = [];
+        foreach ($fields as $column => $value) {
+            if ($column === 'touch_published_at') {
+                $assignments[] = 'published_at = COALESCE(published_at, UTC_TIMESTAMP())';
+                continue;
+            }
+            if (!in_array($column, ['status', 'review_note', 'published_revision'], true)) {
+                throw new \InvalidArgumentException('Unbekannte Statusspalte: ' . $column);
+            }
+            $assignments[] = $column . ' = ?';
+            $values[] = $value;
+        }
+
+        $statement = $this->pdo->prepare(
+            'UPDATE posts SET ' . implode(', ', $assignments) . ', updated_at = UTC_TIMESTAMP() WHERE id = ?'
+        );
+        $statement->execute([...$values, $id]);
+    }
+
+    /** Löscht den Artikel; Revisionen, Quellen und Kategorie-Zuordnungen folgen per Fremdschlüssel (CASCADE). */
+    public function delete(int $id): void
+    {
+        $this->pdo->prepare('DELETE FROM posts WHERE id = ?')->execute([$id]);
+    }
+
     /** @return array<string, mixed>|null */
     private function findOne(string $column, int|string $value): ?array
     {

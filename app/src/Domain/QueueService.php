@@ -229,6 +229,15 @@ final class QueueService
         }
     }
 
+    /** Der Artikel wurde aus der Prüfung zurückgezogen: derselbe Bearbeiter hält den Auftrag wieder, mit frischer Frist. */
+    public function backToClaimed(int $id): void
+    {
+        $item = $this->lockedItem($id);
+        if ($item['status'] === 'review') {
+            $this->queue->extendClaim($id, (int) $this->settings->get('queue_claim_minutes'));
+        }
+    }
+
     /** Der Artikel ist weg: der Auftrag steht wieder zur Vergabe. */
     public function reopen(int $id): void
     {

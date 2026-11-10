@@ -109,6 +109,31 @@ final class QueueRepository
         return array_map(fn (array $row): array => $this->decode($row), $statement->fetchAll());
     }
 
+    /** @return array<string, int> Status, wie ihn der Leser sieht => Anzahl, nur vorhandene */
+    public function countByEffectiveStatus(): array
+    {
+        $statement = $this->pdo->query(
+            'SELECT ' . self::EFFECTIVE_STATUS . ' AS effective_status, COUNT(*) AS total FROM queue_items q GROUP BY effective_status'
+        );
+        $counts = [];
+        foreach ($statement->fetchAll() as $row) {
+            $counts[(string) $row['effective_status']] = (int) $row['total'];
+        }
+
+        return $counts;
+    }
+
+    /** @return array<string, mixed>|null der nächste offene Auftrag in Vergabe-Reihenfolge, ohne ihn zu reservieren */
+    public function nextClaimable(): ?array
+    {
+        $statement = $this->pdo->query(
+            'SELECT id FROM queue_items WHERE ' . self::CLAIMABLE . ' ORDER BY priority ASC, created_at ASC, id ASC LIMIT 1'
+        );
+        $id = $statement->fetchColumn();
+
+        return $id === false ? null : $this->find((int) $id);
+    }
+
     /** @return list<int> Reihenfolge der Vergabe: Priorität, Alter */
     public function claimCandidates(int $limit): array
     {
@@ -138,6 +163,19 @@ final class QueueRepository
         $statement->execute();
 
         return $statement->rowCount() === 1;
+    }
+
+    /** Setzt einen Auftrag in `review` auf `claimed` zurück; `claimed_by` bleibt. */
+    public function extendClaim(int $id, int $minutes): void
+    {
+        $statement = $this->pdo->prepare(
+            "UPDATE queue_items
+             SET status = 'claimed', claim_expires = UTC_TIMESTAMP() + INTERVAL ? MINUTE, updated_at = UTC_TIMESTAMP()
+             WHERE id = ? AND status = 'review'"
+        );
+        $statement->bindValue(1, $minutes, PDO::PARAM_INT);
+        $statement->bindValue(2, $id, PDO::PARAM_INT);
+        $statement->execute();
     }
 
     /** @param array<string, mixed> $fields */

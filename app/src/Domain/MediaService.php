@@ -145,13 +145,14 @@ final class MediaService
     }
 
     /** @return list<array<string, mixed>> */
-    public function list(?string $kind = null, int $limit = 50, int $offset = 0): array
+    public function list(?string $kind = null, int $limit = 50, int $offset = 0, ?string $query = null): array
     {
         if ($kind !== null && !in_array($kind, self::KINDS, true)) {
             throw new DomainError('invalid_value', sprintf('Unbekannte Art „%s“. Gültig: %s.', $kind, implode(', ', self::KINDS)), ['field' => 'kind']);
         }
+        $query = $query === null ? null : trim($query);
 
-        return $this->media->list($kind, $limit, $offset);
+        return $this->media->list($kind, $limit, $offset, $query === '' ? null : $query);
     }
 
     /**

@@ -46,6 +46,16 @@ final class TokenRepository
         return $row === false ? null : $row;
     }
 
+    public function countActive(): int
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM tokens WHERE kind = ? AND revoked = 0 AND (expires_at IS NULL OR expires_at > UTC_TIMESTAMP())'
+        );
+        $statement->execute([self::KIND_MCP]);
+
+        return (int) $statement->fetchColumn();
+    }
+
     public function activeNameExists(string $name): bool
     {
         $statement = $this->pdo->prepare('SELECT 1 FROM tokens WHERE kind = ? AND revoked = 0 AND name = ? LIMIT 1');

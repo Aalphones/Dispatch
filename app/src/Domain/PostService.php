@@ -41,7 +41,15 @@ final class PostService
     private const SOURCE_KINDS = ['web', 'news', 'study', 'official', 'dataset', 'book', 'interview', 'video', 'podcast', 'social', 'other'];
 
     private const REVIEW_NOTE_MAX_LENGTH = 2000;
+    private const SEARCH_MIN_LENGTH = 2;
+    private const SEARCH_MAX_LIMIT = 50;
     private const TITLE_MAX_LENGTH = 200;
+
+    /** Felder des Snapshots, die restoreRevision zurückschreibt; Slug und Herkunft bleiben. */
+    private const RESTORABLE_FIELDS = [
+        'title', 'subtitle', 'kicker', 'excerpt', 'content_html', 'tags', 'layout', 'accent',
+        'seo_title', 'seo_description', 'editor_notes', 'sources',
+    ];
     private const SLUG_MAX_LENGTH = 120;
     private const SLUG_PATTERN = '/^[a-z0-9]+(-[a-z0-9]+)*$/';
     private const ACCENT_PATTERN = '/^#[0-9a-fA-F]{6}$/';
@@ -182,9 +190,33 @@ final class PostService
      * @param list<string> $statuses leer = alle
      * @return list<array<string, mixed>>
      */
-    public function list(array $statuses = [], int $limit = 50, int $offset = 0): array
+    public function list(array $statuses = [], int $limit = 50, int $offset = 0, ?string $category = null, ?string $tag = null, ?int $year = null): array
     {
-        return $this->posts->list($statuses, $limit, $offset);
+        if ($category !== null && $this->categories->findBySlug($category) === null) {
+            $validSlugs = array_map(static fn (array $row): string => (string) $row['slug'], $this->categories->all(true));
+            throw new DomainError(
+                'not_found',
+                sprintf('Die Kategorie „%s“ gibt es nicht. Gültig: %s.', $category, implode(', ', $validSlugs)),
+                ['field' => 'category', 'valid' => $validSlugs]
+            );
+        }
+
+        return $this->posts->list($statuses, $limit, $offset, $category, $tag, $year);
+    }
+
+    /**
+     * Sucht in Titel, Untertitel, Auszug und Text; Titeltreffer zuerst.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function search(string $query, int $limit = 20): array
+    {
+        $term = trim($query);
+        if (mb_strlen($term) < self::SEARCH_MIN_LENGTH) {
+            throw $this->invalid('query', sprintf('braucht mindestens %d Zeichen', self::SEARCH_MIN_LENGTH));
+        }
+
+        return $this->posts->search($term, min(max($limit, 1), self::SEARCH_MAX_LIMIT));
     }
 
     /**
@@ -349,11 +381,71 @@ final class PostService
         });
     }
 
-    /** Löscht einen nie veröffentlichten Artikel samt Revisionen, Quellen und Kategorie-Zuordnungen. */
+    /**
+     * Nimmt einen eingereichten Stand aus der Prüfung zurück. Ein nie veröffentlichter Artikel wird wieder Entwurf,
+     * ein veröffentlichter bleibt mit seinem Live-Stand online und behält den neuen Arbeitsstand.
+     *
+     * @return array<string, mixed>
+     */
+    public function withdraw(int $id, Actor $actor): array
+    {
+        return Transaction::join($this->pdo, function () use ($id, $actor): array {
+            $post = $this->lockedPost($id);
+            if ($post['status'] !== 'review') {
+                throw $this->invalidTransition($post, 'withdraw');
+            }
+
+            $target = $post['published_revision'] === null ? 'draft' : 'published';
+            $this->posts->setStatus($id, ['status' => $target]);
+            $this->queueAfter($post, 'backToClaimed');
+            $this->audit->record($actor, 'post.withdraw', 'post:' . $id, ['revision' => (int) $post['revision'], 'status' => $target]);
+
+            return $this->get($id);
+        });
+    }
+
+    /**
+     * Stellt den Inhalt einer früheren Revision als neue Revision wieder her; der Slug bleibt.
+     *
+     * @return array{post: array<string, mixed>, removed: list<string>}
+     */
+    public function restoreRevision(int $id, int $revision, Actor $actor): array
+    {
+        $snapshot = $this->revision($id, $revision);
+
+        $patch = [];
+        foreach (self::RESTORABLE_FIELDS as $field) {
+            if (array_key_exists($field, $snapshot)) {
+                $patch[$field] = $snapshot[$field];
+            }
+        }
+        if (array_key_exists('cover_media_uid', $snapshot)) {
+            $patch['cover_media_uid'] = $snapshot['cover_media_uid'];
+        }
+        if (array_key_exists('categories', $snapshot)) {
+            $patch['categories'] = array_map(
+                static fn (array $category): array => ['slug' => $category['slug'], 'primary' => $category['primary']],
+                $snapshot['categories']
+            );
+        }
+
+        return Transaction::join($this->pdo, function () use ($id, $revision, $patch, $actor): array {
+            $result = $this->update($id, $patch, $actor);
+            $this->audit->record($actor, 'post.restore', 'post:' . $id, [
+                'from_revision' => $revision,
+                'revision' => $result['post']['revision'],
+            ]);
+
+            return $result;
+        });
+    }
+
+    /**
+     * Löscht einen nie veröffentlichten Artikel samt Revisionen, Quellen und Kategorie-Zuordnungen.
+     * Der Inhaber darf jeden solchen Artikel verwerfen, Agenten nur Entwürfe.
+     */
     public function discard(int $id, Actor $actor): void
     {
-        $this->requireOwner($actor, 'verwerfen');
-
         Transaction::join($this->pdo, function () use ($id, $actor): void {
             $post = $this->lockedPost($id);
             if ($post['published_revision'] !== null) {
@@ -361,6 +453,13 @@ final class PostService
                     'invalid_transition',
                     'Aus Status ' . $post['status'] . ' geht discard nicht: Der Artikel war schon veröffentlicht, und Veröffentlichtes wird zurückgezogen (unpublish), nicht gelöscht.',
                     ['id' => $id, 'status' => $post['status'], 'action' => 'discard']
+                );
+            }
+            if (!$actor->isOwner() && $post['status'] !== 'draft') {
+                throw new DomainError(
+                    'forbidden',
+                    'Agenten löschen nur Entwürfe. Eingereichtes erst mit withdraw_post zurückziehen.',
+                    ['id' => $id, 'status' => $post['status']]
                 );
             }
 
@@ -395,7 +494,7 @@ final class PostService
      * Zieht den verknüpften Queue-Auftrag in derselben Transaktion nach.
      *
      * @param array<string, mixed> $post
-     * @param 'markReview'|'markDone'|'reopen' $transition
+     * @param 'markReview'|'markDone'|'reopen'|'backToClaimed' $transition
      */
     private function queueAfter(array $post, string $transition): void
     {

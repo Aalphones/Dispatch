@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dispatch\Domain;
 
+use Dispatch\Db\Like;
 use PDO;
 
 final class PostRepository
@@ -80,26 +81,89 @@ final class PostRepository
      * Ohne `content_html` und `editor_notes` — Listen sollen klein bleiben.
      *
      * @param list<string> $statuses leer = alle
+     * @param string|null $categorySlug direkte Zuordnung, Haupt- oder Nebenkategorie
+     * @param string|null $tag exakter Name
+     * @param int|null $year Jahr der Veröffentlichung, bei Unveröffentlichten das der Erstellung
      * @return list<array<string, mixed>>
      */
-    public function list(array $statuses, int $limit, int $offset): array
+    public function list(array $statuses, int $limit, int $offset, ?string $categorySlug = null, ?string $tag = null, ?int $year = null): array
     {
-        $sql = 'SELECT ' . implode(', ', self::LIST_COLUMNS) . ' FROM posts';
-        if ($statuses !== []) {
-            $sql .= ' WHERE status IN (' . implode(', ', array_fill(0, count($statuses), '?')) . ')';
+        $columns = array_map(static fn (string $column): string => 'p.' . $column, self::LIST_COLUMNS);
+        $sql = 'SELECT ' . implode(', ', $columns) . ' FROM posts p';
+        $conditions = [];
+        $parameters = [];
+
+        if ($categorySlug !== null) {
+            $sql .= ' JOIN post_categories pc ON pc.post_id = p.id JOIN categories c ON c.id = pc.category_id';
+            $conditions[] = 'c.slug = ?';
+            $parameters[] = $categorySlug;
         }
-        $sql .= ' ORDER BY updated_at DESC, id DESC LIMIT ? OFFSET ?';
+        if ($statuses !== []) {
+            $conditions[] = 'p.status IN (' . implode(', ', array_fill(0, count($statuses), '?')) . ')';
+            array_push($parameters, ...$statuses);
+        }
+        if ($tag !== null) {
+            $conditions[] = 'JSON_CONTAINS(p.tags, JSON_QUOTE(?))';
+            $parameters[] = $tag;
+        }
+        if ($year !== null) {
+            $conditions[] = 'YEAR(COALESCE(p.published_at, p.created_at)) = ?';
+            $parameters[] = $year;
+        }
+        if ($conditions !== []) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
+        }
+        $sql .= ' ORDER BY p.updated_at DESC, p.id DESC LIMIT ? OFFSET ?';
 
         $statement = $this->pdo->prepare($sql);
         $position = 1;
-        foreach ($statuses as $status) {
-            $statement->bindValue($position++, $status);
+        foreach ($parameters as $parameter) {
+            $statement->bindValue($position++, $parameter, is_int($parameter) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
         $statement->bindValue($position++, max(1, $limit), PDO::PARAM_INT);
         $statement->bindValue($position, max(0, $offset), PDO::PARAM_INT);
         $statement->execute();
 
         return array_map(fn (array $row): array => $this->decode($row), $statement->fetchAll());
+    }
+
+    /**
+     * Treffer im Titel stehen vor Treffern nur in Untertitel, Auszug oder Text.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function search(string $term, int $limit): array
+    {
+        $pattern = Like::contains($term);
+        $escape = Like::ESCAPE_CLAUSE;
+        $statement = $this->pdo->prepare(
+            "SELECT id, slug, title, status, excerpt, published_at, updated_at FROM posts
+             WHERE title LIKE ? $escape OR subtitle LIKE ? $escape OR excerpt LIKE ? $escape OR content_html LIKE ? $escape
+             ORDER BY CASE WHEN title LIKE ? $escape THEN 0 ELSE 1 END, updated_at DESC, id DESC
+             LIMIT ?"
+        );
+        foreach (range(1, 5) as $position) {
+            $statement->bindValue($position, $pattern);
+        }
+        $statement->bindValue(6, max(1, $limit), PDO::PARAM_INT);
+        $statement->execute();
+
+        return array_map(static function (array $row): array {
+            $row['id'] = (int) $row['id'];
+
+            return $row;
+        }, $statement->fetchAll());
+    }
+
+    /** @return array<string, int> Status => Anzahl, nur vorhandene */
+    public function countByStatus(): array
+    {
+        $counts = [];
+        foreach ($this->pdo->query('SELECT status, COUNT(*) AS total FROM posts GROUP BY status')->fetchAll() as $row) {
+            $counts[(string) $row['status']] = (int) $row['total'];
+        }
+
+        return $counts;
     }
 
     public function mediaUid(int $mediaId): ?string

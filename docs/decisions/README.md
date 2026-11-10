@@ -21,5 +21,5 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 015 | [Theme: Budgets und Skriptmodule](015-theme-budgets-skriptmodule.md) | Akzeptiert |
 | 016 | [MCP-Protokollschicht und Registry](016-mcp-protokollschicht-und-registry.md) | Akzeptiert |
 | 017 | [MCP-Tokens, Scopes und Wege zum Anlegen](017-mcp-tokens-und-scopes.md) | Akzeptiert |
-| 018 | _reserviert (Phase 3)_ | — |
+| 018 | [MCP-Werkzeuge und Agentenrechte](018-mcp-werkzeuge-und-agentenrechte.md) | Akzeptiert |
 | 019 | [Reaktionen „Mehr davon / Weniger“](019-reaktionen-mehr-davon-weniger.md) | Akzeptiert |

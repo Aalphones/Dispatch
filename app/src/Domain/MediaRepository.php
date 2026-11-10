@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dispatch\Domain;
 
+use Dispatch\Db\Like;
 use PDO;
 
 final class MediaRepository
@@ -15,6 +16,8 @@ final class MediaRepository
     ];
 
     private const META_COLUMNS = ['alt', 'caption', 'credit', 'license', 'license_url', 'source_url'];
+
+    private const SEARCH_COLUMNS = ['uid', 'alt', 'caption', 'credit'];
 
     public function __construct(private readonly PDO $pdo)
     {
@@ -97,13 +100,34 @@ final class MediaRepository
     }
 
     /** @return list<array<string, mixed>> */
-    public function list(?string $kind, int $limit, int $offset): array
+    public function list(?string $kind, int $limit, int $offset, ?string $query = null): array
     {
-        $sql = 'SELECT * FROM media' . ($kind === null ? '' : ' WHERE kind = ?') . ' ORDER BY id DESC LIMIT ' . max(1, $limit) . ' OFFSET ' . max(0, $offset);
+        $conditions = [];
+        $parameters = [];
+        if ($kind !== null) {
+            $conditions[] = 'kind = ?';
+            $parameters[] = $kind;
+        }
+        if ($query !== null) {
+            $searchConditions = [];
+            foreach (self::SEARCH_COLUMNS as $column) {
+                $searchConditions[] = $column . ' LIKE ? ' . Like::ESCAPE_CLAUSE;
+                $parameters[] = Like::contains($query);
+            }
+            $conditions[] = '(' . implode(' OR ', $searchConditions) . ')';
+        }
+
+        $sql = 'SELECT * FROM media' . ($conditions === [] ? '' : ' WHERE ' . implode(' AND ', $conditions))
+            . ' ORDER BY id DESC LIMIT ' . max(1, $limit) . ' OFFSET ' . max(0, $offset);
         $statement = $this->pdo->prepare($sql);
-        $statement->execute($kind === null ? [] : [$kind]);
+        $statement->execute($parameters);
 
         return array_map(fn (array $row): array => $this->decode($row), $statement->fetchAll());
+    }
+
+    public function count(): int
+    {
+        return (int) $this->pdo->query('SELECT COUNT(*) FROM media')->fetchColumn();
     }
 
     /** Öffentlich ist ein Medium, sobald ein Live-Stand es nutzt; die UID ist zufällig, ein Fehltreffer ist ausgeschlossen. */

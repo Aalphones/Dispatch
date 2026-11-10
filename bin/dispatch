@@ -11,6 +11,7 @@ use Dispatch\Domain\DomainError;
 use Dispatch\Domain\MediaService;
 use Dispatch\Domain\PostService;
 use Dispatch\Domain\Seeder;
+use Dispatch\Site\Builder;
 
 if (PHP_SAPI !== 'cli') {
     exit(1);
@@ -151,6 +152,7 @@ Befehle:
   seed            legt fehlende Einstellungen und Startdokumente an (Vorhandenes bleibt)
   demo            legt Demo-Kategorien und 14 freigegebene Beispielartikel an (nur lokal, nur auf leerer
                   Datenbank; --force legt trotzdem einen weiteren Satz an)
+  build           baut die statische Website aus den Live-Ständen in die Webroot (löscht nur, was im Manifest steht)
 
 TXT;
 
@@ -188,6 +190,17 @@ switch ($command) {
 
     case 'demo':
         runDemo(Connection::open(), $config, __DIR__ . '/demo', in_array('--force', $argv, true));
+        break;
+
+    case 'build':
+        $result = (new Builder($config, Connection::open()))->build();
+        echo sprintf(
+            'geschrieben: %d, unverändert: %d, gelöscht: %d, Dauer: %d ms',
+            $result['written'],
+            $result['unchanged'],
+            $result['deleted'],
+            $result['ms']
+        ), PHP_EOL;
         break;
 
     default:

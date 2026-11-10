@@ -9,7 +9,7 @@ Nicht in diesem Meilenstein: alles, was nach dem Login sichtbar ist (Meilenstein
 | # | Phase | Rating | Status |
 |---|---|---|---|
 | 1 | [Demo-Inhalte und Live-Lesepfad ergänzen](phase-1-demo-inhalte.md) | standard | complete |
-| 2 | [Builder-Kern: Sperre, Sammeln, Manifest, Medien, Layout](phase-2-builder-kern.md) | heikel | pending |
+| 2 | [Builder-Kern: Sperre, Sammeln, Manifest, Medien, Layout](phase-2-builder-kern.md) | heikel | complete |
 | 3 | [Inhalt aufbereiten: Medien, Belege, Inhaltsverzeichnis, Markdown](phase-3-inhalt-markdown.md) | heikel | pending |
 | 4 | [Theme-CSS nach Entwurf](phase-4-theme-css.md) | standard | pending |
 | 5 | [Seiten: Start, Artikel, Kategorien, Schlagwort, Suche, Dokumente, 404](phase-5-seiten.md) | standard | pending |
@@ -49,7 +49,7 @@ Reihenfolge ist Pflicht.
 - `array $media` — `uid → MediaView {uid, kind, ext, width, height, alt, caption, credit, license, license_url, source_url, variants, base_url}` für alle von Live-Artikeln genutzten Medien
 - `int $issueNumber` — Zahl der Live-Artikel
 
-**Templates** (`app/templates/`): jede Seitenvorlage liefert nur den Inhalt von `<main>`; `layout.php` umschließt ihn. `Builder::page(string $template, array $vars, array $meta): string` rendert beides. `$meta` = `{title, description, canonical, robots, bodyPage, ogType, ogImage (MediaView|null), jsonLd (list<array>), scripts (list<string>)}`. Helfer in `Site/functions.php` (Namespace `Dispatch\Site`): `e()`, `datum(string $utc, bool $kurz = false)`, `picture(array $media, string $sizes, bool $eager = false, string $class = '')`, `seitenUrl(string $basis, int $n)`.
+**Templates** (`app/templates/`): jede Seitenvorlage liefert nur den Inhalt von `<main>`; `layout.php` umschließt ihn. `Builder::page(string $template, array $vars, array $meta): string` rendert beides. `$meta` = `{title, description, canonical (Pfad, `layout.php` setzt die Basis-URL davor), robots, bodyPage, activeCategory (Kategorie-Slug für `aria-current`, optional), ogType, ogImage (MediaView|null), jsonLd (list<array>), scripts (list<string>)}`. Helfer in `Site/functions.php` (Namespace `Dispatch\Site`): `e()`, `datum(string $utc, bool $kurz = false)`, `picture(array $media, string $sizes, bool $eager = false, string $class = '')`, `seitenUrl(string $basis, int $n)`.
 
 **Andockpunkte für Meilenstein 4** (jetzt schon setzen, ohne Funktion): `<body data-seite="start|artikel|kategorie|kategorien|tag|suche|dokument|fehler">`; Artikelseite `<article class="artikel" data-post-id="{id}" data-post-slug="{slug}">`; jede Karte `<article class="karte" data-post-id="{id}">`; Kategorie-Karte `data-category-id="{id}"`; im Kopf `<div class="kopf-rechts">` mit dem Suchfeld als erstem Kind.
 

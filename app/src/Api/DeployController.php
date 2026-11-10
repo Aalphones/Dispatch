@@ -36,7 +36,7 @@ final class DeployController
 
         $seeded = $this->step('startinhalte', fn (): array => (new Seeder($pdo, $this->config))->run(Actor::deploy()));
 
-        $built = $this->step('bauen', fn (): array => (new Builder($this->config))->buildPlaceholder());
+        $built = $this->step('bauen', fn (): array => (new Builder($this->config, $pdo))->build());
 
         Response::json(['migrations' => $migrations, 'seeded' => $seeded, 'built' => $built]);
     }

@@ -44,10 +44,10 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `src/Auth/` | Deploy-Token (`DeployToken`), JWT, Login-Bremse, MCP-Tokens, Scopes |
 | `src/Db/` | PDO-Verbindung (`Connection`), `Migrator`, `Transaction::run`/`join` (nur DML) |
 | `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll); Einstellungen, Dokumente, Kategorien, Änderungsvorschläge (`SettingService`, `DocumentService`, `CategoryService`, `ChangeService` + Repositories); Medien (`MediaService`, `MediaRepository`); Artikel mit Quellen, Kategorien und Revisionen (`PostService`, `PostRepository`); Queue mit Reservierung (`QueueService`, `QueueRepository`); `Seeder` (Startinhalte) |
-| `src/Site/` | Builder, Manifest, Template-Helfer `e()`, Suchindex, Feed, Sitemap |
+| `src/Site/` | `SiteData` (Live-Stand einmal pro Lauf geladen), `Builder` (`build()` mit `GET_LOCK`, Sammeln im Speicher, Schreiben, Medienkopie, Löschen über das Manifest; `assertWritable`), `Assets` (Theme-Dateien als `assets/<name>.<hash>.<ext>`), `Manifest`, Template-Helfer in `functions.php` (`e`, `datum`, `seitenUrl`); Suchindex, Feed, Sitemap folgen |
 | `src/Util/` | `Env`, `Log`; `Sanitizer` + `SanitizeResult` (HTML-Whitelist, ADR-010); `HttpClient` + `HttpResponse` (einziger Weg nach außen, SSRF-Schutz, ADR-011); `ImageProcessor` + `ImageResult` (Bildvarianten, EXIF-Entfernung); `Text` (Slug, Wortzahl); `FormCheck` + `FormCheckResult` (reine Formprüfung, ADR-012); Zeit folgt |
-| `templates/` | PHP-Templates der Website (Meilenstein 0: `placeholder.php`, `404.php`) |
-| `theme/` | `style.css`, `site.js`, `redaktion/` (nachgeladen); Meilenstein 0: `placeholder.css` |
+| `templates/` | PHP-Templates der Website: `layout.php` (Kopf, Fuß, Skripte) plus je Seitentyp eine Vorlage (`home.php`, `404.php`), die nur den Inhalt von `<main>` liefert |
+| `theme/` | `style.css`, `site.js`, `suche.js`, `artikel.js` (Builder legt sie hash-benannt unter `assets/` ab) |
 | `defaults/` | Startinhalte als Markdown: `editorial_guidelines`, `preferences`, `about`, `imprint`, `privacy` (`Domain/Seeder` legt sie an) |
 | `migrations/` | nummerierte SQL-Dateien; 001–009: Einstellungen, Dokumente, Kategorien, Medien, Artikel mit Quellen, Queue, Änderungsvorschläge, Statistik, Audit (Spalten: [`models.md`](models.md)) |
 | `storage/` | `manifest.json` (vom Builder geschriebene Dateien), `media/<uid>/` (`original.<ext>` und Varianten `<w>.webp` + `<w>.jpg`/`.png`), `logs/` — nur auf dem Server und lokal, nicht im Git |
@@ -57,4 +57,5 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 - Fachliche Funktion? → zuerst `Domain/<X>Service.php`, dann als Tool in `Mcp/Tools/<X>Tools.php`; die API ruft denselben Service.
 - Kennt die Funktion HTTP? → gehört in `Mcp/`, `Api/` oder `OAuth/`, nie in `Domain/`.
 - Erzeugt etwas eine öffentliche Datei? → nur `Site/` schreibt in die Wurzel, und nur über das Manifest.
+- Neue Seitenart? → `Builder::collect<Seitentyp>()` + `templates/<seitentyp>.php` + Pfad in `builder_top_level` (`config.php`).
 - Öffentlich sichtbare Daten ändern ohne Login? → wird ein Änderungsvorschlag (`Domain/ChangeService.php`), keine direkte Änderung.

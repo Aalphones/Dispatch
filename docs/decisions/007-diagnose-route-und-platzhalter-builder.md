@@ -18,3 +18,4 @@ Ob das Strato-Paket PHP 8.5, die nötigen Erweiterungen, den `Authorization`-Hea
 
 - Die Diagnose-Route ist eine zeitlich begrenzte Angriffsfläche, nur mit Token erreichbar; ihr Entfernen ist Pflichtpunkt von Phase 5.
 - Eine veraltete `placeholder.<hash>.css` bleibt nach einer CSS-Änderung liegen, bis Meilenstein 2 das Löschen über das Manifest einführt.
+- Platzhalter-Builder in Meilenstein 2 durch `build()` ersetzt (ADR-014).

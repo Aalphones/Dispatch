@@ -11,6 +11,11 @@ return [
     'web_root' => Env::get('DISPATCH_WEB_ROOT') ?: dirname(__DIR__),
     // Namen der obersten Ebene, die der Builder nie beschreibt (ADR-001).
     'reserved_top_level' => ['card', 'api', 'backend', 'scanner', 'dispatch', 'dispatch-app', '.htaccess', '.well-known'],
+    // ADR-014: der Builder schreibt und löscht nur unter diesen Namen der obersten Ebene.
+    'builder_top_level' => [
+        'index.html', '404.html', 'feed.xml', 'sitemap.xml', 'robots.txt', 'seite', 'artikel', 'kategorie',
+        'kategorien', 'tag', 'suche', 'ueber', 'impressum', 'datenschutz', 'assets', 'media',
+    ],
     // Formvorgaben und Betriebsmodi: nur hier änderbar, nie per Service (SettingService → not_changeable).
     'form_rules' => [
         'min_sources' => 3,

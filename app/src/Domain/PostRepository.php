@@ -205,12 +205,12 @@ final class PostRepository
      * Der Live-Stand aller veröffentlichten Artikel — die einzige Quelle für die Website.
      * Der Snapshot der freigegebenen Revision, nie der Arbeitsstand.
      *
-     * @return list<array<string, mixed>> Snapshot plus `published_at`, neueste zuerst
+     * @return list<array<string, mixed>> Snapshot plus `published_at` und `updated_at` (= Erstellzeit der Live-Revision), neueste zuerst
      */
     public function livePosts(): array
     {
         $statement = $this->pdo->query(
-            "SELECT r.snapshot, p.published_at FROM posts p
+            "SELECT r.snapshot, p.published_at, r.created_at AS updated_at FROM posts p
              JOIN post_revisions r ON r.post_id = p.id AND r.revision = p.published_revision
              WHERE p.published_revision IS NOT NULL AND p.status <> 'archived'
              ORDER BY p.published_at DESC, p.id DESC"
@@ -220,6 +220,7 @@ final class PostRepository
         foreach ($statement->fetchAll() as $row) {
             $snapshot = json_decode((string) $row['snapshot'], true, 512, JSON_THROW_ON_ERROR);
             $snapshot['published_at'] = $row['published_at'];
+            $snapshot['updated_at'] = $row['updated_at'];
             $posts[] = $snapshot;
         }
 

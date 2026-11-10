@@ -31,7 +31,7 @@ Kontext, Scope, Abweichungen vom Konzept, Meilensteine: [`docs/PROJECT.md`](docs
 
 ## Lokal starten
 
-Voraussetzung lokal: PHP 8.5 (Erweiterungen `curl, fileinfo, gd, intl, mbstring, exif, openssl, pdo_mysql`) und MySQL 8.4 mit Datenbank `dispatch_dev` ([ADR-008](docs/decisions/008-zuschnitt-meilenstein-1-lokale-umgebung.md)). `dev.env.example` nach `app/.env.local` kopieren und ausfüllen ([ADR-006](docs/decisions/006-lokale-entwicklung-dev-router.md)), dann `php bin/dispatch migrate` und `php -S localhost:8080 -t public dev-router.php`.
+Voraussetzung lokal: PHP 8.5 (Erweiterungen `curl, fileinfo, gd, intl, mbstring, exif, openssl, pdo_mysql`) und MySQL 8.4 mit Datenbank `dispatch_dev` ([ADR-008](docs/decisions/008-zuschnitt-meilenstein-1-lokale-umgebung.md)). `dev.env.example` nach `app/.env.local` kopieren und ausfüllen ([ADR-006](docs/decisions/006-lokale-entwicklung-dev-router.md)), dann `php bin/dispatch migrate`, `php bin/dispatch seed`, `php bin/dispatch demo` (14 freigegebene Beispielartikel, nur auf leerer Datenbank) und `php -S localhost:8080 -t public dev-router.php`.
 
 ---
 

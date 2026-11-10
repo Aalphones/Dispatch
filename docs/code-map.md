@@ -25,7 +25,8 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `bridge/` | `dispatch/` | einziger PHP-Einstieg: `index.php` + `.htaccess` |
 | `web-root/.htaccess` | `.htaccess` | Wurzel-Regeln (ADR-003) |
 | — | `index.html`, `artikel/`, `assets/`, `media/`, … | vom Builder erzeugt, nie hochgeladen |
-| `bin/dispatch` | — | CLI, nur lokal (`hash-password`, `migrate`, `seed`; `build` ab Meilenstein 2) |
+| `bin/dispatch` | — | CLI, nur lokal (`hash-password`, `migrate`, `seed`, `demo`; `build` ab Phase 2 von Meilenstein 2) |
+| `bin/demo/` | — | Demo-Daten für `demo`: Kategorien, Artikelmetadaten, Bildgenerator (`demo.php`) und Artikeltexte (`<name>.html`); nur lokal, nicht im Webroot |
 | `deploy.cmd`, `deploy.env.example`, `deploy-backup/` | — | Deploy (ADR-005); Vorlage für `deploy.env`; Sicherung der Wurzel-`.htaccess` (nicht im Git) |
 | `dev-router.php`, `dev.env.example` | — | lokaler Server `php -S` mit Brücke und Sperre, Vorlage für `app/.env.local` (ADR-006) |
 

@@ -6,10 +6,126 @@
 use Dispatch\Db\Connection;
 use Dispatch\Db\Migrator;
 use Dispatch\Domain\Actor;
+use Dispatch\Domain\CategoryService;
+use Dispatch\Domain\DomainError;
+use Dispatch\Domain\MediaService;
+use Dispatch\Domain\PostService;
 use Dispatch\Domain\Seeder;
 
 if (PHP_SAPI !== 'cli') {
     exit(1);
+}
+
+const DEMO_COLORS = ['#1a5fb4', '#0b7a75', '#c2410c', '#7c3aed', '#be185d', '#4d7c0f', '#b45309', '#0e7490'];
+
+/**
+ * Legt Kategorien und Artikel aus bin/demo/ an und gibt die Artikel frei.
+ *
+ * @param array<string, mixed> $config
+ */
+function runDemo(PDO $pdo, array $config, string $demoDir, bool $force): void
+{
+    $existingPosts = (int) $pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn();
+    if ($existingPosts > 0 && !$force) {
+        throw new RuntimeException('Es gibt schon Artikel. Demo nur auf leerer Datenbank (php bin/dispatch demo --force legt trotzdem an).');
+    }
+    if (!extension_loaded('gd')) {
+        throw new RuntimeException('Die PHP-Erweiterung gd fehlt; sie erzeugt die Demo-Bilder.');
+    }
+
+    $demo = require $demoDir . '/demo.php';
+    $categoryIds = demoCategories(new CategoryService($pdo, $config), $demo['categories']);
+
+    $posts = new PostService($pdo, $config);
+    $media = new MediaService($pdo, $config);
+    $imageNumber = 0;
+    $postIds = [];
+
+    foreach ($demo['posts'] as $entry) {
+        $postIds[] = demoPost($posts, $media, $entry, $demoDir, $imageNumber);
+    }
+
+    // Nur Demo: Freigaben am selben Tag würden die Sortierung nicht zeigen.
+    $spread = $pdo->prepare('UPDATE posts SET published_at = UTC_TIMESTAMP() - INTERVAL ? DAY WHERE id = ?');
+    foreach ($postIds as $index => $postId) {
+        $spread->execute([$index * 3, $postId]);
+    }
+}
+
+/**
+ * @param list<array<string, mixed>> $categories Eltern vor Kindern
+ * @return array<string, int> Slug → ID
+ */
+function demoCategories(CategoryService $service, array $categories): array
+{
+    $ids = [];
+    foreach ($categories as $category) {
+        $fields = $category;
+        $parentSlug = $fields['parent'] ?? null;
+        unset($fields['parent']);
+        if ($parentSlug !== null) {
+            $fields['parent_id'] = $ids[$parentSlug];
+        }
+
+        try {
+            $record = $service->get($fields['slug']);
+        } catch (DomainError) {
+            $record = $service->create($fields, Actor::owner())['category'];
+        }
+        $ids[$fields['slug']] = (int) $record['id'];
+    }
+
+    return $ids;
+}
+
+/**
+ * @param array<string, mixed> $entry
+ * @return int ID des freigegebenen Artikels
+ */
+function demoPost(PostService $posts, MediaService $media, array $entry, string $demoDir, int &$imageNumber): int
+{
+    $storeImage = static function (bool $isPortrait) use ($media, $entry, &$imageNumber): string {
+        $imageNumber++;
+        $record = $media->store(
+            demoBild($imageNumber, DEMO_COLORS[$imageNumber % count(DEMO_COLORS)], $isPortrait),
+            [
+                'alt' => sprintf('Farbverlauf mit der Aufschrift „DISPATCH Demo %d“', $imageNumber),
+                'caption' => sprintf('Demo-Bild %d zum Artikel „%s“', $imageNumber, $entry['title']),
+                'credit' => 'DISPATCH Demo',
+                'license' => 'CC0 1.0',
+                'license_url' => 'https://creativecommons.org/publicdomain/zero/1.0/',
+            ],
+            'owner',
+            Actor::cli()
+        );
+
+        return (string) $record['uid'];
+    };
+
+    $coverUid = $storeImage(false);
+    $html = (string) file_get_contents($demoDir . '/' . $entry['file'] . '.html');
+    foreach ($entry['bilder'] as $position => $isPortrait) {
+        $html = str_replace('{{bild' . ($position + 1) . '}}', $storeImage($isPortrait), $html);
+    }
+
+    $input = array_diff_key($entry, ['file' => true, 'bilder' => true]);
+    $input['cover_media_uid'] = $coverUid;
+    $input['content_html'] = $html;
+
+    try {
+        $postId = (int) $posts->create($input, Actor::cli())['post']['id'];
+        $posts->submit($postId, Actor::cli());
+        $posts->approve($postId, Actor::owner());
+    } catch (DomainError $error) {
+        // Der Demo-Text ist dann falsch, nicht die Formprüfung.
+        fwrite(STDERR, json_encode($error->details, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . PHP_EOL);
+
+        throw new RuntimeException($entry['file'] . ': ' . $error->getMessage());
+    }
+
+    echo $posts->get($postId)['slug'], PHP_EOL;
+
+    return $postId;
 }
 
 $root = dirname(__DIR__);
@@ -33,6 +149,8 @@ Befehle:
   hash-password   liest eine Zeile von STDIN und gibt den Passwort-Hash aus
   migrate         wendet neue Migrationen aus app/migrations/ an
   seed            legt fehlende Einstellungen und Startdokumente an (Vorhandenes bleibt)
+  demo            legt Demo-Kategorien und 14 freigegebene Beispielartikel an (nur lokal, nur auf leerer
+                  Datenbank; --force legt trotzdem einen weiteren Satz an)
 
 TXT;
 
@@ -66,6 +184,10 @@ switch ($command) {
         foreach ($created as $key) {
             echo $key, PHP_EOL;
         }
+        break;
+
+    case 'demo':
+        runDemo(Connection::open(), $config, __DIR__ . '/demo', in_array('--force', $argv, true));
         break;
 
     default:

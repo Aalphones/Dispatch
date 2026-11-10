@@ -8,7 +8,7 @@ Nicht in diesem Meilenstein: alles, was nach dem Login sichtbar ist (Meilenstein
 
 | # | Phase | Rating | Status |
 |---|---|---|---|
-| 1 | [Demo-Inhalte und Live-Lesepfad ergänzen](phase-1-demo-inhalte.md) | standard | pending |
+| 1 | [Demo-Inhalte und Live-Lesepfad ergänzen](phase-1-demo-inhalte.md) | standard | complete |
 | 2 | [Builder-Kern: Sperre, Sammeln, Manifest, Medien, Layout](phase-2-builder-kern.md) | heikel | pending |
 | 3 | [Inhalt aufbereiten: Medien, Belege, Inhaltsverzeichnis, Markdown](phase-3-inhalt-markdown.md) | heikel | pending |
 | 4 | [Theme-CSS nach Entwurf](phase-4-theme-css.md) | standard | pending |

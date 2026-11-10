@@ -1,0 +1,87 @@
+<aside class="tldr"><p>Sprachmodelle schreiben überzeugend, auch wenn sie irren. Dieser Artikel zeigt, wie sich ihre Aussagen mit Quellen, Stichproben und einer einfachen Prüfroutine kontrollieren lassen.</p></aside>
+
+<p class="lead">Ein Sprachmodell klingt sicher, wenn es recht hat, und genauso sicher, wenn es danebenliegt. Wer seine Antworten nutzt, braucht deshalb eine Methode, sie nachzuprüfen.</p>
+
+<p class="dropcap">Wenn ein Modell einen Satz formuliert, wählt es das wahrscheinlichste nächste Wort. Ob der Satz stimmt, ist dabei keine Bedingung. Studien zur Zuverlässigkeit großer Modelle zeigen, dass die Trefferquote bei Faktenfragen stark schwankt: bei verbreiteten Themen hoch, bei Randthemen und jungen Ereignissen deutlich niedriger. <a data-cite="s1">Eine Untersuchung der Beispiel-Forschungsgemeinschaft</a> fand bei deutschsprachigen Fragen große Unterschiede zwischen den Fachgebieten.</p>
+
+<figure data-media="{{bild1}}" data-layout="inline"></figure>
+
+<h2>Warum Antworten überzeugen, obwohl sie falsch sind</h2>
+<aside class="tldr"><p>Flüssige Sprache ist kein Beleg. Modelle optimieren Wahrscheinlichkeit, nicht Wahrheit.</p></aside>
+
+<p>Menschen lesen Sicherheit als Kompetenz. Ein Modell setzt Zahlen, Namen und Jahreszahlen mit derselben Selbstverständlichkeit, ob sie belegt sind oder erfunden. Das Fachwort dafür ist Halluzination, es beschreibt Aussagen, die plausibel klingen und keine Grundlage haben.</p>
+
+<dl class="definition"><dt>Halluzination</dt><dd>Eine Aussage eines Sprachmodells, die sprachlich korrekt ist, aber nicht durch Daten oder Quellen gedeckt wird.</dd></dl>
+
+<blockquote class="pullquote">„Ein Text ist nicht deshalb wahr, weil er gut klingt.“<cite>— Aus einem Vortrag über den Umgang mit KI-Texten</cite></blockquote>
+
+<aside class="sidenote"><p>Auch gute Quellenangaben können erfunden sein. Eine Adresse, die ein Modell nennt, muss man öffnen, bevor man ihr traut.</p></aside>
+
+<h2>Drei Prüfstufen für den Alltag</h2>
+<aside class="tldr"><p>Erst Quelle öffnen, dann Zahl gegenprüfen, zuletzt den Kontext lesen.</p></aside>
+
+<p>Eine brauchbare Routine braucht keine Technik, nur Disziplin. Hochschulen, die Assistenten im Studium testen, setzen auf kurze Checklisten, die Studierende vor jeder Abgabe durchgehen (<a data-cite="s3">Beispiel-Bildungsmagazin</a>).</p>
+
+<ol class="steps"><li>Jede Zahl und jeden Namen aus der Antwort markieren.</li><li>Zu jeder markierten Stelle eine unabhängige Quelle öffnen.</li><li>Prüfen, ob die Quelle die Aussage trägt, nicht nur das Thema streift.</li><li>Nicht belegte Stellen streichen oder als offen kennzeichnen.</li></ol>
+
+<ul class="checklist"><li>Quelle öffnet sich und nennt Herausgeber und Datum</li><li>Zahl stimmt mit dem Original überein</li><li>Aussage ist nicht älter als der Gegenstand, über den sie spricht</li></ul>
+
+<div class="callout key"><p>Schlüssel: Eine Antwort ist erst geprüft, wenn eine zweite, unabhängige Stelle sie bestätigt.</p></div>
+
+<figure data-media="{{bild2}}" data-layout="wide"></figure>
+
+<h2>Was Messungen zeigen</h2>
+<aside class="tldr"><p>Auf einem deutschen Prüfsatz liegen die Modelle weit auseinander, die Streuung ist größer als der Unterschied im Mittel.</p></aside>
+
+<p>Der <a data-cite="s2">Prüfsatz für Faktenfragen in deutscher Sprache</a> umfasst 1.200 Fragen aus zwölf Fachgebieten. Er dient seit einem Jahr als Vergleichsmaßstab. Die wichtigsten Ergebnisse stehen hier zusammengefasst.</p>
+
+<div class="stats"><div class="stat"><strong>1.200</strong><span>Fragen im Prüfsatz</span></div><div class="stat"><strong>12</strong><span>Fachgebiete</span></div><div class="stat"><strong>31 Prozentpunkte</strong><span>Spanne zwischen bestem und schwächstem Modell</span></div></div>
+
+<table class="compare"><caption>Trefferquote nach Fachgebiet (Beispielwerte)</caption><thead><tr><th scope="col">Fachgebiet</th><th scope="col">Modell A</th><th scope="col">Modell B</th></tr></thead><tbody><tr><th scope="row">Geografie</th><td>91 %</td><td>84 %</td></tr><tr><th scope="row">Medizin</th><td>78 %</td><td>69 %</td></tr><tr><th scope="row">Rechtsfragen</th><td>64 %</td><td>52 %</td></tr></tbody></table>
+
+<div class="callout warning"><p>Achtung: Beispielwerte zeigen eine Größenordnung, keine Rangliste. Für eine echte Auswahl braucht es eigene Stichproben.</p></div>
+
+<figure data-media="{{bild3}}" data-layout="full"></figure>
+
+<h2>Vom Test zum Werkzeug</h2>
+<aside class="tldr"><p>Wer ein Modell einsetzt, sollte vorher festlegen, wie er Fehler bemerkt und wer sie korrigiert.</p></aside>
+
+<p>Behörden, die KI-Texte nutzen wollen, verlangen in ihrem <a data-cite="s5">Leitfaden</a> eine menschliche Endkontrolle und ein Verzeichnis der eingesetzten Systeme. Das klingt nach Bürokratie, verhindert aber, dass sich ein Fehler unbemerkt vervielfältigt.</p>
+
+<figure data-media="{{bild4}}" data-layout="left"></figure>
+
+<p>Eine Faustregel aus der Praxis: je größer der Schaden einer falschen Aussage, desto mehr Prüfschritte. Eine Ideensammlung für den Kaffeetisch verträgt Fehler, ein Bescheid oder eine Dosierungsangabe nicht. Fachleute raten außerdem, dieselbe Frage mehrmals und in anderen Worten zu stellen. Weichen die Antworten voneinander ab, ist das ein deutliches Warnsignal.</p>
+
+<figure data-media="{{bild5}}" data-layout="right"></figure>
+
+<p>Auch die Art der Frage zählt. Offene Bitten wie „Erkläre mir das Thema“ laden zum Ausschmücken ein, enge Fragen mit klarer Antwortform lassen weniger Raum. Wer das Modell zudem bittet, Unsicherheit zu benennen, erhält häufig Hinweise, wo nachzuprüfen lohnt.</p>
+
+<div class="factbox"><h3>Faktenbox: Prüfen in Zahlen</h3><ul><li>Drei Prüfstufen: Quelle, Zahl, Kontext</li><li>Jede Aussage mit Zahl braucht eine zweite Quelle</li><li>Hohe Schäden verlangen eine Endkontrolle durch Menschen</li></ul></div>
+
+<h2>Gegenüberstellung und Meinungen</h2>
+<aside class="tldr"><p>Modelle sparen Zeit, kosten aber Aufmerksamkeit beim Prüfen. Ob sich das lohnt, hängt vom Einsatz ab.</p></aside>
+
+<div class="two-col"><div class="pros"><h3>Dafür</h3><ul><li>Schneller erster Entwurf</li><li>Hilfreich bei Struktur und Formulierung</li><li>Rund um die Uhr verfügbar</li></ul></div><div class="cons"><h3>Dagegen</h3><ul><li>Fehler sind schwer zu sehen</li><li>Quellen können erfunden sein</li><li>Prüfen kostet die gesparte Zeit teilweise wieder</li></ul></div></div>
+
+<div class="opinion"><p>Meinung: Wer ein Modell ohne Prüfroutine einsetzt, spart am falschen Ende. Die Zeit, die das Schreiben kürzer wird, muss ins Nachlesen fließen, sonst verschiebt man nur das Risiko.</p></div>
+
+<dl class="qa"><dt>Muss ich jede Antwort prüfen?</dt><dd>Nein. Prüfen Sie, was Folgen hat: Zahlen, Namen, Zitate, Rechts- und Gesundheitsangaben.</dd><dt>Reicht es, das Modell nach seinen Quellen zu fragen?</dt><dd>Nein. Die Quellen können erfunden sein. Öffnen Sie jede Adresse selbst.</dd></dl>
+
+<details class="details"><summary>Wie lässt sich ein Prüfsatz selbst aufbauen?</summary><p>Sammeln Sie dreißig Fragen aus Ihrem Alltag, zu denen Sie die Antwort sicher kennen. Stellen Sie sie dem Modell, bewerten Sie die Antworten und wiederholen Sie den Test nach jeder neuen Modellversion.</p></details>
+
+<ol class="timeline"><li><time datetime="2023">2023</time> Erste Hochschulen erlauben Schreibassistenten.</li><li><time datetime="2024">2024</time> Prüfsätze in deutscher Sprache erscheinen.</li><li><time datetime="2025-12">Dezember 2025</time> Der Prüfsatz mit 1.200 Fragen wird veröffentlicht.</li><li><time datetime="2026-04">April 2026</time> Ein Leitfaden regelt den Einsatz in Behörden.</li></ol>
+
+<div class="callout note"><p>Hinweis: Dieser Text ist ein Demo-Artikel und enthält absichtlich jeden Baustein des Magazins.</p></div>
+
+<div class="update"><p><time datetime="2026-11-01">1. November 2026</time>: Wir haben die Spanne im Prüfsatz korrigiert und die Fachgebiete ergänzt.</p></div>
+
+<h2>Bilder, Video und weiterführende Quellen</h2>
+<aside class="tldr"><p>Vorträge und Bildserien zeigen die Methode in der Praxis.</p></aside>
+
+<div class="gallery" data-media="{{bild6}},{{bild7}},{{bild8}}"></div>
+
+<figure data-embed="youtube" data-id="aqz-KE-bpKQ"><figcaption>Vortrag: Prüfen statt glauben (YouTube, erst nach Klick geladen)</figcaption></figure>
+
+<p>Wer tiefer einsteigen will, findet im <a data-cite="s4">Einführungsbuch zu sprechenden Maschinen</a> eine ruhige, gut lesbare Erklärung der Grundlagen. Der <a data-cite="s6">aufgezeichnete Vortrag</a> zeigt die Prüfroutine an einem Beispiel aus der Verwaltung, vom ersten Entwurf bis zur Freigabe.</p>
+
+<p>Am Ende bleibt eine einfache Regel: Ein Modell ist ein Werkzeug für Entwürfe. Wahr wird ein Text erst, wenn ein Mensch die Belege gelesen hat und für den Inhalt einsteht.</p>

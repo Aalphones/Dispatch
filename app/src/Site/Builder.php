@@ -139,7 +139,29 @@ final class Builder
             + $this->collectTags()
             + $this->collectSearch()
             + $this->collectDocuments()
-            + $this->collectNotFound();
+            + $this->collectNotFound()
+            + $this->collectTechnical();
+    }
+
+    /** Feed, Sitemap und robots.txt. @return array<string, string> */
+    private function collectTechnical(): array
+    {
+        $baseUrl = rtrim((string) $this->config['base_url'], '/');
+
+        // Sperren, die es unter diesen Namen auf dem Server wirklich gibt (ADR-001, docs/PROJECT.md).
+        $robots = "User-agent: *\n"
+            . "Disallow: /dispatch/\n"
+            . "Disallow: /dispatch-app/\n"
+            . "Disallow: /vorschau/\n"
+            . "Disallow: /anmelden/\n"
+            . "Disallow: /suche/\n"
+            . 'Sitemap: ' . $baseUrl . "/sitemap.xml\n";
+
+        return [
+            'feed.xml' => Feed::build($this->site, $this->rendered, $baseUrl, (string) $this->config['storage_dir'] . '/media'),
+            'sitemap.xml' => Sitemap::build($this->site, $baseUrl),
+            'robots.txt' => $robots,
+        ];
     }
 
     /** Startseite: Seite 1 mit Aufmacher und `posts_per_page` Karten, danach `seite/{n}/`. @return array<string, string> */
@@ -155,7 +177,7 @@ final class Builder
         foreach ($pages as $index => $cards) {
             $number = $index + 1;
             $url = seitenUrl('/', $number);
-            $title = $siteTitle;
+            $title = $siteTitle . ' — ' . $this->site->settings['site_tagline'];
             if ($number > 1) {
                 $title = 'Ältere Artikel – Seite ' . $number . ' · ' . $siteTitle;
             }
@@ -218,6 +240,8 @@ final class Builder
                 'activeCategory' => $activeCategory,
                 'ogType' => 'article',
                 'ogImage' => $post['cover'],
+                'post' => $post,
+                'krumen' => $this->breadcrumbs($primary, $categories),
                 'scripts' => [$this->assetUrls['artikel']],
             ]);
         }

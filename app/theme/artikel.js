@@ -21,7 +21,8 @@ function trackSections() {
 	if (!links.length || !headings.length || !('IntersectionObserver' in window)) return;
 
 	const list = links[0].closest('ol');
-	const marker = create('span', 'marker', '');
+	const marker = create('li', 'marker', '');
+	marker.setAttribute('aria-hidden', 'true');
 	list.append(marker);
 	const select = (id) => {
 		const link = links.find((anchor) => anchor.getAttribute('href') === '#' + id);

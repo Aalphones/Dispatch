@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Dispatch\Site\Seo;
 use Dispatch\Site\SiteData;
 
 use function Dispatch\Site\datum;
@@ -17,7 +18,14 @@ use function Dispatch\Site\e;
 
 $siteTitle = (string) $site->settings['site_title'];
 $siteTagline = (string) $site->settings['site_tagline'];
-$description = (string) ($meta['description'] ?? '');
+$description = trim((string) ($meta['description'] ?? ''));
+if ($description === '') {
+    $description = trim((string) $site->settings['site_description']);
+}
+if ($description === '') {
+    $description = $siteTagline;
+}
+$meta['description'] = $description;
 $canonical = (string) ($meta['canonical'] ?? '');
 $robots = (string) ($meta['robots'] ?? 'index, follow');
 $activeCategory = (string) ($meta['activeCategory'] ?? '');
@@ -47,8 +55,14 @@ $topTags = array_slice($site->tags, 0, 10);
 <link rel="canonical" href="<?= e($baseUrl . $canonical) ?>">
 <?php } ?>
 <meta name="robots" content="<?= e($robots) ?>">
+<?php foreach (Seo::headTags($meta, $site, $baseUrl) as $headTag) { ?>
+<<?= $headTag['tag'] ?><?php foreach ($headTag['attributes'] as $attribute => $value) { ?> <?= $attribute ?>="<?= e($value) ?>"<?php } ?>>
+<?php } ?>
 <link rel="stylesheet" href="<?= e($assets['style']) ?>">
 <link rel="alternate" type="application/rss+xml" title="<?= e($siteTitle) ?>" href="/feed.xml">
+<?php foreach (Seo::jsonLd($meta, $site, $baseUrl) as $jsonLd) { ?>
+<script type="application/ld+json"><?= $jsonLd ?></script>
+<?php } ?>
 </head>
 <body data-seite="<?= e((string) ($meta['bodyPage'] ?? '')) ?>">
 <div class="fortschritt" aria-hidden="true"></div>

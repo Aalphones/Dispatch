@@ -6,6 +6,7 @@ namespace Dispatch\Site;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Dom\HTMLDocument;
 use IntlDateFormatter;
 
 function e(string $value): string
@@ -124,6 +125,45 @@ function dachzeile(array $post): string
 function quellenText(int $count): string
 {
     return $count . ($count === 1 ? ' Quelle' : ' Quellen');
+}
+
+/**
+ * Macht alle Adressen mit führendem `/` in `src`, `href` und `srcset` absolut — für Feed-Leser,
+ * die das HTML außerhalb der Website anzeigen.
+ */
+function absolut(string $html, string $baseUrl): string
+{
+    $document = HTMLDocument::createFromString('<!doctype html><body>' . $html, LIBXML_NOERROR, 'UTF-8');
+    $prefix = rtrim($baseUrl, '/');
+    $makeAbsolute = static function (string $address) use ($prefix): string {
+        $address = trim($address);
+        if (str_starts_with($address, '/') && !str_starts_with($address, '//')) {
+            return $prefix . $address;
+        }
+
+        return $address;
+    };
+
+    foreach ($document->querySelectorAll('[src], [href], [srcset]') as $element) {
+        foreach (['src', 'href'] as $attribute) {
+            if ($element->hasAttribute($attribute)) {
+                $element->setAttribute($attribute, $makeAbsolute($element->getAttribute($attribute)));
+            }
+        }
+        if ($element->hasAttribute('srcset')) {
+            $candidates = [];
+            foreach (explode(',', $element->getAttribute('srcset')) as $candidate) {
+                $parts = preg_split('/\s+/', trim($candidate), 2);
+                if ($parts === false || $parts[0] === '') {
+                    continue;
+                }
+                $candidates[] = trim($makeAbsolute($parts[0]) . ' ' . ($parts[1] ?? ''));
+            }
+            $element->setAttribute('srcset', implode(', ', $candidates));
+        }
+    }
+
+    return $document->body->innerHTML;
 }
 
 /** Adresse einer Listenseite; Seite 1 hat nie `seite/1/`. */

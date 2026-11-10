@@ -3,6 +3,7 @@
 
 // Lokale Kommandozeile (ADR-002/ADR-006): läuft nie auf dem Server.
 
+use Dispatch\Auth\Scopes;
 use Dispatch\Db\Connection;
 use Dispatch\Db\Migrator;
 use Dispatch\Domain\Actor;
@@ -10,7 +11,9 @@ use Dispatch\Domain\CategoryService;
 use Dispatch\Domain\DomainError;
 use Dispatch\Domain\MediaService;
 use Dispatch\Domain\PostService;
+use Dispatch\Domain\ReactionService;
 use Dispatch\Domain\Seeder;
+use Dispatch\Domain\TokenService;
 use Dispatch\Site\Builder;
 
 if (PHP_SAPI !== 'cli') {
@@ -129,6 +132,139 @@ function demoPost(PostService $posts, MediaService $media, array $entry, string 
     return $postId;
 }
 
+/**
+ * Liest KEY=VALUE-Zeilen (ohne Kommentare, ohne Anführungszeichen um den Wert).
+ *
+ * @return array<string, string>
+ */
+function readDeployEnv(string $path): array
+{
+    if (!is_file($path)) {
+        throw new RuntimeException('deploy.env fehlt im Repo-Wurzelverzeichnis. Vorlage: deploy.env.example.');
+    }
+
+    $values = [];
+    foreach (file($path, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) {
+            continue;
+        }
+        [$key, $value] = explode('=', $line, 2);
+        $values[trim($key)] = trim(trim($value), '"\'');
+    }
+
+    return $values;
+}
+
+/**
+ * Ruft POST /dispatch/api/tokens auf (Deploy-Token aus deploy.env).
+ *
+ * @param array<string, mixed> $payload
+ * @return array{result: array<string, mixed>, baseUrl: string}
+ */
+function callTokenEndpoint(string $deployEnvPath, array $payload): array
+{
+    $env = readDeployEnv($deployEnvPath);
+    foreach (['PUBLIC_BASE_URL', 'DISPATCH_DEPLOY_TOKEN'] as $key) {
+        if (($env[$key] ?? '') === '') {
+            throw new RuntimeException('In deploy.env fehlt ' . $key . '.');
+        }
+    }
+    if (!extension_loaded('curl')) {
+        throw new RuntimeException('Die PHP-Erweiterung curl fehlt; --remote braucht sie.');
+    }
+
+    $baseUrl = rtrim($env['PUBLIC_BASE_URL'], '/');
+    $curl = curl_init($baseUrl . '/dispatch/api/tokens');
+    curl_setopt_array($curl, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $env['DISPATCH_DEPLOY_TOKEN'],
+            'Content-Type: application/json',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 30,
+    ]);
+    $body = curl_exec($curl);
+    $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+    $curlError = curl_error($curl);
+
+    if ($body === false) {
+        throw new RuntimeException('Der Server ist nicht erreichbar: ' . $curlError);
+    }
+    $result = json_decode((string) $body, true);
+    if (!is_array($result)) {
+        throw new RuntimeException(sprintf('Unerwartete Antwort vom Server (HTTP %d).', $status));
+    }
+    if ($status >= 400) {
+        throw new RuntimeException(sprintf('%s (%s, HTTP %d)', (string) ($result['message'] ?? 'Fehler'), (string) ($result['error'] ?? '?'), $status));
+    }
+
+    return ['result' => $result, 'baseUrl' => $baseUrl];
+}
+
+/** @param array<string, mixed> $created */
+function printCreatedToken(array $created, string $baseUrl): void
+{
+    echo 'Token-ID:  ', $created['id'], PHP_EOL;
+    echo 'Name:      ', $created['name'], PHP_EOL;
+    echo 'Scopes:    ', implode(' ', $created['scopes']), PHP_EOL;
+    echo 'Läuft ab:  ', $created['expires_at'] === null ? 'nie' : $created['expires_at'] . ' UTC', PHP_EOL;
+    echo 'Token (wird nur jetzt angezeigt):', PHP_EOL, $created['token'], PHP_EOL, PHP_EOL;
+    echo 'Claude Code:', PHP_EOL;
+    echo sprintf(
+        'claude mcp add --transport http dispatch %s/dispatch/mcp --header "Authorization: Bearer %s"',
+        rtrim($baseUrl, '/'),
+        $created['token']
+    ), PHP_EOL;
+}
+
+/** @param list<array<string, mixed>> $tokens */
+function printTokenTable(array $tokens): void
+{
+    if ($tokens === []) {
+        echo 'Keine Tokens.', PHP_EOL;
+
+        return;
+    }
+
+    echo sprintf('%-4s %-20s %-30s %-20s %-10s %s', 'ID', 'Name', 'Scopes', 'Läuft ab', 'Widerrufen', 'Zuletzt benutzt'), PHP_EOL;
+    foreach ($tokens as $token) {
+        echo sprintf(
+            '%-4d %-20s %-30s %-20s %-10s %s',
+            $token['id'],
+            $token['name'],
+            implode(' ', $token['scopes']),
+            $token['expires_at'] ?? '-',
+            $token['revoked'] ? 'ja' : 'nein',
+            $token['last_used_at'] ?? '-'
+        ), PHP_EOL;
+    }
+}
+
+/**
+ * Trennt Argumente nach dem Befehl in Optionen (--name=wert, --flag) und freie Argumente.
+ *
+ * @param list<string> $arguments
+ * @return array{options: array<string, string|true>, positional: list<string>}
+ */
+function parseArguments(array $arguments): array
+{
+    $options = [];
+    $positional = [];
+    foreach ($arguments as $argument) {
+        if (!str_starts_with($argument, '--')) {
+            $positional[] = $argument;
+            continue;
+        }
+        $parts = explode('=', substr($argument, 2), 2);
+        $options[$parts[0]] = $parts[1] ?? true;
+    }
+
+    return ['options' => $options, 'positional' => $positional];
+}
+
 $root = dirname(__DIR__);
 $envFile = $root . '/app/.env.local';
 if ((string) getenv('DISPATCH_ENV_FILE') === '' && is_file($envFile)) {
@@ -153,6 +289,14 @@ Befehle:
   demo            legt Demo-Kategorien und 14 freigegebene Beispielartikel an (nur lokal, nur auf leerer
                   Datenbank; --force legt trotzdem einen weiteren Satz an)
   build           baut die statische Website aus den Live-Ständen in die Webroot (löscht nur, was im Manifest steht)
+  token:create <name> [--scopes=blog:read,blog:write] [--days=N] [--remote]
+                  legt ein MCP-Token an und zeigt den Klartext einmalig (--remote: auf dem Server über deploy.env)
+  token:list [--remote]
+                  zeigt die MCP-Tokens ohne Hash
+  token:revoke <id> [--remote]
+                  widerruft ein MCP-Token
+  reaction <slug> more|less|none [Notiz]
+                  setzt oder löscht „Mehr davon / Weniger“ für einen Artikel
 
 TXT;
 
@@ -201,6 +345,77 @@ switch ($command) {
             $result['deleted'],
             $result['ms']
         ), PHP_EOL;
+        break;
+
+    case 'token:create':
+        ['options' => $options, 'positional' => $positional] = parseArguments(array_slice($argv, 2));
+        $tokenName = $positional[0] ?? '';
+        if ($tokenName === '') {
+            throw new RuntimeException('Name fehlt. Beispiel: php bin/dispatch token:create claude-code');
+        }
+        $scopeOption = is_string($options['scopes'] ?? null) ? $options['scopes'] : 'blog:read,blog:write';
+        $daysOption = null;
+        if (isset($options['days'])) {
+            $daysText = (string) $options['days'];
+            if (preg_match('/^\d+$/', $daysText) !== 1) {
+                throw new RuntimeException('--days braucht eine ganze Zahl, z. B. --days=30.');
+            }
+            $daysOption = (int) $daysText;
+        }
+
+        if (isset($options['remote'])) {
+            $reply = callTokenEndpoint($root . '/deploy.env', [
+                'action' => 'create',
+                'name' => $tokenName,
+                'scopes' => Scopes::parse($scopeOption),
+                'expires_days' => $daysOption,
+            ]);
+            printCreatedToken($reply['result'], $reply['baseUrl']);
+            break;
+        }
+        $created = (new TokenService(Connection::open()))->create($tokenName, $scopeOption, $daysOption, Actor::cli());
+        printCreatedToken($created, (string) $config['base_url']);
+        break;
+
+    case 'token:list':
+        ['options' => $options] = parseArguments(array_slice($argv, 2));
+        if (isset($options['remote'])) {
+            $tokens = callTokenEndpoint($root . '/deploy.env', ['action' => 'list'])['result']['tokens'];
+        } else {
+            $tokens = (new TokenService(Connection::open()))->list();
+        }
+        printTokenTable($tokens);
+        break;
+
+    case 'token:revoke':
+        ['options' => $options, 'positional' => $positional] = parseArguments(array_slice($argv, 2));
+        if (preg_match('/^\d+$/', $positional[0] ?? '') !== 1) {
+            throw new RuntimeException('ID fehlt. Beispiel: php bin/dispatch token:revoke 3 (IDs: token:list)');
+        }
+        $tokenId = (int) $positional[0];
+        if (isset($options['remote'])) {
+            callTokenEndpoint($root . '/deploy.env', ['action' => 'revoke', 'id' => $tokenId]);
+        } else {
+            (new TokenService(Connection::open()))->revoke($tokenId, Actor::cli());
+        }
+        echo 'Token ', $tokenId, ' widerrufen.', PHP_EOL;
+        break;
+
+    case 'reaction':
+        $slug = $argv[2] ?? '';
+        $reactionName = $argv[3] ?? '';
+        $reactionNote = isset($argv[4]) ? implode(' ', array_slice($argv, 4)) : null;
+        if ($slug === '' || !in_array($reactionName, ['more', 'less', 'none'], true)) {
+            throw new RuntimeException('Aufruf: php bin/dispatch reaction <slug> more|less|none [Notiz]');
+        }
+        $reactionPdo = Connection::open();
+        try {
+            $reactionPostId = (int) (new PostService($reactionPdo, $config))->getBySlug($slug)['id'];
+        } catch (DomainError $error) {
+            throw new RuntimeException($error->getMessage());
+        }
+        (new ReactionService($reactionPdo))->set($reactionPostId, $reactionName === 'none' ? null : $reactionName, $reactionNote, Actor::cli());
+        echo $reactionName === 'none' ? 'Reaktion gelöscht: ' : 'Reaktion gesetzt (' . $reactionName . '): ', $slug, PHP_EOL;
         break;
 
     default:

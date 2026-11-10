@@ -4,7 +4,7 @@ Feature → Ordner. Bewusst grob, keine Zeilennummern. Gerüst (Bootstrap, Http,
 
 ## Namensschema (erst raten, dann suchen)
 
-Eine Domäne `<x>` (post, source, media, queue, category, document, change, setting, stats, token) heißt in jeder Schicht gleich:
+Eine Domäne `<x>` (post, source, media, queue, category, document, change, setting, stats, token, reaction) heißt in jeder Schicht gleich:
 
 | Schicht | Datei |
 |---|---|
@@ -25,7 +25,7 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `bridge/` | `dispatch/` | einziger PHP-Einstieg: `index.php` + `.htaccess` |
 | `web-root/.htaccess` | `.htaccess` | Wurzel-Regeln (ADR-003) |
 | — | `index.html`, `artikel/`, `assets/`, `media/`, … | vom Builder erzeugt, nie hochgeladen |
-| `bin/dispatch` | — | CLI, nur lokal (`hash-password`, `migrate`, `seed`, `demo`; `build`) |
+| `bin/dispatch` | — | CLI, lokal (`hash-password`, `migrate`, `seed`, `demo`, `build`, `token:create|list|revoke` auch mit `--remote` gegen den Server über `deploy.env`, `reaction`) |
 | `bin/demo/` | — | Demo-Daten für `demo`: Kategorien, Artikelmetadaten, Bildgenerator (`demo.php`) und Artikeltexte (`<name>.html`); nur lokal, nicht im Webroot |
 | `deploy.cmd`, `deploy.env.example`, `deploy-backup/` | — | Deploy (ADR-005); Vorlage für `deploy.env`; Sicherung der Wurzel-`.htaccess` (nicht im Git) |
 | `dev-router.php`, `dev.env.example` | — | lokaler Server `php -S` mit Brücke und Sperre, Vorlage für `app/.env.local` (ADR-006) |
@@ -40,16 +40,16 @@ Seitentypen der öffentlichen Website: `app/templates/<seitentyp>.php` (home, ar
 | `config.php` | Basis-URL, Pfade, Formvorgaben, reservierte Namen der obersten Ebene |
 | `src/Mcp/` | Protokoll (beide Generationen), Tool-Registry, `Tools/` |
 | `src/OAuth/` | Discovery, CIMD, Autorisierung, Token, Widerruf |
-| `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`) |
-| `src/Auth/` | Deploy-Token (`DeployToken`), JWT, Login-Bremse, MCP-Tokens, Scopes |
+| `src/Api/` | Redaktions-API-Controller, Deploy-Endpunkt (`DeployController`), Token-Endpunkt für `--remote` (`TokenController`) |
+| `src/Auth/` | Deploy-Token (`DeployToken`), Scopes (`Scopes`), JWT, Login-Bremse |
 | `src/Db/` | PDO-Verbindung (`Connection`), `Migrator`, `Transaction::run`/`join` (nur DML) |
-| `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll); Einstellungen, Dokumente, Kategorien, Änderungsvorschläge (`SettingService`, `DocumentService`, `CategoryService`, `ChangeService` + Repositories); Medien (`MediaService`, `MediaRepository`); Artikel mit Quellen, Kategorien und Revisionen (`PostService`, `PostRepository`); Queue mit Reservierung (`QueueService`, `QueueRepository`); `Seeder` (Startinhalte) |
+| `src/Domain/` | Services und Repositories je Domäne; `Actor` (Akteur), `DomainError` (fachlicher Fehler), `AuditRepository` (Protokoll); Einstellungen, Dokumente, Kategorien, Änderungsvorschläge (`SettingService`, `DocumentService`, `CategoryService`, `ChangeService` + Repositories); Medien (`MediaService`, `MediaRepository`); Artikel mit Quellen, Kategorien und Revisionen (`PostService`, `PostRepository`); Queue mit Reservierung (`QueueService`, `QueueRepository`); MCP-Tokens (`TokenService`, `TokenRepository`); Reaktionen „Mehr davon / Weniger“ (`ReactionService`, `ReactionRepository`); `Seeder` (Startinhalte) |
 | `src/Site/` | `SiteData` (Live-Stand einmal pro Lauf geladen), `Builder` (`build()` mit `GET_LOCK`, Sammeln im Speicher, Schreiben, Medienkopie, Löschen über das Manifest; `assertWritable`), `Assets` (Theme-Dateien als `assets/<name>.<hash>.<ext>`), `Manifest`, `ContentRenderer` (Artikel-HTML → responsive `<picture>`, Galerien, Zwei-Klick-Einbettungen, Beleg-Fußnoten, h2-IDs, Kurz-gesagt-Titel; nur DOM-API), Template-Helfer in `functions.php` (`e`, `datum`, `seitenUrl`, `varianten`, `picture`); `SearchIndex` (JSON-Suchindex nach Kontrakt, Ablage `assets/suchindex.<hash>.json`); `Seo` (Theme-Farbe, OpenGraph, JSON-LD, Vorschaubild `shareImage`), `Feed` (RSS 2.0, `absolut()` in `functions.php`), `Sitemap`; `robots.txt` entsteht in `Builder::collectTechnical()` |
 | `src/Util/` | `Env`, `Log`; `Sanitizer` + `SanitizeResult` (HTML-Whitelist, ADR-010); `HttpClient` + `HttpResponse` (einziger Weg nach außen, SSRF-Schutz, ADR-011); `ImageProcessor` + `ImageResult` (Bildvarianten, EXIF-Entfernung); `Text` (Slug, Wortzahl, Klartext); `Markdown` (Dokumentseiten → HTML, durch den Sanitizer); `FormCheck` + `FormCheckResult` (reine Formprüfung, ADR-012); Zeit folgt |
 | `templates/` | PHP-Templates der Website: `layout.php` (Kopf, Fuß, Skripte) plus je Seitentyp eine Vorlage (`home.php`, `404.php`), die nur den Inhalt von `<main>` liefert |
 | `theme/` | `style.css`, `site.js` (Kürzel, Nachladen, `--nav-h`), `suche.js` (Vorschläge + Suchseite, lädt den Suchindex), `artikel.js` (Inhaltsverzeichnis, Fokus, Lightbox, Videos); Builder legt sie hash-benannt unter `assets/` ab |
 | `defaults/` | Startinhalte als Markdown: `editorial_guidelines`, `preferences`, `about`, `imprint`, `privacy` (`Domain/Seeder` legt sie an) |
-| `migrations/` | nummerierte SQL-Dateien; 001–009: Einstellungen, Dokumente, Kategorien, Medien, Artikel mit Quellen, Queue, Änderungsvorschläge, Statistik, Audit (Spalten: [`models.md`](models.md)) |
+| `migrations/` | nummerierte SQL-Dateien; 001–011: Einstellungen, Dokumente, Kategorien, Medien, Artikel mit Quellen, Queue, Änderungsvorschläge, Statistik, Audit, Tokens, Reaktionen (Spalten: [`models.md`](models.md)) |
 | `storage/` | `manifest.json` (vom Builder geschriebene Dateien), `media/<uid>/` (`original.<ext>` und Varianten `<w>.webp` + `<w>.jpg`/`.png`), `logs/` — nur auf dem Server und lokal, nicht im Git |
 
 ## Faustregeln

@@ -2,7 +2,7 @@
 
 Quelle sind die Migrationen in `app/migrations/`. Alle Tabellen: InnoDB, `utf8mb4_unicode_ci`. Zeitspalten sind UTC, geschrieben mit `UTC_TIMESTAMP()`. JSON-Spalten werden nur gespeichert, nie im SQL abgefragt ([ADR-008](decisions/008-zuschnitt-meilenstein-1-lokale-umgebung.md)). `schema_migrations` (`filename` PK, `applied_at`) führt der Migrator selbst.
 
-Nicht in Meilenstein 1: `tokens` (M3), `login_attempts` (M4), `oauth_clients`, `oauth_codes` (M5).
+Nicht in Meilenstein 1: `login_attempts` (M4), `oauth_clients`, `oauth_codes` (M5).
 
 ## settings (001)
 
@@ -269,3 +269,28 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 | `action` | VARCHAR(60) | `<domäne>.<verb>` |
 | `target` | VARCHAR(160) | `<domäne>:<schlüssel>` |
 | `details` | JSON NULL | leer → `NULL` |
+
+## tokens (010)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `token_hash` | CHAR(64) | UNIQUE; SHA-256 (hex) des Klartexts |
+| `kind` | ENUM | `mcp`, `oauth_access`, `oauth_refresh`, `owner_refresh`; M3 nutzt nur `mcp`; Index mit `revoked` |
+| `name` | VARCHAR(120) | bei `mcp`: `^[a-z0-9][a-z0-9-]{0,39}$`, eindeutig unter nicht widerrufenen |
+| `client_id` | VARCHAR(500) NULL | OAuth (M5) |
+| `scope` | VARCHAR(200) | Scopes durch Leerzeichen getrennt |
+| `family` | CHAR(32) NULL | OAuth-Refresh-Familie (M5) |
+| `expires_at` | DATETIME NULL | `NULL` = läuft nie ab |
+| `revoked` | TINYINT(1) | Default 0 |
+| `last_used_at` | DATETIME NULL | bei jeder erfolgreichen Anmeldung |
+| `created_at` | DATETIME | |
+
+## post_reactions (011)
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `post_id` | INT UNSIGNED | PK, FK → `posts.id` CASCADE |
+| `reaction` | ENUM | `more`, `less`; keine Reaktion = Zeile gelöscht |
+| `note` | VARCHAR(500) NULL | |
+| `updated_at` | DATETIME | |

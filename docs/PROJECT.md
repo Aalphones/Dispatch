@@ -62,7 +62,14 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 | `app/` und `storage/` über dem Document Root | `www/dispatch-app/`, komplett gesperrt (ADR-002) |
 | Zugangsdaten per `SetEnv`, `.env` als Rückfall | nur `.env` in `www/dispatch-app/`, geschrieben vom Deploy (ADR-002); Phase 0 prüft `SetEnv` nicht mehr |
 | `.htaccess` mit globaler CSP, `ErrorDocument`, Caching | Blog-Regeln nur in einem Block, der die Nachbarordner ausnimmt (ADR-003) |
-| `robots.txt` sperrt `/api/`, `/mcp`, `/oauth/` | sperrt `/dispatch/`, `/dispatch-app/`, `/vorschau/`, `/anmelden/` |
+| `robots.txt` sperrt `/api/`, `/mcp`, `/oauth/` | sperrt `/dispatch/`, `/dispatch-app/`, `/vorschau/`, `/anmelden/`, `/suche/` |
+| Gestaltung nur beschrieben | verbindlicher Entwurf `docs/design/entwurf-website.html` (ADR-013) |
+| Archiv `/archiv/`, Übersicht `/schlagwoerter/`, Filter Jahr und Format | entfallen; Seitenzahlen, Kategorien, Schlagwort-Seiten und Suche mit additiven Schlagwort-, Kategorie- und Sortierfiltern (ADR-013) |
+| Login-Link in der Fußzeile | Knopf „Anmelden" oben rechts im Kopf plus `/#anmelden` (ADR-013) |
+| Redaktionsleiste über der Seite | Redaktion in die Seite eingebaut: Konto-Menü, „Wartet auf dich", Redaktionskasten, Interesse an den Kategorie-Karten, schwebender Knopf „Thema einreichen" (ADR-013) |
+| Dialoge für Kategorien erst „später" | Interessen-Dialog (Gewichte, Stichwörter) mit Meilenstein 4; dazu „Mehr davon / Weniger" an Artikeln und Anmerkungen an einzelnen Stellen der Vorschau (ADR-013) |
+| CSS < 30 KB, ein `site.js` < 5 KB | `style.css` ≤ 48 000 Byte, `site.js` ≤ 5 000 plus nachgeladene `suche.js` und `artikel.js` (ADR-015) |
+| Builder baut Hüllen für Vorschau und Zustimmung | Vorschau mit Meilenstein 4, Zustimmung mit Meilenstein 5 (ADR-013) |
 | PHP 8.3, PHPUnit, Tests in den Abnahmen | PHP 8.5, keine automatisierten Tests, Abnahme per Handprüfung (ADR-004) |
 | Deployment per SFTP oder `git pull` | `deploy.cmd` mit Nachprüfung (ADR-005) |
 | `/` auf der Domain | bisher Weiterleitung nach `/card/`, künftig die Startseite des Blogs |
@@ -74,9 +81,9 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 
 0. **Strato-Probe und Deploy-Skript:** Brücke, gesperrter Code-Ordner, Wurzel-`.htaccess`, Diagnose-Route (PHP-Version, Erweiterungen, Authorization-Header, MySQL, ausgehendes HTTPS, GD mit WebP), `deploy.cmd` mit Rauchtest der Nachbarn. Bis der Builder läuft (Meilenstein 2), zeigt `/` eine statische Platzhalter-Seite mit Name und Unterzeile; die Weiterleitung nach `/card/` entfällt schon jetzt.
 1. **Kern (erledigt):** Migrationen, Domänen-Services, Sanitizer, Formprüfung, Medien, Queue, Statistik-Tabellen, Audit-Log, CLI `bin/dispatch`.
-2. **Builder und Theme:** alle Seitentypen, Suche, Feed, Sitemap, Manifest-Aufräumen.
-3. **MCP-Server mit Tokens.**
-4. **Redaktions-API und Redaktionsmodus.**
+2. **Builder und Theme:** alle Seitentypen nach Entwurf, Suche mit additiven Filtern, Fokusmodus, Feed, Sitemap, Manifest-Aufräumen (Plan: `docs/planning/2026-11-10_meilenstein-2-builder-theme/`).
+3. **MCP-Server mit Tokens.** Das Briefing enthält zusätzlich die „Mehr davon / Weniger"-Reaktionen des Inhabers.
+4. **Redaktions-API und Redaktionsmodus** nach Entwurf, inklusive Interessen-Dialog, „Mehr davon / Weniger" und Anmerkungen an Stellen der Vorschau.
 5. **OAuth 2.1** für die Claude-Apps.
 6. **Probebetrieb** mit geplanter Claude-Aufgabe.
 
@@ -84,9 +91,7 @@ Abnahmen je Phase: Konzept → „Umsetzungsplan", ohne die dort genannten autom
 
 ## Offene Fragen
 
-- **Sprache:** Name und Unterzeile sind englisch, das Konzept deutsch. Erscheinen Artikel, Oberfläche und URL-Pfade (`/artikel/`, `/kategorie/`, `/ueber/`) auf Deutsch oder Englisch?
 - Kategorienbaum zum Start (Haupt- und Unterkategorien, Gewichte).
-- Login-Einstieg: Link in der Fußzeile oder nur `/#anmelden`.
 - Rhythmus der geplanten Aufgabe (Vorschlag: dreimal pro Woche).
 - Mindestwerte bestätigen: 3 Quellen und 600 Wörter, bei Tiefenrecherche 5 Quellen und 1200 Wörter.
 - Wortlaut des Transparenzhinweises.

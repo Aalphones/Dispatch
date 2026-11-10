@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entwurf DISPATCH – Website und Redaktionsmodus (Meilenstein 2 und 4)</title>
+<style>
+/* ================= Tokens ================= */
+:root {
+  --paper: #f6f1e7; --paper-2: #efe7d8; --paper-3: #e6dcc9;
+  --ink: #1d1a16; --ink-2: #4a443b; --ink-3: #6f675b;
+  --rule: #cfc4b0; --rule-strong: #1d1a16;
+  --accent: #b3261e; --accent-ink: var(--accent);
+  --accent-soft: color-mix(in oklab, var(--accent-ink) 12%, var(--paper));
+  --accent-line: color-mix(in oklab, var(--accent-ink) 40%, transparent);
+  --ok: #2e6b3a; --warn: #9a5b00; --bad: #a3261e;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Charter, "Bitstream Charter", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --measure: 38rem; --wide: 74rem; --side: 12rem; --gap: 3rem;
+  --t-fast: 140ms; --t-mid: 260ms; --t-slow: 520ms;
+  --ease-out: cubic-bezier(.2,.7,.2,1); --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --shadow-1: 0 1px 2px rgba(29,26,22,.06), 0 4px 14px rgba(29,26,22,.07);
+  --shadow-2: 0 2px 6px rgba(29,26,22,.08), 0 18px 48px rgba(29,26,22,.16);
+  --nav-h: 2.9rem;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.hell) { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: color-mix(in oklab, var(--accent) 55%, white); --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
+}
+:root.dunkel { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: color-mix(in oklab, var(--accent) 55%, white); --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
+
+@view-transition { navigation: auto; }
+
+* { box-sizing: border-box; }
+html { background: var(--paper); color: var(--ink); scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 1.5rem); }
+body { margin: 0; font: 1.125rem/1.6 var(--serif); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+a { color: inherit; text-decoration-color: var(--rule); text-underline-offset: .18em; transition: text-decoration-color var(--t-fast); }
+a:hover { text-decoration-color: var(--accent-ink); }
+:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 2px; border-radius: 3px; }
+button { font: inherit; color: inherit; }
+img { max-width: 100%; display: block; }
+.sprung { position: absolute; left: -999px; } .sprung:focus { left: 1rem; top: 1rem; background: var(--ink); color: var(--paper); padding: .5rem 1rem; z-index: 99; }
+.wrap { max-width: var(--wide); margin: 0 auto; padding: 0 1.25rem; }
+.klein { font: 600 .72rem/1.3 var(--sans); letter-spacing: .08em; text-transform: uppercase; }
+.ico { width: 1em; height: 1em; vertical-align: -.125em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.nur-schmal { display: none !important; }
+
+.fortschritt { position: fixed; inset: 0 0 auto 0; height: 3px; background: var(--accent-ink); transform-origin: 0 50%; transform: scaleX(0); z-index: 60; }
+@supports (animation-timeline: scroll()) {
+  .fortschritt { animation: fortschritt linear both; animation-timeline: scroll(root); }
+  @keyframes fortschritt { to { transform: scaleX(1); } }
+}
+
+/* ================= Kopf ================= */
+.leiste { border-bottom: 1px solid var(--rule); position: relative; z-index: 30; }
+.leiste .wrap { display: flex; gap: 1rem; align-items: center; min-height: 3.4rem; color: var(--ink-3); }
+.ausgabe { cursor: help; text-decoration: underline dotted var(--rule); text-underline-offset: .3em; white-space: nowrap; }
+.kopf-rechts { margin-left: auto; display: flex; align-items: center; gap: .6rem; min-width: 0; }
+
+.suche { position: relative; width: 17rem; flex: none; transition: width var(--t-mid) var(--ease-out); }
+.suche:focus-within { width: min(34rem, 60vw); }
+.suche-feld { display: flex; align-items: center; gap: .55rem; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 999px; padding: .42rem .5rem .42rem .9rem; cursor: text; transition: border-color var(--t-fast), background var(--t-fast), box-shadow var(--t-mid) var(--ease-out); }
+.suche-feld:hover { border-color: var(--ink-3); }
+.suche:focus-within .suche-feld { background: var(--paper); border-color: var(--accent-ink); box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-1); }
+.suche-feld .ico { color: var(--ink-3); transition: transform var(--t-mid) var(--ease-spring), color var(--t-fast); }
+.suche:focus-within .suche-feld .ico { transform: rotate(-12deg) scale(1.12); color: var(--accent-ink); }
+.suche-feld input { flex: 1; min-width: 0; width: 100%; border: 0; background: transparent; font: .95rem var(--sans); color: var(--ink); outline: none; text-overflow: ellipsis; }
+.suche-feld input::placeholder { color: var(--ink-3); }
+.suche-feld input::-webkit-search-cancel-button { display: none; }
+kbd { font: 600 .68rem var(--sans); border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: .05rem .38rem; background: var(--paper); color: var(--ink-2); white-space: nowrap; }
+.taste { transition: opacity var(--t-fast); }
+.suche:focus-within .taste { opacity: 0; }
+.suche-zu { display: none; border: 0; background: none; color: var(--ink-2); font: 600 .85rem var(--sans); cursor: pointer; padding: .3rem .4rem; }
+.panel { position: absolute; left: 0; right: 0; top: calc(100% + .5rem); background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--shadow-2); padding: .5rem; opacity: 0; transform: translateY(-6px) scale(.98); transform-origin: top center; pointer-events: none; visibility: hidden; transition: opacity var(--t-mid) var(--ease-out), transform var(--t-mid) var(--ease-out), visibility 0s linear var(--t-mid); max-height: 70vh; overflow: auto; }
+.suche:focus-within .panel { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.panel h3 { font: 700 .66rem var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); margin: .6rem .6rem .35rem; }
+.panel ul { list-style: none; margin: 0; padding: 0; }
+.panel .reihe { display: flex; flex-wrap: wrap; gap: .35rem; padding: 0 .5rem .3rem; }
+.treffer a { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); gap: .75rem; align-items: center; padding: .5rem; border-radius: 8px; text-decoration: none; transition: background var(--t-fast); animation: rein var(--t-mid) var(--ease-out) both; }
+.treffer li:nth-child(2) a { animation-delay: 40ms; } .treffer li:nth-child(3) a { animation-delay: 80ms; }
+.treffer a:hover, .treffer a.sel { background: var(--paper-2); }
+.treffer img { width: 3.2rem; height: 2.4rem; object-fit: cover; border-radius: 5px; }
+.treffer .t { font: 700 .98rem/1.25 var(--serif); display: block; }
+.treffer .s { font: .8rem/1.35 var(--sans); color: var(--ink-3); display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+mark { background: var(--accent-soft); color: var(--ink); padding: 0 .1em; border-radius: 2px; box-shadow: inset 0 -2px 0 var(--accent-line); }
+.panel-fuss { display: flex; gap: .9rem; border-top: 1px solid var(--rule); margin-top: .4rem; padding: .5rem .6rem .2rem; font: .72rem var(--sans); color: var(--ink-3); }
+.leer { font: .85rem var(--sans); color: var(--ink-3); padding: .4rem .6rem; }
+
+.konto { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid var(--rule); background: transparent; border-radius: 999px; padding: .38rem .8rem .38rem .45rem; font: 600 .82rem var(--sans); color: var(--ink-2); cursor: pointer; white-space: nowrap; flex: none; transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast); }
+.konto:hover { border-color: var(--ink-3); background: var(--paper-2); }
+.konto:active { transform: scale(.96); }
+.konto .avatar { width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; background: var(--paper-3); font-size: .8rem; }
+body.angemeldet .konto { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent-ink); }
+body.angemeldet .konto .avatar { background: var(--accent-ink); color: var(--paper); font: 700 .78rem var(--sans); }
+.zaehler { display: inline-grid; place-items: center; min-width: 1.2rem; height: 1.2rem; padding: 0 .3rem; border-radius: 999px; background: var(--accent-ink); color: var(--paper); font: 700 .68rem var(--sans); }
+
+.titelkopf { text-align: center; padding: 1.75rem 0 1rem; }
+.titelkopf a { text-decoration: none; }
+.titelkopf .name { font-size: clamp(2.4rem, 9vw, 5.25rem); line-height: 1; letter-spacing: .02em; font-weight: 700; margin: 0; }
+.nav { border-top: 3px double var(--rule-strong); border-bottom: 1px solid var(--rule-strong); position: sticky; top: 0; z-index: 20; background: color-mix(in oklab, var(--paper) 94%, transparent); backdrop-filter: blur(8px); }
+.nav ul { list-style: none; margin: 0 auto; padding: 0 1.25rem; display: flex; justify-content: center; gap: .25rem 1.75rem; max-width: var(--wide); }
+.nav a { display: block; padding: .6rem 0; text-decoration: none; position: relative; white-space: nowrap; }
+.nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent-ink); transform: scaleX(0); transition: transform var(--t-mid) var(--ease-out); }
+.nav a:hover::after, .nav a[aria-current]::after { transform: scaleX(1); }
+.nav .alle { color: var(--ink-3); font-style: italic; }
+
+/* ================= Chips & Etiketten ================= */
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: 0; }
+.chip { display: inline-flex; align-items: center; gap: .35rem; font: 500 .8rem/1 var(--sans); border: 1px solid var(--rule); border-radius: 999px; padding: .4rem .72rem; text-decoration: none; background: var(--paper); color: var(--ink-2); cursor: pointer; white-space: nowrap; transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast), transform var(--t-fast) var(--ease-spring); }
+.chip:hover { border-color: var(--accent-ink); color: var(--ink); background: var(--accent-soft); transform: translateY(-1px); }
+.chip:active { transform: scale(.95); }
+.chip.tag::before { content: "#"; color: var(--accent-ink); font-weight: 700; }
+.chip.kat { border-radius: 6px; background: var(--paper-2); font-weight: 600; }
+.chip.kat .ico { color: var(--accent-ink); }
+.chip .zahl { color: var(--ink-3); font-size: .72rem; }
+.chip.aktiv { background: var(--ink); color: var(--paper); border-color: var(--ink); animation: pop var(--t-mid) var(--ease-spring); }
+.chip.aktiv::before, .chip.aktiv .zahl, .chip.aktiv .ico { color: inherit; }
+.chip .x { margin-left: .1rem; opacity: .75; }
+@keyframes pop { from { transform: scale(.8); opacity: 0; } }
+.badge { display: inline-flex; align-items: center; gap: .38rem; font: 600 .74rem/1 var(--sans); border-radius: 999px; padding: .4rem .7rem .4rem .58rem; text-decoration: none; border: 0; cursor: default; transition: transform var(--t-fast) var(--ease-spring); }
+.badge:hover { transform: translateY(-1px); }
+.badge.ki { background: var(--accent-soft); color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.badge.quellen { background: color-mix(in oklab, var(--ok) 12%, var(--paper)); color: var(--ok); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ok) 35%, transparent); cursor: pointer; }
+.badge.zeit { background: var(--paper-2); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--rule); }
+.badge.fokus { background: transparent; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--rule); cursor: pointer; transition: box-shadow var(--t-fast), color var(--t-fast), transform var(--t-fast) var(--ease-spring); }
+.badge.fokus:hover { color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink); }
+.badge.fokus kbd { background: transparent; color: inherit; border-color: currentColor; opacity: .7; padding: 0 .3rem; }
+
+/* ================= Karten & Startseite ================= */
+.aufmacher { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; padding: 2rem 0; border-bottom: 1px solid var(--rule); }
+.aufmacher h2 { font-size: clamp(1.7rem, 4vw, 2.9rem); line-height: 1.1; margin: .35rem 0 .6rem; text-wrap: balance; }
+.aufmacher h2 a, .karte h3 a { text-decoration: none; }
+.dach { color: var(--accent-ink); }
+.teaser { color: var(--ink-2); margin: 0 0 .75rem; }
+.meta { color: var(--ink-3); font: .8rem/1.4 var(--sans); margin: 0; }
+.foto { display: block; position: relative; overflow: hidden; border-radius: 4px; background: var(--paper-2); }
+.foto img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--t-slow) var(--ease-out), filter var(--t-slow) var(--ease-out); }
+.aufmacher .foto { aspect-ratio: 3 / 2; }
+.aufmacher:hover .foto img, .karte:hover .foto img { transform: scale(1.04); }
+.raster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 1.5rem 0 0; }
+.karte { position: relative; padding: 0 1.25rem 1.75rem; border-left: 1px solid var(--rule); min-width: 0; }
+.karte:nth-child(3n+1) { border-left: 0; padding-left: 0; }
+.karte:nth-child(3n) { padding-right: 0; }
+.karte h3 { font-size: 1.3rem; line-height: 1.2; margin: .5rem 0 .4rem; transition: color var(--t-fast); }
+.karte:hover h3 { color: var(--accent-ink); }
+.karte .foto { aspect-ratio: 16 / 9; margin-bottom: .65rem; }
+.neu { animation: rein var(--t-slow) var(--ease-out) both; }
+@keyframes rein { from { opacity: 0; transform: translateY(10px); } }
+
+/* Seitenzahlen */
+.seiten { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--rule-strong); margin-top: .5rem; padding: 1.1rem 0 2.75rem; font: .88rem var(--sans); }
+.seiten ol { list-style: none; display: flex; gap: .3rem; margin: 0; padding: 0; }
+.seiten ol a { display: grid; place-items: center; min-width: 2.4rem; height: 2.4rem; border-radius: 8px; text-decoration: none; color: var(--ink-2); transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast) var(--ease-spring); }
+.seiten ol a:hover { background: var(--paper-2); transform: translateY(-1px); }
+.seiten ol a[aria-current] { background: var(--ink); color: var(--paper); font-weight: 700; }
+.seiten .weiter-knopf { display: inline-flex; align-items: center; gap: .4rem; text-decoration: none; padding: .55rem .85rem; border: 1px solid var(--rule); border-radius: 8px; color: var(--ink-2); transition: border-color var(--t-fast), transform var(--t-fast) var(--ease-spring); }
+.seiten .weiter-knopf:hover { border-color: var(--ink-3); transform: translateX(2px); }
+.seiten .weiter-knopf.zurueck:hover { transform: translateX(-2px); }
+.seiten [aria-disabled="true"] { opacity: .35; pointer-events: none; }
+.seiten .stand { display: none; color: var(--ink-3); }
+
+/* ================= Artikel ================= */
+.artikel { padding: 1.5rem 0 3rem; }
+.krumen { font: .8rem var(--sans); color: var(--ink-3); }
+.krumen ol { list-style: none; padding: 0; margin: 0; display: flex; gap: .4rem; flex-wrap: wrap; }
+.krumen li + li::before { content: "›"; margin-right: .4rem; }
+.artikelkopf { max-width: 48rem; margin: 1.25rem auto 1.5rem; text-align: center; }
+.artikelkopf h1 { font-size: clamp(2rem, 5.5vw, 3.6rem); line-height: 1.05; margin: .4rem 0 .75rem; text-wrap: balance; }
+.artikelkopf .unterzeile { font-style: italic; font-size: clamp(1.1rem, 2.4vw, 1.3rem); color: var(--ink-2); margin: 0 0 1rem; text-wrap: balance; }
+.autor { display: flex; justify-content: center; flex-wrap: wrap; gap: .3rem .9rem; font: .85rem var(--sans); color: var(--ink-3); }
+.badges { display: flex; justify-content: center; flex-wrap: wrap; gap: .45rem; margin-top: .8rem; }
+.titelbild { max-width: 64rem; margin: 0 auto 2.5rem; }
+.titelbild .foto { aspect-ratio: 2 / 1; }
+figcaption { font: .8rem/1.45 var(--sans); color: var(--ink-3); margin-top: .5rem; }
+figcaption .nachweis { opacity: .75; }
+
+/* Dreispaltig: links Navigation, Mitte Text, rechts "Kurz gesagt". Nichts ragt in die linke Spalte. */
+.koerper { display: grid; grid-template-columns: var(--side) minmax(0, var(--measure)) var(--side); column-gap: var(--gap); justify-content: center; }
+.seitenspalte { position: sticky; top: calc(var(--nav-h) + 1.25rem); align-self: start; font: .85rem/1.45 var(--sans); display: grid; gap: 1.75rem; max-height: calc(100vh - var(--nav-h) - 2.5rem); overflow: auto; transition: opacity var(--t-mid), transform var(--t-mid) var(--ease-out); }
+.seitenspalte.weg { opacity: 0; transform: translateX(-8px); pointer-events: none; }
+.iv ol { list-style: none; margin: .6rem 0 0; padding: 0; position: relative; border-left: 2px solid var(--rule); counter-reset: iv; }
+.iv li { counter-increment: iv; }
+.iv a { display: block; padding: .38rem 0 .38rem .9rem; text-decoration: none; color: var(--ink-3); transition: color var(--t-fast); }
+.iv a::before { content: counter(iv, decimal-leading-zero) " "; font-variant-numeric: tabular-nums; color: var(--rule); margin-right: .2rem; transition: color var(--t-fast); }
+.iv a:hover { color: var(--ink); }
+.iv a[aria-current] { color: var(--ink); font-weight: 600; }
+.iv a[aria-current]::before { color: var(--accent-ink); }
+.iv .marker { position: absolute; left: -2px; top: 0; width: 2px; height: 2rem; background: var(--accent-ink); border-radius: 2px; transition: transform var(--t-mid) var(--ease-out), height var(--t-mid) var(--ease-out); }
+.seitenspalte .chips { margin-top: .6rem; }
+
+.text { min-width: 0; }
+.text > * { margin: 0 0 1.15rem; }
+.text h2 { font-size: 1.65rem; line-height: 1.2; margin: 2.6rem 0 .9rem; text-wrap: balance; clear: both; }
+.lead { font-size: 1.28rem; line-height: 1.5; }
+.dropcap::first-letter { float: left; font-size: 4.2em; line-height: .82; padding: .05em .08em 0 0; color: var(--accent-ink); font-weight: 700; }
+/* "Kurz gesagt": breit in der rechten Spalte (negativer Außenabstand), schmal als Kasten im Text */
+.kurz { font: .84rem/1.5 var(--sans); color: var(--ink-2); background: var(--paper-2); border-radius: 10px; padding: .8rem .95rem .85rem; box-shadow: inset 3px 0 0 var(--accent-ink); }
+.kurz b { display: flex; align-items: center; gap: .35rem; font: 700 .66rem var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: .3rem; }
+.kurz.gesamt { background: var(--accent-soft); }
+.callout { border-left: 4px solid var(--accent-ink); background: var(--paper-2); padding: .9rem 1.1rem; font-size: 1rem; border-radius: 0 8px 8px 0; }
+.factbox { border: 1px solid var(--rule-strong); padding: 1rem 1.2rem; font: .95rem/1.5 var(--sans); border-radius: 4px; }
+.factbox h3 { font: 700 .78rem var(--sans); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 .5rem; color: var(--accent-ink); }
+.factbox ul { margin: 0; padding-left: 1.1rem; }
+.pullquote { font-size: 1.65rem; line-height: 1.3; font-style: italic; text-align: center; border-block: 1px solid var(--rule); padding: 1.3rem .5rem; margin: 2.2rem 0; text-wrap: balance; }
+.pullquote cite { display: block; font: normal .8rem var(--sans); color: var(--ink-3); margin-top: .5rem; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center; border-block: 1px solid var(--rule); padding: 1rem 0; }
+.stat b { display: block; font-size: 2rem; line-height: 1.1; color: var(--accent-ink); }
+.stat span { font: .8rem/1.3 var(--sans); color: var(--ink-3); }
+sup a { text-decoration: none; color: var(--accent-ink); font: 600 .7rem var(--sans); }
+
+/* Bilder im Text. Regel: inline/left/right bleiben in der Textspalte; wide und Galerie
+   nutzen zusätzlich die rechte Spalte, aber erst unterhalb eines "Kurz gesagt" (clear);
+   full geht über die ganze Breite, die linke Navigation blendet sich so lange aus. */
+.abb { margin: 2rem 0; }
+.abb .foto { cursor: zoom-in; }
+.abb .foto img { aspect-ratio: 3 / 2; }
+.abb:hover .foto img { transform: scale(1.02); }
+.abb[data-layout="wide"], .galerie { clear: both; margin-right: calc(-1 * (var(--side) + var(--gap))); }
+.abb[data-layout="full"] { clear: both; position: relative; z-index: 2; width: 100vw; margin-left: calc(50% - 50vw); }
+.abb[data-layout="full"] .foto { border-radius: 0; }
+.abb[data-layout="full"] .foto img { aspect-ratio: 21 / 9; }
+.abb[data-layout="full"] figcaption { max-width: calc(var(--measure) + 2.5rem); margin-inline: auto; padding: 0 1.25rem; }
+.abb[data-layout="left"] { float: left; width: 46%; margin: .3rem 1.5rem 1rem 0; }
+.abb[data-layout="right"] { float: right; width: 46%; margin: .3rem 0 1rem 1.5rem; }
+.abb[data-layout="left"] .foto img, .abb[data-layout="right"] .foto img { aspect-ratio: 4 / 5; }
+.galerie { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: .5rem; margin-top: 2rem; margin-bottom: 2rem; }
+.galerie .foto:first-child { grid-row: span 2; }
+.galerie .foto img { aspect-ratio: auto; height: 100%; min-height: 9rem; }
+.galerie figcaption { grid-column: 1 / -1; }
+
+@media (min-width: 62.01rem) {
+  .kurz { float: right; clear: right; width: var(--side); margin: .3rem calc(-1 * (var(--side) + var(--gap))) 1rem 0; }
+}
+
+.transparenz { border: 1px solid var(--rule); background: var(--paper-2); padding: 1rem 1.2rem; font: .9rem/1.5 var(--sans); margin-top: 2.5rem; display: flex; gap: .8rem; border-radius: 10px; clear: both; }
+.transparenz .ico { font-size: 1.3rem; color: var(--accent-ink); margin-top: .1rem; }
+.quellen { font: .88rem/1.5 var(--sans); clear: both; }
+.abschnitt-titel { font: 700 .78rem var(--sans); text-transform: uppercase; letter-spacing: .08em; border-top: 1px solid var(--rule-strong); padding-top: .8rem; margin-top: 2.5rem; }
+.quellen ol { padding-left: 1.4rem; }
+.quellen li { margin: .4rem 0; overflow-wrap: anywhere; }
+.quellen li.blitz { background: var(--accent-soft); border-radius: 4px; animation: pop var(--t-mid) var(--ease-out); }
+.vornach { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-block: 1px solid var(--rule); padding: 1rem 0; margin-top: 2rem; font-size: 1rem; clear: both; }
+.vornach a { text-decoration: none; } .vornach .klein { display: block; color: var(--ink-3); }
+.vornach div:last-child { text-align: right; }
+.tags-unten { clear: both; }
+
+/* Inhaltsverzeichnis schmal: klebt unter der Kategorie-Leiste und zeigt den aktuellen Abschnitt */
+.iv-mobil { position: sticky; top: var(--nav-h); z-index: 14; margin: 0 -1.25rem 1.25rem; background: color-mix(in oklab, var(--paper) 94%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); font: .85rem var(--sans); }
+.iv-mobil summary { list-style: none; display: flex; align-items: center; gap: .6rem; padding: .7rem 1.25rem; cursor: pointer; }
+.iv-mobil summary::-webkit-details-marker { display: none; }
+.iv-mobil summary .klein { color: var(--accent-ink); }
+.iv-mobil summary .jetzt { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
+.iv-mobil summary .pfeil { transition: transform var(--t-mid) var(--ease-out); }
+.iv-mobil[open] summary .pfeil { transform: rotate(180deg); }
+.iv-mobil ol { margin: 0; padding: 0 1.25rem .8rem 2.6rem; }
+.iv-mobil li { padding: .3rem 0; }
+.iv-mobil a { text-decoration: none; }
+
+/* ================= Fokusmodus ================= */
+.fokus-raus { position: fixed; top: 1rem; right: 1rem; z-index: 70; display: none; align-items: center; gap: .5rem; background: var(--ink); color: var(--paper); border: 0; border-radius: 999px; padding: .55rem .9rem; font: 600 .82rem var(--sans); cursor: pointer; box-shadow: var(--shadow-2); opacity: .2; transition: opacity var(--t-mid); }
+.fokus-raus:hover, .fokus-raus:focus-visible, body.fokus.maus .fokus-raus { opacity: 1; }
+.fokus-raus kbd { background: transparent; color: inherit; border-color: color-mix(in oklab, var(--paper) 40%, transparent); }
+body.fokus .fokus-raus { display: inline-flex; }
+body.fokus header, body.fokus .fuss, body.fokus .seitenspalte, body.fokus .iv-mobil, body.fokus .kurz, body.fokus .krumen, body.fokus .redkasten, body.fokus .badges, body.fokus .mehr-dazu, body.fokus .vornach, body.fokus .fab, body.fokus .pult, body.fokus .tags-unten, body.fokus .reaktion-unten { display: none !important; }
+/* Fokus nutzt die Bildschirmbreite: breite Spalte, Schrift wächst mit, Bilder randlos */
+body.fokus { --fokus-breite: min(68rem, 92vw); }
+body.fokus .artikel.wrap { max-width: none; padding-top: 4rem; }
+body.fokus .koerper { grid-template-columns: minmax(0, var(--fokus-breite)); }
+body.fokus .text { font-size: clamp(1.15rem, .9rem + .55vw, 1.45rem); line-height: 1.75; }
+body.fokus .text .stats { grid-template-columns: repeat(3, 1fr); }
+body.fokus .artikelkopf { max-width: var(--fokus-breite); }
+body.fokus .artikelkopf h1 { font-size: clamp(2.2rem, 4.5vw, 4.4rem); }
+body.fokus .titelbild { max-width: var(--fokus-breite); }
+body.fokus .abb[data-layout="wide"], body.fokus .galerie { margin-right: 0; }
+body.fokus .abb[data-layout="left"], body.fokus .abb[data-layout="right"] { float: none; width: auto; margin: 2rem 0; }
+
+/* ================= Alle Kategorien ================= */
+.seitenkopf { text-align: center; padding: 2rem 0 1rem; }
+.seitenkopf h1 { font-size: clamp(1.9rem, 5vw, 3rem); margin: .3rem 0; overflow-wrap: anywhere; }
+.seitenkopf p { color: var(--ink-2); margin: 0; font-style: italic; }
+.katgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; padding: 1.5rem 0 3rem; }
+.katkarte { grid-column: span 2; position: relative; isolation: isolate; overflow: hidden; border-radius: 14px; min-height: 19rem; color: #fff; text-decoration: none; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.4rem; box-shadow: var(--shadow-1); transition: box-shadow var(--t-mid), transform var(--t-mid) var(--ease-out); }
+.katkarte.gross { grid-column: span 3; min-height: 23rem; }
+.katkarte img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform var(--t-slow) var(--ease-out), filter var(--t-slow) var(--ease-out); }
+.katkarte::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,8,5,0) 25%, rgba(10,8,5,.82) 100%); transition: background var(--t-slow) var(--ease-out); }
+.katkarte::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--accent); mix-blend-mode: multiply; opacity: 0; transition: opacity var(--t-slow) var(--ease-out); }
+.katkarte:hover, .katkarte:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-2); }
+.katkarte:hover img, .katkarte:focus-visible img { transform: scale(1.08); filter: blur(3px) saturate(.6) brightness(.85); }
+.katkarte:hover::after, .katkarte:focus-visible::after { opacity: .55; }
+.katkarte:hover::before { background: linear-gradient(180deg, rgba(10,8,5,.15) 0%, rgba(10,8,5,.85) 100%); }
+.katkarte .klein { opacity: .85; }
+.katkarte h2 { font-size: clamp(1.6rem, 3vw, 2rem); line-height: 1.05; margin: .25rem 0 .35rem; display: flex; align-items: center; gap: .5rem; }
+.katkarte h2 .pfeil { display: inline-block; font-size: 1.3rem; opacity: 0; transform: translateX(-8px); transition: opacity var(--t-mid), transform var(--t-mid) var(--ease-spring); }
+.katkarte:hover h2 .pfeil { opacity: 1; transform: none; }
+.katkarte p { margin: 0; font-size: .98rem; line-height: 1.45; opacity: .92; max-width: 30rem; }
+.katkarte .mehr { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--t-slow) var(--ease-out); }
+.katkarte .mehr > div { overflow: hidden; }
+.katkarte:hover .mehr, .katkarte:focus-within .mehr { grid-template-rows: 1fr; }
+.katkarte .unterkat { display: flex; gap: .35rem; flex-wrap: wrap; padding-top: .8rem; }
+.katkarte .unterkat span { font: 600 .74rem var(--sans); background: rgba(255,255,255,.16); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .3rem .6rem; }
+.katkarte .neuester { font: .78rem var(--sans); opacity: .85; padding-top: .6rem; }
+.katkarte .gewicht-inline { position: absolute; top: 1rem; right: 1rem; }
+/* Touch-Geräte haben kein Hover: Unterkategorien immer zeigen, kein Weichzeichner */
+@media (hover: none) {
+  .katkarte .mehr { grid-template-rows: 1fr; }
+  .katkarte h2 .pfeil { opacity: 1; transform: none; }
+  .katkarte:active img { filter: blur(2px) brightness(.85); }
+}
+
+/* ================= Schnellfilter ================= */
+.filterleiste { position: sticky; top: var(--nav-h); z-index: 15; background: color-mix(in oklab, var(--paper) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); padding: .75rem 0; }
+.filterleiste .wrap { display: grid; gap: .55rem; }
+.filterzeile { display: flex; align-items: center; gap: .6rem; font: .82rem var(--sans); color: var(--ink-3); min-width: 0; }
+.filterzeile > b { color: var(--ink-2); font-weight: 600; min-width: 7rem; flex: none; }
+.filterzeile .chips { flex-wrap: wrap; }
+.ergebniszahl { font: .85rem var(--sans); color: var(--ink-3); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ergebniszahl b { color: var(--ink); font-variant-numeric: tabular-nums; display: inline-block; }
+.ergebniszahl b.neu { animation: pop var(--t-mid) var(--ease-spring); }
+.leeren { background: none; border: 0; color: var(--accent-ink); font: 600 .8rem var(--sans); cursor: pointer; text-decoration: underline; flex: none; }
+
+/* ================= Fuß ================= */
+.fuss { border-top: 3px double var(--rule-strong); padding: 2rem 0 3rem; color: var(--ink-3); font: .85rem/1.6 var(--sans); clear: both; }
+.fuss .spalten { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+.fuss h2 { font: 700 .72rem var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 .7rem; }
+.fuss nav { display: flex; flex-direction: column; gap: .2rem; }
+.fuss .unten { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-top: 1px solid var(--rule); margin-top: 1.5rem; padding-top: 1rem; }
+
+/* ================= Redaktion (nur nach Login) ================= */
+.red { display: none !important; }
+body.angemeldet .red { display: revert !important; }
+body.angemeldet .red.flex { display: flex !important; }
+body.angemeldet .red.grid { display: grid !important; }
+body.angemeldet .nur-gast { display: none !important; }
+.red-fade { animation: rein var(--t-slow) var(--ease-out) both; }
+
+[popover] { margin: 0; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); border-radius: 12px; box-shadow: var(--shadow-2); padding: .4rem; min-width: 16rem; font: .9rem var(--sans); inset: auto; position: fixed; top: 3.6rem; right: 1rem; opacity: 0; transform: translateY(-6px) scale(.97); transform-origin: top right; transition: opacity var(--t-mid) var(--ease-out), transform var(--t-mid) var(--ease-out), overlay var(--t-mid) allow-discrete, display var(--t-mid) allow-discrete; }
+[popover]:popover-open { opacity: 1; transform: none; }
+@starting-style { [popover]:popover-open { opacity: 0; transform: translateY(-6px) scale(.97); } }
+.menue a, .menue button { display: flex; align-items: center; gap: .65rem; width: 100%; text-align: left; padding: .6rem .7rem; border-radius: 8px; border: 0; background: none; cursor: pointer; text-decoration: none; transition: background var(--t-fast); }
+.menue a:hover, .menue button:hover { background: var(--paper-2); }
+.menue .ico { color: var(--ink-3); font-size: 1.05rem; }
+.menue hr { border: 0; border-top: 1px solid var(--rule); margin: .35rem 0; }
+.menue .zaehler { margin-left: auto; }
+.menue .kopfzeile { padding: .5rem .7rem .6rem; font-size: .78rem; color: var(--ink-3); }
+
+.wartet { padding: 1.5rem 0 .5rem; }
+.wartet-kopf { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.wartet-kopf h2 { font-size: 1.35rem; margin: 0; }
+.wartet-kopf span { font: .8rem var(--sans); color: var(--ink-3); }
+.wartet-reihe { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.wartekarte { border: 1.5px dashed var(--accent-line); border-radius: 12px; padding: 1rem; background: color-mix(in oklab, var(--accent-soft) 45%, var(--paper)); display: grid; gap: .55rem; align-content: start; transition: border-color var(--t-fast), transform var(--t-mid) var(--ease-out), box-shadow var(--t-mid); }
+.wartekarte:hover { border-color: var(--accent-ink); transform: translateY(-2px); box-shadow: var(--shadow-1); }
+.wartekarte h3 { font-size: 1.1rem; line-height: 1.25; margin: 0; }
+.wartekarte .zeile { display: flex; gap: .4rem; flex-wrap: wrap; }
+.vorher-nachher { font: .8rem/1.45 var(--sans); }
+del { color: var(--bad); text-decoration-thickness: 1px; background: color-mix(in oklab, var(--bad) 8%, transparent); }
+ins { color: var(--ok); text-decoration: none; background: color-mix(in oklab, var(--ok) 10%, transparent); }
+.status { display: inline-flex; align-items: center; gap: .3rem; font: 700 .64rem var(--sans); letter-spacing: .06em; text-transform: uppercase; border-radius: 4px; padding: .22rem .45rem; width: fit-content; }
+.status.review { background: color-mix(in oklab, var(--warn) 16%, var(--paper)); color: var(--warn); }
+.status.zurueck { background: var(--paper-3); color: var(--ink-2); }
+.status.vorschlag { background: var(--accent-soft); color: var(--accent-ink); }
+
+.knopf { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; font: 600 .82rem var(--sans); border-radius: 8px; padding: .5rem .85rem; border: 1px solid var(--rule); background: var(--paper); cursor: pointer; text-decoration: none; white-space: nowrap; transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast) var(--ease-spring), box-shadow var(--t-fast); }
+.knopf:hover { border-color: var(--ink-3); box-shadow: var(--shadow-1); }
+.knopf:active { transform: scale(.96); }
+.knopf.primaer { background: var(--accent-ink); color: var(--paper); border-color: var(--accent-ink); }
+.knopf.primaer:hover { background: color-mix(in oklab, var(--accent-ink) 88%, black); }
+.knopf.leise { border-color: transparent; background: transparent; color: var(--ink-2); }
+.knopf.gefahr { color: var(--bad); }
+.knopf.klein-k { padding: .32rem .6rem; font-size: .76rem; }
+
+.reaktion { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; background: var(--paper); overflow: hidden; box-shadow: var(--shadow-1); }
+.reaktion button { display: inline-flex; align-items: center; gap: .35rem; border: 0; background: none; padding: .45rem .75rem; font: 600 .78rem var(--sans); color: var(--ink-2); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
+.reaktion button + button { border-left: 1px solid var(--rule); }
+.reaktion button:hover { background: var(--paper-2); }
+.reaktion button .ico { transition: transform var(--t-mid) var(--ease-spring); }
+.reaktion button:hover .ico { transform: scale(1.18) rotate(-8deg); }
+.reaktion button[aria-pressed="true"].mehr { background: color-mix(in oklab, var(--ok) 14%, var(--paper)); color: var(--ok); }
+.reaktion button[aria-pressed="true"].weniger { background: color-mix(in oklab, var(--bad) 12%, var(--paper)); color: var(--bad); }
+.reaktion button[aria-pressed="true"] .ico { animation: hops var(--t-slow) var(--ease-spring); }
+@keyframes hops { 40% { transform: scale(1.45) rotate(-12deg); } }
+.reaktion.mini { position: absolute; top: .6rem; right: 1.85rem; opacity: 0; transform: translateY(-4px); transition: opacity var(--t-mid), transform var(--t-mid) var(--ease-out); z-index: 2; }
+.karte:nth-child(3n) .reaktion.mini { right: .6rem; }
+.karte:hover .reaktion.mini, .reaktion.mini:focus-within, .reaktion.mini.gesetzt { opacity: 1; transform: none; }
+.reaktion.mini button { padding: .4rem .55rem; }
+@media (hover: none) { .reaktion.mini { opacity: 1; transform: none; } }
+.kennzahl { font: .72rem var(--sans); color: var(--ink-3); display: inline-flex; gap: .35rem; align-items: center; }
+
+.redkasten { max-width: 48rem; margin: 0 auto 2rem; border: 1px solid var(--accent-line); background: color-mix(in oklab, var(--accent-soft) 50%, var(--paper)); border-radius: 14px; padding: .9rem 1rem; grid-template-columns: 1fr auto; gap: .8rem 1.2rem; align-items: center; font: .85rem var(--sans); }
+.redkasten .zahlen { display: flex; gap: 1.2rem; flex-wrap: wrap; color: var(--ink-2); align-items: flex-end; }
+.redkasten .zahlen b { font: 700 1.1rem var(--serif); color: var(--ink); display: block; }
+.redkasten .aktionen { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: flex-end; }
+.redkasten .hinweiszeile { grid-column: 1 / -1; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; border-top: 1px dashed var(--accent-line); padding-top: .7rem; color: var(--ink-2); }
+.funken { display: flex; align-items: flex-end; gap: 2px; height: 1.6rem; }
+.funken i { width: 5px; background: var(--accent-ink); border-radius: 2px 2px 0 0; opacity: .75; }
+
+.freigabe { position: sticky; top: var(--nav-h); z-index: 16; background: color-mix(in oklab, var(--paper) 94%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--accent-line); }
+.freigabe .wrap { display: flex; gap: .6rem 1rem; align-items: center; flex-wrap: wrap; padding-block: .7rem; font: .85rem var(--sans); }
+.pruefung { display: flex; gap: .35rem; flex-wrap: wrap; margin-right: auto; }
+.pruef { display: inline-flex; align-items: center; gap: .3rem; font: 600 .74rem var(--sans); padding: .3rem .55rem; border-radius: 999px; white-space: nowrap; }
+.pruef.ok { color: var(--ok); background: color-mix(in oklab, var(--ok) 12%, var(--paper)); }
+.pruef.warn { color: var(--warn); background: color-mix(in oklab, var(--warn) 14%, var(--paper)); }
+.freigabe-knoepfe { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+.vorschau-band { text-align: center; font: 700 .7rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--warn); padding: .6rem 0 0; }
+.anmerkung { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--t-mid) var(--ease-out); width: 100%; }
+.anmerkung > div { overflow: hidden; }
+.anmerkung.offen { grid-template-rows: 1fr; }
+.anmerkung textarea { width: 100%; min-height: 4.5rem; margin-top: .3rem; font: .9rem var(--sans); padding: .6rem; border-radius: 8px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+
+/* Kommentieren in der Vorschau: Stelle anklicken oder Text markieren, Anmerkung schreiben */
+.k-hinweis { display: none; text-align: center; font: 600 .78rem var(--sans); color: var(--accent-ink); background: var(--accent-soft); padding: .45rem 1rem; }
+body.k-modus .k-hinweis { display: block; animation: rein var(--t-mid) var(--ease-out); }
+body.k-modus #v-vorschau .text > :not(.k-liste-schmal):hover { outline: 2px dashed var(--accent-ink); outline-offset: 5px; border-radius: 3px; cursor: crosshair; }
+body.k-modus #v-vorschau .text { user-select: text; }
+#kommentieren[aria-pressed="true"] { background: var(--accent-ink); color: var(--paper); border-color: var(--accent-ink); }
+.kommentiert { position: relative; outline: 2px solid var(--accent-line); outline-offset: 5px; border-radius: 3px; }
+.k-nr { position: absolute; left: -2.6rem; top: 0; width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent-ink); color: var(--paper); font: 700 .72rem var(--sans); cursor: pointer; animation: pop var(--t-mid) var(--ease-spring); box-shadow: var(--shadow-1); }
+.k-mark { background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent-ink); border-radius: 2px; cursor: pointer; }
+.k-mark sup { font: 700 .62rem var(--sans); color: var(--accent-ink); margin-left: .1rem; }
+.k-box { position: absolute; z-index: 50; width: min(22rem, calc(100vw - 2rem)); background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--shadow-2); padding: .8rem; font: .88rem var(--sans); animation: pop var(--t-mid) var(--ease-spring); }
+.k-box[hidden] { display: none; }
+.k-box blockquote { margin: 0 0 .5rem; padding: .35rem .6rem; border-left: 3px solid var(--accent-ink); background: var(--paper-2); color: var(--ink-2); font-size: .8rem; max-height: 4.2rem; overflow: hidden; border-radius: 0 6px 6px 0; }
+.k-box textarea { width: 100%; min-height: 4.5rem; font: .92rem var(--sans); padding: .55rem; border-radius: 8px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); resize: vertical; }
+.k-box textarea:focus { outline: none; border-color: var(--accent-ink); box-shadow: 0 0 0 3px var(--accent-soft); }
+.k-box .k-knoepfe { display: flex; justify-content: flex-end; gap: .4rem; margin-top: .5rem; }
+/* min-width: 0 – sonst zieht das lange Zitat (nowrap) die Spalte über den Bildschirm hinaus */
+.k-liste { position: sticky; top: calc(var(--nav-h) + 6rem); align-self: start; font: .82rem/1.45 var(--sans); min-width: 0; }
+.k-liste h3 { font: 700 .7rem var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 .6rem; }
+.k-liste ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.k-liste li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .2rem .45rem; align-items: start; min-width: 0; border: 1px solid var(--rule); border-radius: 10px; padding: .55rem .4rem .55rem .65rem; background: var(--paper); cursor: pointer; transition: border-color var(--t-fast), transform var(--t-fast) var(--ease-spring); animation: rein var(--t-mid) var(--ease-out); }
+.k-liste li:hover { border-color: var(--accent-ink); transform: translateX(-2px); }
+.k-liste li b { display: inline-grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--accent-ink); color: var(--paper); font-size: .66rem; }
+.k-liste li .k-text { overflow-wrap: anywhere; padding-top: .05rem; }
+.k-liste li q { grid-column: 2 / 4; display: block; min-width: 0; color: var(--ink-3); font-size: .74rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.k-liste li .weg { display: grid; place-items: center; width: 2rem; height: 2rem; margin: -.35rem 0 -.35rem; border: 0; border-radius: 8px; background: none; color: var(--ink-3); cursor: pointer; font-size: .9rem; transition: background var(--t-fast), color var(--t-fast); }
+.k-liste li .weg:hover { background: color-mix(in oklab, var(--bad) 12%, var(--paper)); color: var(--bad); }
+.k-liste .k-leer { color: var(--ink-3); }
+
+.fab { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40; align-items: center; gap: .5rem; background: var(--accent-ink); color: var(--paper); border: 0; border-radius: 999px; padding: .85rem 1.15rem .85rem .95rem; font: 700 .88rem var(--sans); box-shadow: var(--shadow-2); cursor: pointer; transition: transform var(--t-mid) var(--ease-spring); }
+.fab:hover { transform: translateY(-2px) scale(1.03); }
+.fab .ico { font-size: 1.15rem; transition: transform var(--t-mid) var(--ease-spring); }
+.fab:hover .ico { transform: rotate(90deg); }
+
+.gewicht { display: inline-flex; border-radius: 999px; overflow: hidden; background: rgba(20,16,10,.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.25); }
+.gewicht button { border: 0; background: none; color: rgba(255,255,255,.85); padding: .32rem .58rem; cursor: pointer; font: 700 .75rem var(--sans); transition: background var(--t-fast), color var(--t-fast); }
+.gewicht button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.gewicht.hell { background: var(--paper); border-color: var(--rule); }
+.gewicht.hell button { color: var(--ink-3); }
+.gewicht.hell button[aria-pressed="true"] { background: var(--accent-ink); color: var(--paper); }
+
+dialog { border: 1px solid var(--rule); background: var(--paper); color: var(--ink); padding: 0; border-radius: 16px; box-shadow: var(--shadow-2); width: min(40rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); opacity: 0; transform: translateY(12px) scale(.98); transition: opacity var(--t-mid) var(--ease-out), transform var(--t-mid) var(--ease-out), overlay var(--t-mid) allow-discrete, display var(--t-mid) allow-discrete; }
+dialog[open] { opacity: 1; transform: none; display: flex; flex-direction: column; }
+@starting-style { dialog[open] { opacity: 0; transform: translateY(12px) scale(.98); } }
+dialog::backdrop { background: rgba(20,16,10,0); transition: background var(--t-mid), overlay var(--t-mid) allow-discrete, display var(--t-mid) allow-discrete; }
+dialog[open]::backdrop { background: rgba(20,16,10,.45); backdrop-filter: blur(3px); }
+@starting-style { dialog[open]::backdrop { background: rgba(20,16,10,0); } }
+dialog.breit { width: min(54rem, calc(100vw - 2rem)); }
+.dlg-kopf { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--rule); flex: none; }
+.dlg-kopf h2 { margin: 0; font-size: 1.3rem; }
+.zu { background: none; border: 0; font-size: 1.3rem; line-height: 1; cursor: pointer; color: var(--ink-3); padding: .35rem .5rem; border-radius: 6px; transition: background var(--t-fast), transform var(--t-mid) var(--ease-spring); }
+.zu:hover { background: var(--paper-2); transform: rotate(90deg); }
+.dlg-rumpf { padding: 1.25rem; font: .92rem/1.5 var(--sans); overflow: auto; flex: 1; }
+.dlg-fuss { display: flex; justify-content: flex-end; gap: .6rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); flex: none; flex-wrap: wrap; }
+label.feld { display: grid; gap: .3rem; margin-bottom: .9rem; font: 600 .82rem var(--sans); }
+label.feld input, label.feld textarea, label.feld select { font: 1rem var(--sans); padding: .6rem .7rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); transition: border-color var(--t-fast), box-shadow var(--t-fast); }
+label.feld input:focus, label.feld textarea:focus { border-color: var(--accent-ink); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+.zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+.ablage { border: 2px dashed var(--rule); border-radius: 12px; padding: 1.3rem; text-align: center; color: var(--ink-3); transition: border-color var(--t-fast), background var(--t-fast); margin-bottom: .9rem; }
+.ablage:hover { border-color: var(--accent-ink); background: var(--accent-soft); }
+.schalter { display: flex; align-items: center; gap: .6rem; font: .88rem var(--sans); margin-bottom: .9rem; }
+.hinweis { font: .82rem/1.5 var(--sans); color: var(--ink-3); background: var(--paper-2); border-radius: 8px; padding: .65rem .8rem; margin: 0 0 1rem; }
+.info { display: inline-grid; place-items: center; width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 1px solid var(--rule); font: 700 .68rem var(--serif); color: var(--ink-3); cursor: help; position: relative; vertical-align: middle; flex: none; }
+.info:hover::after, .info:focus::after { content: attr(data-tipp); position: absolute; left: 50%; top: 135%; transform: translateX(-50%); width: min(16rem, 70vw); background: var(--ink); color: var(--paper); font: 400 .78rem/1.4 var(--sans); padding: .55rem .7rem; border-radius: 8px; z-index: 5; text-align: left; }
+.liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.liste li { display: flex; align-items: center; gap: .8rem; border: 1px solid var(--rule); border-radius: 10px; padding: .65rem .8rem; }
+.liste li .t { flex: 1; min-width: 0; } .liste li small { display: block; color: var(--ink-3); }
+.balken { display: flex; align-items: flex-end; gap: 4px; height: 7rem; border-bottom: 1px solid var(--rule); padding-top: .5rem; }
+.balken i { flex: 1; background: var(--accent-ink); border-radius: 3px 3px 0 0; opacity: .8; transform-origin: bottom; animation: wachsen var(--t-slow) var(--ease-out) both; }
+@keyframes wachsen { from { transform: scaleY(0); } }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin-bottom: 1.2rem; }
+.kpi { background: var(--paper-2); border-radius: 10px; padding: .7rem .8rem; }
+.kpi b { display: block; font: 700 1.4rem var(--serif); }
+.kpi span { font-size: .75rem; color: var(--ink-3); }
+.interessen-liste { display: grid; gap: .6rem; }
+.int { border: 1px solid var(--rule); border-radius: 10px; padding: .75rem .9rem; display: flex; align-items: center; gap: .6rem .9rem; flex-wrap: wrap; }
+.int.unter { margin-left: 1.5rem; border-style: dashed; }
+.int b { font: 700 1rem var(--serif); flex: 1; min-width: 8rem; }
+.int .gewicht-text { font: .76rem var(--sans); color: var(--ink-3); min-width: 7.5rem; }
+.signale { font: .75rem var(--sans); color: var(--ink-3); width: 100%; display: flex; gap: .4rem .8rem; flex-wrap: wrap; align-items: center; }
+.signale .mehr-s { color: var(--ok); } .signale .weniger-s { color: var(--bad); }
+
+.toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 180%); background: var(--ink); color: var(--paper); font: .86rem var(--sans); padding: .7rem 1rem; border-radius: 12px; box-shadow: var(--shadow-2); z-index: 80; display: flex; gap: .6rem; align-items: center; transition: transform var(--t-mid) var(--ease-spring); width: max-content; max-width: calc(100vw - 2rem); }
+/* Versteckt heißt wirklich weg: unsichtbar und nicht klickbar, nicht nur nach unten geschoben */
+.toast { opacity: 0; visibility: hidden; pointer-events: none; transition: transform var(--t-mid) var(--ease-spring), opacity var(--t-mid), visibility 0s linear var(--t-mid); }
+.toast.zeigen { transform: translate(-50%, 0); opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.toast button { background: none; border: 0; color: inherit; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; font: 600 .82rem var(--sans); flex: none; padding: .2rem .3rem; border-radius: 6px; opacity: .85; }
+.toast button:hover { opacity: 1; background: color-mix(in oklab, var(--paper) 15%, transparent); }
+
+/* ================= Tablet (bis 62rem ≈ 992 px) ================= */
+@media (max-width: 62rem) {
+  .koerper { grid-template-columns: minmax(0, var(--measure)); }
+  .seitenspalte { display: none; }
+  .iv-mobil { display: block !important; }
+  .nur-schmal { display: revert !important; }
+  .kopf-tags.nur-schmal { display: flex !important; margin: -.25rem 0 1.4rem; }
+  .k-liste { position: static; margin-top: 1.5rem; }
+  .k-nr { left: auto; right: -.4rem; top: -1.1rem; }
+  body.fokus .kopf-tags { display: none !important; }
+  .abb[data-layout="wide"], .galerie { margin-right: 0; }
+  .abb[data-layout="full"] { z-index: auto; }
+  .katkarte, .katkarte.gross { grid-column: span 3; }
+  .wartet-reihe { grid-template-columns: 1fr 1fr; }
+  .wartet-reihe .wartekarte:last-child { grid-column: 1 / -1; }
+  .raster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .karte, .karte:nth-child(n) { border-left: 1px solid var(--rule); padding: 0 1.1rem 1.6rem; }
+  .karte:nth-child(2n+1) { border-left: 0; padding-left: 0; }
+  .karte:nth-child(2n) { padding-right: 0; }
+  .karte:nth-child(n) .reaktion.mini { right: .6rem; }
+  .ausgabe-datum { display: none; }
+  .nav ul { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+  .nav ul::-webkit-scrollbar { display: none; }
+  .suche { width: 13rem; }
+}
+
+/* ================= Handy (bis 46rem ≈ 736 px) ================= */
+@media (max-width: 46rem) {
+  :root { --nav-h: 2.75rem; }
+  body { font-size: 1.0625rem; }
+  .wrap { padding: 0 1rem; }
+  .leiste .wrap { min-height: 3.2rem; gap: .5rem; }
+  .ausgabe-zeile { display: none; }
+  .kopf-rechts { margin-left: 0; width: 100%; justify-content: flex-end; }
+  .suche { width: auto; flex: 1; }
+  .suche:focus-within { width: auto; }
+  .suche-feld input::placeholder { font-size: .9rem; }
+  .taste { display: none; }
+  .konto { padding: .3rem; } .konto .text { display: none; }
+  /* Suche wird beim Tippen zur Vollbild-Ebene */
+  .suche:focus-within { position: fixed; inset: 0; z-index: 85; background: var(--paper); padding: .75rem 1rem; display: flex; flex-direction: column; }
+  .suche:focus-within .suche-feld { box-shadow: none; }
+  .suche:focus-within .suche-zu { display: inline-block; }
+  .suche:focus-within .panel { position: static; border: 0; box-shadow: none; max-height: none; flex: 1; padding: .5rem 0; }
+  .suche:focus-within .panel-fuss { display: none; }
+  .titelkopf { padding: 1.1rem 0 .7rem; }
+  .nav ul { padding: 0 1rem; gap: 1.25rem; }
+  .nav a { padding: .55rem 0; font-size: 1rem; }
+
+  .aufmacher { grid-template-columns: 1fr; gap: 1rem; padding: 1.25rem 0; }
+  /* Liste statt Raster: Bild links klein, Text rechts – mehr Artikel pro Bildschirm */
+  .raster { grid-template-columns: 1fr; padding-top: .5rem; }
+  .karte, .karte:nth-child(n) { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); column-gap: .9rem; border-left: 0; padding: 1rem 0; border-bottom: 1px solid var(--rule); align-items: start; }
+  .karte .foto { grid-row: 1 / span 4; aspect-ratio: 1; margin: 0; }
+  .karte h3 { font-size: 1.08rem; margin: .2rem 0 .25rem; }
+  .karte .teaser { display: none; }
+  .karte:nth-child(n) .reaktion.mini { position: static; grid-column: 2; margin-top: .45rem; width: fit-content; box-shadow: none; }
+  .seiten ol { display: none; }
+  .seiten .stand { display: inline; }
+
+  .artikelkopf { margin-top: .8rem; text-align: left; }
+  .autor, .badges { justify-content: flex-start; }
+  .titelbild { margin: 0 -1rem 1.75rem; }
+  .titelbild .foto { aspect-ratio: 4 / 3; border-radius: 0; }
+  .titelbild figcaption { padding: 0 1rem; }
+  .iv-mobil { margin: 0 -1rem 1.25rem; }
+  .iv-mobil summary { padding: .65rem 1rem; }
+  .text > * { margin-bottom: 1.05rem; }
+  .text h2 { font-size: 1.4rem; margin-top: 2.1rem; }
+  .lead { font-size: 1.15rem; }
+  .stats { grid-template-columns: 1fr; gap: .6rem; }
+  .pullquote { font-size: 1.3rem; }
+  .abb[data-layout="left"], .abb[data-layout="right"] { float: none; width: auto; margin: 1.5rem 0; }
+  .abb[data-layout="left"] .foto img, .abb[data-layout="right"] .foto img { aspect-ratio: 3 / 2; }
+  .abb[data-layout="wide"], .abb[data-layout="full"] { width: auto; margin: 1.5rem -1rem; }
+  .abb[data-layout="wide"] .foto, .abb[data-layout="full"] .foto { border-radius: 0; }
+  .abb[data-layout="wide"] figcaption, .abb[data-layout="full"] figcaption { padding: 0 1rem; }
+  .abb[data-layout="full"] .foto img { aspect-ratio: 4 / 3; }
+  .galerie { grid-template-columns: 1fr 1fr; grid-template-rows: auto; margin: 1.5rem -1rem; }
+  .galerie .foto { border-radius: 0; }
+  .galerie .foto:first-child { grid-column: 1 / -1; grid-row: auto; }
+  .galerie figcaption { padding: 0 1rem; }
+  .vornach { grid-template-columns: 1fr; }
+  .vornach div:last-child { text-align: left; }
+
+  .katgrid { grid-template-columns: 1fr; gap: .8rem; }
+  .katkarte, .katkarte.gross { grid-column: 1 / -1; min-height: 13.5rem; padding: 1.1rem; }
+  .katkarte p { font-size: .92rem; }
+  .katkarte .gewicht-inline { top: .7rem; right: .7rem; }
+
+  .filterzeile { align-items: flex-start; flex-direction: column; gap: .4rem; }
+  .filterzeile > b { min-width: 0; }
+  .filterzeile .chips { flex-wrap: nowrap; overflow-x: auto; width: calc(100% + 1rem); padding-bottom: .2rem; scrollbar-width: none; }
+  .ergebniszahl .meta { display: none; }
+
+  .fuss .spalten { grid-template-columns: 1fr; }
+  .fuss .chips { gap: .35rem; }
+  /* Auf dem Handy klebt nicht die Kategorie-Leiste, sondern das, was auf der Seite gerade zählt
+     (Inhaltsverzeichnis, Filter) – bündig am oberen Rand */
+  .nav { position: relative; }
+  .iv-mobil, .filterleiste { top: 0; }
+  html { scroll-padding-top: 4rem; }
+  .artikel { padding-top: 1.25rem; }
+  .krumen { margin-bottom: .25rem; }
+  .iv-mobil .iv-tags { padding: .2rem 1.25rem 1rem; border-top: 1px solid var(--rule); }
+  .iv-mobil .iv-tags .klein { display: block; color: var(--ink-3); margin: .7rem 0 .5rem; }
+  body[data-ansicht="vorschau"] .fab { display: none !important; }
+
+  .wartet-reihe { grid-template-columns: 1fr; display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; gap: .75rem; padding-bottom: .4rem; margin-right: -1rem; }
+  .wartekarte { flex: 0 0 85%; scroll-snap-align: start; }
+  .redkasten { grid-template-columns: 1fr; }
+  .redkasten .aktionen { justify-content: flex-start; }
+  /* Freigabe wird zur Leiste am unteren Rand mit großem Hauptknopf */
+  .freigabe { position: fixed; top: auto; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--accent-line); border-bottom: 0; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -8px 24px rgba(0,0,0,.08); }
+  .freigabe .wrap { gap: .6rem; padding-block: .75rem calc(.75rem + env(safe-area-inset-bottom)); }
+  .pruefung { flex-wrap: nowrap; overflow-x: auto; width: 100%; margin-right: 0; scrollbar-width: none; }
+  .freigabe-knoepfe { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .freigabe-knoepfe .knopf { width: 100%; padding: .6rem .5rem; font-size: .82rem; }
+  .freigabe-knoepfe [data-freigeben] { grid-column: 1 / -1; order: -1; padding: .8rem; font-size: 1rem; }
+  #v-vorschau .artikel { padding-bottom: 18rem; }
+  .k-nr { left: auto; right: -.4rem; top: -1.1rem; }
+  .k-box { position: fixed; left: 0 !important; right: 0; bottom: 0; top: auto !important; width: 100%; border-radius: 16px 16px 0 0; padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom)); z-index: 95; }
+  .k-liste { position: static; margin-top: 1.5rem; }
+  .fab .text { display: none; } .fab { padding: 1rem; right: 1rem; bottom: 1rem; }
+
+  /* Menü und Dialoge als Blatt von unten */
+  [popover] { top: auto; bottom: 0; left: 0; right: 0; width: 100%; border-radius: 16px 16px 0 0; padding: .5rem .5rem calc(.5rem + env(safe-area-inset-bottom)); transform: translateY(100%); }
+  [popover]:popover-open { transform: none; }
+  @starting-style { [popover]:popover-open { transform: translateY(100%); } }
+  .menue a, .menue button { padding: .8rem .8rem; font-size: 1rem; }
+  dialog, dialog.breit { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 16px 16px 0 0; max-height: 92dvh; transform: translateY(40px); border-bottom: 0; }
+  dialog[open] { transform: none; }
+  @starting-style { dialog[open] { transform: translateY(40px); } }
+  .dlg-fuss { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+  .dlg-fuss .knopf { flex: 1; padding: .7rem; }
+  .zwei, .kpis { grid-template-columns: 1fr 1fr; }
+  .zwei { grid-template-columns: 1fr; }
+  .int.unter { margin-left: .6rem; }
+  .int .gewicht-text { min-width: 0; }
+  /* Unten liegen Menü, Dialoge und Freigabe-Leiste – Hinweise kommen deshalb von oben */
+  .toast { bottom: auto; top: calc(.75rem + env(safe-area-inset-top)); transform: translate(-50%, -160%); }
+  .toast.zeigen { transform: translate(-50%, 0); }
+  body.fokus .text { font-size: 1.15rem; }
+  body.fokus .artikel { padding-top: 3.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* ================= Nur Entwurf ================= */
+.ansicht { display: none; }
+.ansicht.sichtbar { display: block; }
+.pult { position: fixed; left: .75rem; bottom: .75rem; z-index: 90; background: #222; color: #fff; font: .76rem/1.4 var(--sans); padding: .5rem .6rem; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3); display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; max-width: min(50rem, calc(100vw - 6rem)); }
+.pult a, .pult button { color: #fff; background: #444; border: 0; border-radius: 4px; padding: .22rem .5rem; font: inherit; text-decoration: none; cursor: pointer; }
+.pult .an { background: #b3261e; }
+.pult select { font: inherit; border-radius: 4px; }
+.pult .trenn { width: 1px; align-self: stretch; background: #555; margin: 0 .15rem; }
+body.eingebettet .pult { display: none; }
+#geraet { width: auto; max-width: none; max-height: none; background: #2a2723; border: 0; padding: 1rem 1rem .8rem; border-radius: 20px; margin: auto; transform: none; }
+#geraet .rahmen { border-radius: 28px; overflow: hidden; border: 8px solid #111; background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+#geraet iframe { display: block; border: 0; }
+#geraet .geraet-fuss { display: flex; justify-content: space-between; align-items: center; color: #ddd; font: .8rem var(--sans); padding-top: .6rem; gap: 1rem; }
+#geraet .geraet-fuss button, #geraet .geraet-fuss a { background: #444; color: #fff; border: 0; border-radius: 4px; padding: .25rem .6rem; cursor: pointer; font: inherit; text-decoration: none; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-suche" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-ki" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+  <symbol id="i-quelle" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h6"/></symbol>
+  <symbol id="i-uhr" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-ordner" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-hoch" viewBox="0 0 24 24"><path d="M7 10v11M15 5.9 14 10h5.8a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 18.4 21H7V10l4.2-7.4A1.9 1.9 0 0 1 15 5.9z"/></symbol>
+  <symbol id="i-runter" viewBox="0 0 24 24"><path d="M17 14V3M9 18.1 10 14H4.2a2 2 0 0 1-2-2.3l1.4-7A2 2 0 0 1 5.6 3H17v11l-4.2 7.4A1.9 1.9 0 0 1 9 18.1z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-schluessel" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M17 6l3 3M14 9l2 2"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></symbol>
+  <symbol id="i-herz" viewBox="0 0 24 24"><path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6a5 5 0 1 1 7.5 6.6z"/></symbol>
+  <symbol id="i-tuer" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-auge" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-stift" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-fokus" viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></symbol>
+  <symbol id="i-liste" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+</svg>
+
+<div class="fortschritt" aria-hidden="true"></div>
+<a class="sprung" href="#inhalt">Zum Inhalt</a>
+
+<div class="pult" aria-label="Entwurfs-Steuerung, nicht Teil der Website">
+  <strong>Entwurf</strong>
+  <button data-view="start">Startseite</button><button data-view="artikel">Artikel</button><button data-view="kategorien">Kategorien</button><button data-view="tag">Schlagwort-Filter</button><button data-view="vorschau" class="red">Vorschau (Freigabe)</button>
+  <span class="trenn"></span>
+  <button data-geraet="390x844">Handy</button><button data-geraet="820x1180">Tablet</button>
+  <span class="trenn"></span>
+  <button type="button" id="modus">Hell/Dunkel</button>
+  <label>Akzent <select id="akzent"><option value="#b3261e">Rot</option><option value="#c2410c">Orange</option><option value="#1f5f8b">Blau</option><option value="#2e6b3a">Grün</option><option value="#6d28d9">Violett</option></select></label>
+  <button type="button" id="login-sim">Als Inhaber</button>
+</div>
+
+<button class="fokus-raus" id="fokus-raus" type="button"><svg class="ico"><use href="#i-fokus"/></svg>Fokus beenden <kbd>Esc</kbd></button>
+
+<header>
+  <div class="leiste">
+    <div class="wrap">
+      <span class="klein ausgabe-zeile"><span class="ausgabe" title="Laufende Nummer: so viele Artikel sind bisher erschienen">Ausgabe Nr. 47</span><span class="ausgabe-datum"> · 10. November 2026</span></span>
+      <div class="kopf-rechts">
+        <div class="suche" id="suche">
+          <label class="suche-feld">
+            <svg class="ico"><use href="#i-suche"/></svg>
+            <input id="suchfeld" type="search" placeholder="Suchen …" autocomplete="off" aria-label="Artikel, Kategorien und Schlagwörter durchsuchen" aria-controls="panel" aria-keyshortcuts="Control+K /">
+            <kbd class="taste">Strg K</kbd>
+            <button type="button" class="suche-zu" id="suche-zu">Abbrechen</button>
+          </label>
+          <div class="panel" id="panel" role="listbox" aria-label="Vorschläge"></div>
+        </div>
+        <button type="button" class="konto nur-gast" data-open="login" title="Anmelden (nur Herausgeber)"><span class="avatar"><svg class="ico"><use href="#i-person"/></svg></span><span class="text">Anmelden</span></button>
+        <button type="button" class="konto red flex" popovertarget="menue" aria-label="Redaktionsmenü"><span class="avatar">S</span><span class="text">Redaktion</span><span class="zaehler">4</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="titelkopf wrap"><p class="name"><a href="#" data-view="start">DISPATCH</a></p></div>
+  <nav class="nav" aria-label="Kategorien">
+    <ul>
+      <li><a href="#" data-view="kategorien">Technik</a></li>
+      <li><a href="#" data-view="kategorien" aria-current="page">Wissenschaft</a></li>
+      <li><a href="#" data-view="kategorien">Gesellschaft</a></li>
+      <li><a href="#" data-view="kategorien">Kultur</a></li>
+      <li><a href="#" data-view="kategorien">Wirtschaft</a></li>
+      <li><a href="#" data-view="kategorien" class="alle">Alle Kategorien</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div id="menue" popover class="menue">
+  <div class="kopfzeile">Angemeldet als <b>Sascha</b> · Herausgeber</div>
+  <a href="#" data-view="start" data-close-pop><svg class="ico"><use href="#i-check"/></svg>Freigaben <span class="zaehler">2</span></a>
+  <a href="#" data-view="start" data-close-pop><svg class="ico"><use href="#i-stift"/></svg>Vorschläge <span class="zaehler">2</span></a>
+  <button data-open="einreichen"><svg class="ico"><use href="#i-plus"/></svg>Thema einreichen</button>
+  <hr>
+  <button data-open="interessen"><svg class="ico"><use href="#i-herz"/></svg>Interessen</button>
+  <button data-open="statistik"><svg class="ico"><use href="#i-chart"/></svg>Statistik</button>
+  <button data-open="zugaenge"><svg class="ico"><use href="#i-schluessel"/></svg>Zugänge für Agenten</button>
+  <hr>
+  <button id="abmelden"><svg class="ico"><use href="#i-tuer"/></svg>Abmelden</button>
+</div>
+
+<main id="inhalt">
+
+<!-- ================= STARTSEITE ================= -->
+<section id="v-start" class="ansicht sichtbar" aria-label="Startseite">
+  <div class="wrap">
+    <section class="wartet red red-fade" aria-labelledby="wh">
+      <div class="wartet-kopf"><h2 id="wh">Wartet auf dich</h2><span>2 Entwürfe · 1 Vorschlag</span></div>
+      <div class="wartet-reihe">
+        <article class="wartekarte">
+          <span class="status review">Zur Freigabe</span>
+          <h3>Was Wärmepumpen im Altbau wirklich leisten</h3>
+          <span class="meta">Eingereicht heute 06:12 · 1.480 Wörter · 6 Quellen · Formprüfung ok</span>
+          <div class="zeile"><button class="knopf primaer klein-k" data-view="vorschau"><svg class="ico"><use href="#i-auge"/></svg>Ansehen und freigeben</button></div>
+        </article>
+        <article class="wartekarte">
+          <span class="status zurueck">Zurückgegeben → überarbeitet</span>
+          <h3>Kurz erklärt: Der neue Mobilfunkstandard</h3>
+          <span class="meta">Deine Anmerkung: „Quelle 3 ist ein Pressetext, bitte Primärquelle“ – erledigt</span>
+          <div class="zeile"><button class="knopf primaer klein-k" data-view="vorschau">Ansehen und freigeben</button></div>
+        </article>
+        <article class="wartekarte">
+          <span class="status vorschlag">Vorschlag · Kategorie</span>
+          <h3>Neue Unterkategorie „Energie“ unter Wirtschaft</h3>
+          <div class="vorher-nachher"><ins>+ Energie</ins> – Strom, Wärme, Netze</div>
+          <div class="zeile"><button class="knopf primaer klein-k" data-erledigt>Übernehmen</button><button class="knopf klein-k" data-erledigt>Ablehnen</button></div>
+        </article>
+      </div>
+    </section>
+
+    <article class="aufmacher">
+      <a href="#" data-view="artikel" class="foto" aria-hidden="true" tabindex="-1"><img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1400&q=70&auto=format&fit=crop" alt=""></a>
+      <div>
+        <span class="klein dach">Wissenschaft · Klima</span>
+        <h2><a href="#" data-view="artikel">Warum der Golfstrom nicht kippt – noch nicht</a></h2>
+        <p class="teaser">Neue Messreihen aus dem Nordatlantik zeigen ein schwächeres, aber stabiles System. Was die Daten sagen, was sie nicht sagen – und wo die Modelle auseinanderlaufen.</p>
+        <p class="meta">9. November 2026 · 12 Min. Lesezeit · 7 Quellen</p>
+        <div class="red flex" style="gap:.8rem;align-items:center;margin-top:.8rem;flex-wrap:wrap">
+          <div class="reaktion"><button class="mehr" aria-pressed="false"><svg class="ico"><use href="#i-hoch"/></svg>Mehr davon</button><button class="weniger" aria-pressed="false"><svg class="ico"><use href="#i-runter"/></svg>Weniger</button></div>
+          <span class="kennzahl"><svg class="ico"><use href="#i-auge"/></svg>1.240 Aufrufe · 58 % zu Ende gelesen</span>
+        </div>
+      </div>
+    </article>
+
+    <div class="raster" id="raster"></div>
+
+    <nav class="seiten" id="seiten-start" aria-label="Seiten"></nav>
+  </div>
+</section>
+
+<!-- ================= ARTIKEL ================= -->
+<section id="v-artikel" class="ansicht" aria-label="Artikel">
+  <article class="artikel wrap">
+    <nav class="krumen" aria-label="Brotkrumen"><ol><li><a href="#" data-view="start">Start</a></li><li><a href="#" data-view="kategorien">Wissenschaft</a></li><li><a href="#" data-view="kategorien">Klima</a></li></ol></nav>
+
+    <header class="artikelkopf">
+      <span class="klein dach">Wissenschaft · Klima</span>
+      <h1>Warum der Golfstrom nicht kippt – noch nicht</h1>
+      <p class="unterzeile">Neue Messreihen zeigen ein schwächeres, aber stabiles System. Eine Bestandsaufnahme.</p>
+      <div class="autor"><span>Von Sascha</span><span>9. November 2026</span><span>aktualisiert 10. November</span></div>
+      <div class="badges">
+        <span class="badge ki" title="Recherchiert und entworfen von einem KI-Agenten, vom Herausgeber gelesen und freigegeben"><svg class="ico"><use href="#i-ki"/></svg>KI-recherchiert</span>
+        <a class="badge quellen" href="#quellen" data-anker><svg class="ico"><use href="#i-quelle"/></svg>7 Quellen</a>
+        <span class="badge zeit"><svg class="ico"><use href="#i-uhr"/></svg>12 Min. Lesezeit</span>
+        <button class="badge fokus" id="fokus-an" type="button" title="Nur der Text, im Vollbild" aria-keyshortcuts="F"><svg class="ico"><use href="#i-fokus"/></svg>Fokus <kbd>F</kbd></button>
+      </div>
+    </header>
+
+    <div class="redkasten red grid red-fade" aria-label="Redaktion zu diesem Artikel">
+      <div class="zahlen">
+        <span><b>1.240</b>Aufrufe</span><span><b>58 %</b>zu Ende gelesen</span><span><b>4:12</b>Lesezeit Ø</span>
+        <span class="funken" aria-hidden="true"><i style="height:30%"></i><i style="height:55%"></i><i style="height:100%"></i><i style="height:80%"></i><i style="height:60%"></i><i style="height:45%"></i><i style="height:38%"></i></span>
+      </div>
+      <div class="aktionen">
+        <div class="reaktion"><button class="mehr" aria-pressed="true"><svg class="ico"><use href="#i-hoch"/></svg>Mehr davon</button><button class="weniger" aria-pressed="false"><svg class="ico"><use href="#i-runter"/></svg>Weniger</button></div>
+        <button class="knopf leise gefahr klein-k" data-open="zurueckziehen">Zurückziehen</button>
+      </div>
+      <div class="hinweiszeile"><span class="status review">Neue Fassung</span>Der Agent hat eine Korrektur eingereicht (2 Absätze, 1 neue Quelle). <button class="knopf klein-k" data-view="vorschau">Änderungen ansehen</button></div>
+    </div>
+
+    <figure class="titelbild">
+      <div class="foto"><img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=70&auto=format&fit=crop" alt="Brandung an einer Atlantikküste" fetchpriority="high"></div>
+      <figcaption>Brandung am Nordatlantik. <span class="nachweis">Foto: Unsplash (Platzhalter) · Unsplash-Lizenz</span></figcaption>
+    </figure>
+
+    <div class="koerper">
+      <aside class="seitenspalte" id="seitenspalte">
+        <nav class="iv" aria-label="Inhaltsverzeichnis">
+          <span class="klein">Inhalt</span>
+          <ol>
+            <li><a href="#a1" data-anker>Was gemessen wird</a></li>
+            <li><a href="#a2" data-anker>Was die Modelle sagen</a></li>
+            <li><a href="#a3" data-anker>Ein Blick von oben</a></li>
+            <li><a href="#a4" data-anker>Wo es unsicher bleibt</a></li>
+            <span class="marker" aria-hidden="true"></span>
+          </ol>
+        </nav>
+        <nav aria-label="Schlagwörter dieses Artikels">
+          <span class="klein">Schlagwörter</span>
+          <ul class="chips">
+            <li><a class="chip tag" href="#" data-view="tag" data-tag="Ozean" rel="tag">Ozean</a></li>
+            <li><a class="chip tag" href="#" data-view="tag" data-tag="Klimamodelle" rel="tag">Klimamodelle</a></li>
+            <li><a class="chip tag" href="#" data-view="tag" data-tag="Messdaten" rel="tag">Messdaten</a></li>
+            <li><a class="chip tag" href="#" data-view="tag" data-tag="Nordatlantik" rel="tag">Nordatlantik</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="text">
+        <details class="iv-mobil nur-schmal" id="iv-mobil">
+          <summary><svg class="ico"><use href="#i-liste"/></svg><span class="klein">Inhalt</span><span class="jetzt" id="iv-jetzt">Was gemessen wird</span><span class="pfeil">▾</span></summary>
+          <ol>
+            <li><a href="#a1" data-anker>Was gemessen wird</a></li>
+            <li><a href="#a2" data-anker>Was die Modelle sagen</a></li>
+            <li><a href="#a3" data-anker>Ein Blick von oben</a></li>
+            <li><a href="#a4" data-anker>Wo es unsicher bleibt</a></li>
+          </ol>
+          <div class="iv-tags"><span class="klein">Schlagwörter</span><ul class="chips"><li><a class="chip tag" href="#" data-view="tag" data-tag="Ozean">Ozean</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Klimamodelle">Klimamodelle</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Messdaten">Messdaten</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Nordatlantik">Nordatlantik</a></li></ul></div>
+        </details>
+        <ul class="chips nur-schmal kopf-tags" aria-label="Schlagwörter dieses Artikels"><li><a class="chip tag" href="#" data-view="tag" data-tag="Ozean">Ozean</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Klimamodelle">Klimamodelle</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Messdaten">Messdaten</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Nordatlantik">Nordatlantik</a></li></ul>
+
+        <aside class="kurz gesamt"><b><svg class="ico"><use href="#i-ki"/></svg>Kurz gesagt</b>Die Umwälzströmung im Atlantik ist seit 2004 messbar schwächer geworden, ein Kipppunkt ist in den Daten bisher nicht erkennbar. Die Modelle streuen stark.</aside>
+        <p class="lead dropcap">Seit zwanzig Jahren hängt eine Kette aus Messbojen quer über den Atlantik. Sie misst, wie viel warmes Wasser nach Norden und wie viel kaltes zurück nach Süden fließt.<sup><a href="#q1" data-anker>1</a></sup></p>
+        <p>Die Frage, ob das System kippen kann, beschäftigt die Forschung seit Jahrzehnten. Neu ist, dass es inzwischen genug Messdaten gibt, um Modelle an der Wirklichkeit zu prüfen.</p>
+
+        <h2 id="a1">Was gemessen wird</h2>
+        <aside class="kurz"><b><svg class="ico"><use href="#i-ki"/></svg>Kurz gesagt</b>Seit 2004 rund 15 % weniger Umwälzung – aber mit Schwankungen, die größer sind als der Trend.</aside>
+        <p>Die Daten zeigen einen Rückgang von etwa 15 Prozent gegenüber den ersten Jahren der Messreihe, mit großen Schwankungen von Jahr zu Jahr.<sup><a href="#q2" data-anker>2</a></sup> Ob das ein Trend oder eine lange Schwankung ist, lässt sich aus zwei Jahrzehnten allein nicht entscheiden.</p>
+        <figure class="abb" data-layout="right"><div class="foto"><img loading="lazy" src="https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=700&q=70&auto=format&fit=crop" alt="Platzhalterbild"></div><figcaption>Bild rechts im Text (Layout „right“).</figcaption></figure>
+        <p>Die Bojen messen Temperatur, Salzgehalt und Strömung in verschiedenen Tiefen. Aus diesen Werten berechnen Forschende den Transport in Sverdrup. Einmal im Jahr holt ein Schiff die Geräte ein, liest die Daten aus und setzt neue aus.</p>
+        <p>Weil die Geräte nur einmal jährlich geborgen werden, erscheinen die Daten mit Verzögerung. Die jüngsten Werte reichen bis ins Frühjahr 2025.</p>
+        <div class="stats">
+          <div class="stat"><b>2004</b><span>Beginn der Messreihe</span></div>
+          <div class="stat"><b>−15 %</b><span>Rückgang der Umwälzung</span></div>
+          <div class="stat"><b>~17 Sv</b><span>mittlerer Transport</span></div>
+        </div>
+
+        <h2 id="a2">Was die Modelle sagen</h2>
+        <aside class="kurz"><b><svg class="ico"><use href="#i-ki"/></svg>Kurz gesagt</b>Die Modelle reichen von „langsam schwächer“ bis „Umschlag noch in diesem Jahrhundert“.</aside>
+        <p>Die Klimamodelle der jüngsten Generation reichen von „deutliche Abschwächung bis 2100“ bis „Übergang schon in diesem Jahrhundert möglich“.<sup><a href="#q3" data-anker>3</a></sup> Die Unterschiede entstehen vor allem dort, wo Modelle Schmelzwasser und Wind unterschiedlich behandeln.</p>
+        <p>Einige Arbeitsgruppen suchen deshalb nach Frühwarnzeichen in den Messdaten selbst, statt sich allein auf Modelle zu verlassen.</p>
+        <figure class="abb" data-layout="wide"><div class="foto"><img loading="lazy" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1400&q=70&auto=format&fit=crop" alt="Platzhalterbild"></div><figcaption>Breites Bild (Layout „wide“): Textspalte plus rechte Spalte, beginnt erst unter dem „Kurz gesagt“. <span class="nachweis">Foto: Unsplash (Platzhalter)</span></figcaption></figure>
+        <blockquote class="pullquote">„Die Bandbreite der Modelle ist selbst die wichtigste Nachricht.“<cite>— Ozeanografin, Interview 2026</cite></blockquote>
+        <div class="callout"><strong>Hinweis:</strong> „Kippen“ meint hier den Übergang in einen schwachen Zustand, nicht einen Stillstand.</div>
+
+        <h2 id="a3">Ein Blick von oben</h2>
+        <aside class="kurz"><b><svg class="ico"><use href="#i-ki"/></svg>Kurz gesagt</b>Satelliten sehen die Oberfläche, die Bojen die Tiefe – erst beides zusammen ergibt ein Bild.</aside>
+        <p>Satelliten messen die Meeresoberfläche, nicht die Tiefe. Erst zusammen mit den Bojen entsteht ein Bild der gesamten Strömung. Seit einigen Jahren lassen sich so auch Wirbel verfolgen, die Wärme über Hunderte Kilometer tragen.</p>
+        <p>Die Satellitendaten sind täglich verfügbar und schließen damit die Lücke zwischen den jährlichen Bergungen der Bojen.</p>
+        <figure class="abb" data-layout="full"><div class="foto"><img loading="lazy" src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=2000&q=70&auto=format&fit=crop" alt="Platzhalterbild"></div><figcaption>Randloses Bild (Layout „full“) über die ganze Breite; die linke Navigation blendet sich währenddessen aus.</figcaption></figure>
+        <p>Der Abgleich beider Quellen zeigt bisher keine Hinweise auf eine plötzliche Veränderung.</p>
+        <figure class="galerie"><div class="foto"><img loading="lazy" src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1000&q=70&auto=format&fit=crop" alt="Platzhalterbild"></div><div class="foto"><img loading="lazy" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=70&auto=format&fit=crop" alt="Platzhalterbild"></div><div class="foto"><img loading="lazy" src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=70&auto=format&fit=crop" alt="Platzhalterbild"></div><figcaption>Galerie; Klick öffnet die große Ansicht.</figcaption></figure>
+
+        <h2 id="a4">Wo es unsicher bleibt</h2>
+        <aside class="kurz"><b><svg class="ico"><use href="#i-ki"/></svg>Kurz gesagt</b>Die große Unbekannte ist Schmelzwasser aus Grönland.</aside>
+        <p>Offen ist vor allem, wie schnell Schmelzwasser aus Grönland die Dichte im Nordatlantik verändert. Je leichter das Oberflächenwasser wird, desto schwerer sinkt es ab – und genau dieses Absinken treibt die Umwälzung an.</p>
+        <div class="factbox"><h3>Faktenbox</h3><ul><li>1 Sverdrup = 1 Million m³ Wasser pro Sekunde</li><li>Messkette: 26,5° Nord</li></ul></div>
+
+        <aside class="transparenz"><svg class="ico"><use href="#i-ki"/></svg><div><strong>Wie dieser Artikel entstand.</strong> Recherche und Entwurf stammen von einem KI-Agenten; die Quellen sind unten verlinkt. Vor der Veröffentlichung wurde der Text vom Herausgeber gelesen und freigegeben.</div></aside>
+
+        <section class="quellen" id="quellen" aria-labelledby="qh">
+          <h2 class="abschnitt-titel" id="qh">Quellen</h2>
+          <ol>
+            <li id="q1">RAPID-Messprogramm: <a href="#">AMOC Data</a>, National Oceanography Centre, abgerufen 8.11.2026</li>
+            <li id="q2">Muster, A. et al.: <a href="#">Two decades of AMOC observations</a>, Studie, 2025</li>
+            <li id="q3">IPCC: <a href="#">Sechster Sachstandsbericht, Kapitel 9</a>, 2021</li>
+          </ol>
+          <h2 class="abschnitt-titel">Bildnachweise</h2>
+          <p>Alle Bilder: Unsplash (Platzhalter im Entwurf)</p>
+        </section>
+
+        <div class="tags-unten nur-schmal">
+          <h2 class="abschnitt-titel">Schlagwörter</h2>
+          <ul class="chips"><li><a class="chip tag" href="#" data-view="tag" data-tag="Ozean">Ozean</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Klimamodelle">Klimamodelle</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Messdaten">Messdaten</a></li><li><a class="chip tag" href="#" data-view="tag" data-tag="Nordatlantik">Nordatlantik</a></li></ul>
+        </div>
+
+        <div class="reaktion-unten red flex" style="justify-content:center;gap:.8rem;align-items:center;margin-top:2rem;flex-wrap:wrap;clear:both">
+          <span class="meta">Wie fandest du das?</span>
+          <div class="reaktion"><button class="mehr" aria-pressed="true"><svg class="ico"><use href="#i-hoch"/></svg>Mehr davon</button><button class="weniger" aria-pressed="false"><svg class="ico"><use href="#i-runter"/></svg>Weniger</button></div>
+        </div>
+
+        <nav class="vornach" aria-label="Weitere Artikel">
+          <div><span class="klein">← Vorheriger</span><a href="#">Mikroplastik im Boden</a></div>
+          <div><span class="klein">Nächster →</span><a href="#">Der stille Abschied vom Passwort</a></div>
+        </nav>
+      </div>
+      <div aria-hidden="true"></div>
+    </div>
+
+    <section class="mehr-dazu" aria-labelledby="mh">
+      <h2 class="abschnitt-titel" id="mh">Mehr dazu</h2>
+      <div class="raster">
+        <article class="karte"><a class="foto" href="#" tabindex="-1" aria-hidden="true"><img loading="lazy" src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=70&auto=format&fit=crop" alt=""></a><span class="klein dach">Wissenschaft</span><h3><a href="#">Mikroplastik im Boden: Was man messen kann</a></h3><p class="meta">4. Nov. · 11 Min.</p></article>
+        <article class="karte"><a class="foto" href="#" tabindex="-1" aria-hidden="true"><img loading="lazy" src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=800&q=70&auto=format&fit=crop" alt=""></a><span class="klein dach">Wissenschaft</span><h3><a href="#">Wie Meeresbojen funken</a></h3><p class="meta">1. Nov. · 5 Min.</p></article>
+        <article class="karte"><a class="foto" href="#" tabindex="-1" aria-hidden="true"><img loading="lazy" src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&q=70&auto=format&fit=crop" alt=""></a><span class="klein dach">Klima</span><h3><a href="#">Kurz erklärt: Was ein Kipppunkt ist</a></h3><p class="meta">28. Okt. · 4 Min.</p></article>
+      </div>
+    </section>
+  </article>
+</section>
+
+<!-- ================= ALLE KATEGORIEN ================= -->
+<section id="v-kategorien" class="ansicht" aria-label="Alle Kategorien">
+  <div class="wrap">
+    <header class="seitenkopf"><span class="klein dach">Übersicht</span><h1>Alle Kategorien</h1><p>5 Ressorts · 11 Unterkategorien · 47 Artikel</p></header>
+    <p class="hinweis red red-fade" style="text-align:center">Angemeldet: Die Zahl oben rechts an jeder Karte ist dein Interesse (0 = Agenten schreiben nie von selbst darüber, 5 = bevorzugt). Antippen ändert es sofort.</p>
+    <div class="katgrid">
+      <a class="katkarte gross" href="#">
+        <img loading="lazy" src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=1200&q=70&auto=format&fit=crop" alt="">
+        <span class="gewicht-inline red"><span class="gewicht" role="group" aria-label="Interesse Wissenschaft"><button>0</button><button>1</button><button>2</button><button>3</button><button aria-pressed="true">4</button><button>5</button></span></span>
+        <span class="klein">14 Artikel</span>
+        <h2>Wissenschaft <span class="pfeil">→</span></h2>
+        <p>Forschung, Messdaten und was sie bedeuten – ohne Hype, mit Belegen.</p>
+        <div class="mehr"><div><div class="unterkat"><span>Klima · 6</span><span>Medizin · 5</span><span>Raumfahrt · 3</span></div><div class="neuester">Neuester: Warum der Golfstrom nicht kippt</div></div></div>
+      </a>
+      <a class="katkarte gross" href="#">
+        <img loading="lazy" src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=70&auto=format&fit=crop" alt="">
+        <span class="gewicht-inline red"><span class="gewicht" role="group" aria-label="Interesse Technik"><button>0</button><button>1</button><button>2</button><button aria-pressed="true">3</button><button>4</button><button>5</button></span></span>
+        <span class="klein">12 Artikel</span>
+        <h2>Technik <span class="pfeil">→</span></h2>
+        <p>Software, Sicherheit und Geräte, die den Alltag verändern.</p>
+        <div class="mehr"><div><div class="unterkat"><span>KI · 5</span><span>Sicherheit · 4</span><span>Mobilität · 3</span></div><div class="neuester">Neuester: Der stille Abschied vom Passwort</div></div></div>
+      </a>
+      <a class="katkarte" href="#">
+        <img loading="lazy" src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=900&q=70&auto=format&fit=crop" alt="">
+        <span class="gewicht-inline red"><span class="gewicht" role="group" aria-label="Interesse Gesellschaft"><button>0</button><button>1</button><button aria-pressed="true">2</button><button>3</button><button>4</button><button>5</button></span></span>
+        <span class="klein">9 Artikel</span>
+        <h2>Gesellschaft <span class="pfeil">→</span></h2>
+        <p>Wie wir leben, wohnen, reisen und streiten.</p>
+        <div class="mehr"><div><div class="unterkat"><span>Verkehr · 4</span><span>Bildung · 5</span></div></div></div>
+      </a>
+      <a class="katkarte" href="#">
+        <img loading="lazy" src="https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=900&q=70&auto=format&fit=crop" alt="">
+        <span class="gewicht-inline red"><span class="gewicht" role="group" aria-label="Interesse Wirtschaft"><button>0</button><button>1</button><button>2</button><button aria-pressed="true">3</button><button>4</button><button>5</button></span></span>
+        <span class="klein">7 Artikel</span>
+        <h2>Wirtschaft <span class="pfeil">→</span></h2>
+        <p>Märkte, Energie und Geld – erklärt statt kommentiert.</p>
+        <div class="mehr"><div><div class="unterkat"><span>Energie · 4</span><span>Arbeit · 3</span></div></div></div>
+      </a>
+      <a class="katkarte" href="#">
+        <img loading="lazy" src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=900&q=70&auto=format&fit=crop" alt="">
+        <span class="gewicht-inline red"><span class="gewicht" role="group" aria-label="Interesse Kultur"><button aria-pressed="true">0</button><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button></span></span>
+        <span class="klein">5 Artikel</span>
+        <h2>Kultur <span class="pfeil">→</span></h2>
+        <p>Bücher, Orte und Ideen.</p>
+        <div class="mehr"><div><div class="unterkat"><span>Literatur · 5</span></div></div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCHLAGWORT-FILTER (additiv) ================= -->
+<section id="v-tag" class="ansicht" aria-label="Schlagwort-Filter">
+  <div class="filterleiste">
+    <div class="wrap">
+      <div class="filterzeile"><b>Gefiltert nach</b><ul class="chips" id="aktiv"></ul><button class="leeren" id="leeren">Alle entfernen</button></div>
+      <div class="filterzeile"><b>Hinzufügen</b><ul class="chips" id="vorschlaege"></ul></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <header class="seitenkopf"><span class="klein dach">Schlagwort</span><h1 id="tag-titel">#Klimamodelle</h1></header>
+    <p class="ergebniszahl"><span><b id="anzahl">5</b> Artikel, neueste zuerst</span><span class="meta">Teilbare Adresse: <code id="url">/suche/?tag=klimamodelle</code></span></p>
+    <div class="raster" id="tag-raster"></div>
+    <nav class="seiten" id="seiten-tag" aria-label="Seiten"></nav>
+  </div>
+</section>
+
+<!-- ================= VORSCHAU MIT FREIGABE ================= -->
+<section id="v-vorschau" class="ansicht" aria-label="Vorschau zur Freigabe">
+  <div class="freigabe red red-fade">
+    <div class="wrap">
+      <div class="pruefung" aria-label="Formprüfung">
+        <span class="pruef ok"><svg class="ico"><use href="#i-check"/></svg>6 Quellen</span>
+        <span class="pruef ok"><svg class="ico"><use href="#i-check"/></svg>1.480 Wörter</span>
+        <span class="pruef ok"><svg class="ico"><use href="#i-check"/></svg>Titelbild mit Lizenz</span>
+        <span class="pruef warn" title="Warnung, blockiert nicht"><svg class="ico"><use href="#i-warn"/></svg>Ähnlicher Titel vorhanden</span>
+      </div>
+      <div class="freigabe-knoepfe">
+        <button class="knopf klein-k" id="kommentieren" aria-pressed="false" title="Stelle anklicken oder Text markieren, dann Anmerkung schreiben"><svg class="ico"><use href="#i-stift"/></svg>Kommentieren <span class="zaehler" id="k-zahl" hidden>0</span></button>
+        <button class="knopf leise klein-k" id="diff-an">Änderungen zeigen</button>
+        <button class="knopf klein-k" id="zurueck-an">Zurück an Agent</button>
+        <button class="knopf leise gefahr klein-k">Verwerfen</button>
+        <button class="knopf primaer" data-freigeben><svg class="ico"><use href="#i-check"/></svg>Freigeben</button>
+      </div>
+      <div class="anmerkung" id="anmerkung"><div><textarea placeholder="Was soll der Agent ändern? (wird ihm beim nächsten Lauf gezeigt)"></textarea><div style="display:flex;justify-content:flex-end;margin-top:.4rem"><button class="knopf primaer klein-k" data-zurueckgeben>Zurückgeben</button></div></div></div>
+    </div>
+  </div>
+  <p class="k-hinweis">Kommentarmodus: Absatz, Bild oder Kasten anklicken – oder Text markieren · Esc beendet</p>
+  <p class="vorschau-band">Vorschau · nicht öffentlich</p>
+  <article class="artikel wrap">
+    <header class="artikelkopf">
+      <span class="klein dach">Wirtschaft · Energie</span>
+      <h1>Was Wärmepumpen im Altbau wirklich leisten</h1>
+      <p class="unterzeile">Feldtests aus drei Wintern – und warum die Vorlauftemperatur wichtiger ist als das Baujahr.</p>
+      <div class="badges"><span class="badge ki"><svg class="ico"><use href="#i-ki"/></svg>KI-recherchiert</span><span class="badge quellen"><svg class="ico"><use href="#i-quelle"/></svg>6 Quellen</span></div>
+    </header>
+    <div class="koerper"><div></div><div class="text" id="k-text">
+      <p class="lead">Drei Winter, 56 Häuser, ein Ergebnis: <del>Wärmepumpen funktionieren im Altbau fast immer.</del> <ins>In den meisten Altbauten arbeiten Wärmepumpen effizient – wenn die Heizkörper groß genug sind.</ins></p>
+      <p>Die Jahresarbeitszahl lag im Mittel bei 3,4. Entscheidend war nicht das Alter des Hauses, sondern die nötige Vorlauftemperatur. Häuser, die mit 45 Grad auskamen, erreichten fast durchweg Werte über 3.</p>
+      <h2>Was die Messungen zeigen</h2>
+      <p>Gemessen wurde mit geeichten Wärmemengenzählern und separaten Stromzählern. Die Daten stammen aus einem Feldtest eines Forschungsinstituts sowie aus zwei kleineren Studien von Energieberatern.</p>
+      <figure class="abb"><div class="foto"><img loading="lazy" src="https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=1000&q=70&auto=format&fit=crop" alt="Platzhalterbild"></div><figcaption>Außeneinheit an einem Altbau. Foto: Unsplash (Platzhalter)</figcaption></figure>
+      <div class="callout"><strong>Wichtig:</strong> Wer vor dem Einbau einzelne Heizkörper tauscht, senkt die nötige Vorlauftemperatur oft um 5 bis 10 Grad.</div>
+      <p>Schwach schnitten vor allem Häuser ab, in denen die Anlage zu groß gewählt war. Sie taktete häufig und verbrauchte dadurch mehr Strom als nötig.</p>
+    </div>
+    <aside class="k-liste" id="k-liste" aria-label="Deine Anmerkungen"><h3>Deine Anmerkungen</h3><ol></ol><p class="k-leer">Noch keine. „Kommentieren“ einschalten, dann eine Stelle anklicken oder Text markieren.</p></aside>
+    </div>
+  </article>
+  <div class="k-box" id="k-box" hidden role="dialog" aria-label="Anmerkung">
+    <blockquote id="k-zitat"></blockquote>
+    <textarea id="k-feld" placeholder="Was soll der Agent hier ändern?"></textarea>
+    <div class="k-knoepfe"><button class="knopf leise klein-k" id="k-abbrechen">Abbrechen</button><button class="knopf primaer klein-k" id="k-speichern">Anmerkung speichern</button></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="fuss">
+  <div class="wrap">
+    <div class="spalten">
+      <section aria-labelledby="fh-tags">
+        <h2 id="fh-tags">Häufige Schlagwörter</h2>
+        <ul class="chips">
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="KI">KI <span class="zahl">9</span></a></li>
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="Klimamodelle">Klimamodelle <span class="zahl">5</span></a></li>
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="Datenschutz">Datenschutz <span class="zahl">5</span></a></li>
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="Energie">Energie <span class="zahl">4</span></a></li>
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="Ozean">Ozean <span class="zahl">4</span></a></li>
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="Bahn">Bahn <span class="zahl">3</span></a></li>
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="Open Source">Open Source <span class="zahl">3</span></a></li>
+          <li><a class="chip tag" href="#" data-view="tag" data-tag="Städte">Städte <span class="zahl">3</span></a></li>
+        </ul>
+      </section>
+      <section aria-labelledby="fh-seiten">
+        <h2 id="fh-seiten">DISPATCH</h2>
+        <nav aria-labelledby="fh-seiten"><a href="#">Über</a><a href="#" data-view="kategorien">Alle Kategorien</a><a href="#">RSS-Feed</a><a href="#">Impressum</a><a href="#">Datenschutz</a></nav>
+      </section>
+    </div>
+    <div class="unten"><span>DISPATCH · Your agents. Your publication.</span></div>
+  </div>
+</footer>
+
+<button class="fab red flex" data-open="einreichen"><svg class="ico"><use href="#i-plus"/></svg><span class="text">Thema einreichen</span></button>
+
+<div class="toast" id="toast" role="status"><span id="toast-text"></span><button id="toast-zurueck">Rückgängig</button></div>
+
+<!-- ===== Dialoge ===== -->
+<dialog id="login" aria-labelledby="lh">
+  <div class="dlg-kopf"><h2 id="lh">Anmelden</h2><button class="zu" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-rumpf">
+    <label class="feld">Benutzername<input autocomplete="username" value="sascha"></label>
+    <label class="feld">Passwort<input type="password" autocomplete="current-password" value="geheim"></label>
+    <p class="hinweis">Nur für den Herausgeber. Danach erscheinen die Redaktionsfunktionen direkt in der Website.</p>
+  </div>
+  <div class="dlg-fuss"><button class="knopf" data-close>Abbrechen</button><button class="knopf primaer" id="login-ok">Anmelden</button></div>
+</dialog>
+
+<dialog id="einreichen" aria-labelledby="eh" class="breit">
+  <div class="dlg-kopf"><h2 id="eh">Thema einreichen</h2><button class="zu" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-rumpf">
+    <label class="feld">Thema<input placeholder="z. B. Wie sicher sind Balkonkraftwerke?"></label>
+    <label class="feld">Worum soll es gehen? <textarea rows="3" placeholder="Fragen, Blickwinkel, was du wissen willst"></textarea></label>
+    <label class="feld">Links (einer pro Zeile)<textarea rows="2" placeholder="https://…"></textarea></label>
+    <div class="ablage">Fotos, Videos oder Ton hierher ziehen – oder <b>Kamera öffnen</b></div>
+    <label class="schalter"><input type="checkbox"> Das Material ist von mir <span class="info" tabindex="0" data-tipp="Dann trägt der Artikel dich als Urheber ein, eine Lizenzangabe ist nicht nötig.">i</span></label>
+    <div class="zwei">
+      <label class="feld">Wie dringend? <select><option>Normal</option><option>Bald</option><option>Sofort</option></select></label>
+      <label class="feld">Wie tief? <select><option>Standard (ab 600 Wörter, 3 Quellen)</option><option>Tiefenrecherche (ab 1.200 Wörter, 5 Quellen)</option></select></label>
+    </div>
+  </div>
+  <div class="dlg-fuss"><button class="knopf" data-close>Abbrechen</button><button class="knopf primaer" data-close data-toast="Thema eingereicht – der nächste Agentenlauf greift es auf.">Einreichen</button></div>
+</dialog>
+
+<dialog id="interessen" aria-labelledby="ih" class="breit">
+  <div class="dlg-kopf"><h2 id="ih">Deine Interessen</h2><button class="zu" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-rumpf">
+    <p class="hinweis">Steuert, worüber die Agenten <b>von sich aus</b> schreiben. Deine „Mehr davon / Weniger“-Klicks fließen mit ein; die Zahl stellst du hier oder direkt auf der Seite „Alle Kategorien“.</p>
+    <div class="interessen-liste">
+      <div class="int"><b>Wissenschaft</b><span class="info" tabindex="0" data-tipp="0 = nie von selbst, 5 = bevorzugt. Selbst eingereichte Themen schreiben die Agenten immer.">i</span><span class="gewicht hell" role="group" aria-label="Wissenschaft"><button>0</button><button>1</button><button>2</button><button>3</button><button aria-pressed="true">4</button><button>5</button></span><span class="gewicht-text">oft</span>
+        <div class="signale"><span class="mehr-s">▲ 6× mehr davon</span><span class="weniger-s">▼ 1× weniger</span><span>Gern über: Klimaforschung, Ozeane · Bitte nicht: Astrologie</span></div></div>
+      <div class="int unter"><b>Klima</b><span class="gewicht hell" role="group" aria-label="Klima"><button>0</button><button>1</button><button>2</button><button>3</button><button>4</button><button aria-pressed="true">5</button></span><span class="gewicht-text">bevorzugt</span></div>
+      <div class="int"><b>Technik</b><span class="gewicht hell" role="group" aria-label="Technik"><button>0</button><button>1</button><button>2</button><button aria-pressed="true">3</button><button>4</button><button>5</button></span><span class="gewicht-text">gelegentlich</span>
+        <div class="signale"><span class="mehr-s">▲ 2×</span><span class="weniger-s">▼ 3×</span><span>Vorschlag aus deinen Klicks: auf 2 senken?</span><button class="knopf leise klein-k">Übernehmen</button></div></div>
+      <div class="int"><b>Kultur</b><span class="gewicht hell" role="group" aria-label="Kultur"><button aria-pressed="true">0</button><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button></span><span class="gewicht-text">nie von selbst</span></div>
+    </div>
+  </div>
+  <div class="dlg-fuss"><button class="knopf" data-close>Schließen</button></div>
+</dialog>
+
+<dialog id="statistik" aria-labelledby="sh" class="breit">
+  <div class="dlg-kopf"><h2 id="sh">Statistik · letzte 14 Tage</h2><button class="zu" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-rumpf">
+    <div class="kpis"><div class="kpi"><b>8.912</b><span>Aufrufe</span></div><div class="kpi"><b>3.104</b><span>Besucher (je Tag)</span></div><div class="kpi"><b>52 %</b><span>zu Ende gelesen</span></div><div class="kpi"><b>3:48</b><span>Lesezeit Ø</span></div></div>
+    <div class="balken" aria-label="Aufrufe pro Tag"><i style="height:35%"></i><i style="height:42%;animation-delay:30ms"></i><i style="height:38%;animation-delay:60ms"></i><i style="height:55%;animation-delay:90ms"></i><i style="height:60%;animation-delay:120ms"></i><i style="height:48%;animation-delay:150ms"></i><i style="height:44%;animation-delay:180ms"></i><i style="height:70%;animation-delay:210ms"></i><i style="height:95%;animation-delay:240ms"></i><i style="height:80%;animation-delay:270ms"></i><i style="height:66%;animation-delay:300ms"></i><i style="height:58%;animation-delay:330ms"></i><i style="height:62%;animation-delay:360ms"></i><i style="height:74%;animation-delay:390ms"></i></div>
+    <div class="zwei" style="margin-top:1.2rem">
+      <div><h3 class="klein">Meistgelesen</h3><ul class="liste"><li><span class="t">Warum der Golfstrom nicht kippt<small>1.240 · 58 % gelesen</small></span></li><li><span class="t">Der stille Abschied vom Passwort<small>980 · 61 %</small></span></li></ul></div>
+      <div><h3 class="klein">Suchen ohne Treffer</h3><ul class="chips"><li><span class="chip">balkonkraftwerk</span></li><li><span class="chip">e-rezept</span></li><li><span class="chip">wasserstoff</span></li></ul><p class="meta" style="margin-top:.6rem">Tipp: Daraus ein Thema einreichen.</p></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="zugaenge" aria-labelledby="zh" class="breit">
+  <div class="dlg-kopf"><h2 id="zh">Zugänge für Agenten</h2><button class="zu" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-rumpf">
+    <p class="hinweis">Mit einem Zugang dürfen Claude Code oder die Claude-App Artikel einreichen. Veröffentlichen kann kein Zugang – das bleibt deine Freigabe.</p>
+    <ul class="liste">
+      <li><svg class="ico"><use href="#i-schluessel"/></svg><span class="t">Claude Code · Laptop<small>zuletzt heute 06:10 · läuft ab 10.02.2027</small></span><button class="knopf leise gefahr klein-k">Widerrufen</button></li>
+      <li><svg class="ico"><use href="#i-schluessel"/></svg><span class="t">Geplante Aufgabe<small>zuletzt gestern 22:00 · kein Ablauf</small></span><button class="knopf leise gefahr klein-k">Widerrufen</button></li>
+      <li><svg class="ico"><use href="#i-ki"/></svg><span class="t">Claude-App (Android)<small>verbunden seit 02.11.2026</small></span><button class="knopf leise gefahr klein-k">Trennen</button></li>
+    </ul>
+  </div>
+  <div class="dlg-fuss"><button class="knopf">Überall abmelden</button><button class="knopf primaer">Neuer Zugang …</button></div>
+</dialog>
+
+<dialog id="zurueckziehen" aria-labelledby="rh">
+  <div class="dlg-kopf"><h2 id="rh">Artikel zurückziehen?</h2><button class="zu" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-rumpf"><p style="margin:0">Der Artikel verschwindet von der Website, aus Suche, Feed und Sitemap. Er bleibt gespeichert und kann neu eingereicht werden.</p></div>
+  <div class="dlg-fuss"><button class="knopf" data-close>Abbrechen</button><button class="knopf primaer" data-close data-toast="Zurückgezogen. Die Website wird neu gebaut.">Zurückziehen</button></div>
+</dialog>
+
+<dialog id="geraet" aria-label="Geräte-Vorschau">
+  <div class="rahmen"><iframe id="geraet-frame" title="Entwurf in Gerätegröße"></iframe></div>
+  <div class="geraet-fuss"><span id="geraet-name">Handy · 390 × 844</span><span><button data-geraet-drehen>Drehen</button> <button data-close>Schließen</button></span></div>
+</dialog>
+
+<script>
+// ===== Nur Entwurf: Verhalten zum Ausprobieren =====
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const root = document.documentElement;
+const IMG = (id, w = 800) => `https://images.unsplash.com/photo-${id}?w=${w}&q=65&auto=format&fit=crop`;
+const params = new URLSearchParams(location.search);
+if (params.get('geraet') === '1') document.body.classList.add('eingebettet');
+
+// ---- Ansichten (Entwurf). Auf der echten Website sind das eigene Seiten. ----
+function zeige(name, ohneScroll) {
+  const wechsel = () => {
+    $$('.ansicht').forEach(v => v.classList.toggle('sichtbar', v.id === 'v-' + name));
+    document.body.dataset.ansicht = name;
+    if (name !== 'vorschau') kModus(false);
+    if (!ohneScroll) scrollTo({ top: 0, behavior: 'instant' });
+    merkeAdresse(name);
+    if (name === 'artikel') setTimeout(() => setzeMarker(ivLinks[0]), 60);
+  };
+  if (document.startViewTransition && !ohneScroll) document.startViewTransition(wechsel); else wechsel();
+}
+addEventListener('click', e => {
+  const v = e.target.closest('[data-view]'); if (!v) return;
+  e.preventDefault();
+  if (v.dataset.tag) { filter = [v.dataset.tag]; tagSeite = 1; zeichneFilter(); }
+  zeige(v.dataset.view);
+});
+// Sprünge innerhalb einer Seite (Inhaltsverzeichnis, Fußnoten, Quellen): scrollen statt Ansicht wechseln
+addEventListener('click', e => {
+  const a = e.target.closest('a[data-anker]'); if (!a) return;
+  e.preventDefault();
+  const ziel = document.getElementById(a.getAttribute('href').slice(1)); if (!ziel) return;
+  ziel.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  if (ziel.tagName === 'LI') { ziel.classList.remove('blitz'); void ziel.offsetWidth; ziel.classList.add('blitz'); }
+  $('#iv-mobil').open = false;
+});
+
+$('#modus').onclick = () => {
+  const dunkel = root.classList.contains('dunkel') || (!root.classList.contains('hell') && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.classList.toggle('dunkel', !dunkel); root.classList.toggle('hell', dunkel);
+};
+$('#akzent').onchange = e => root.style.setProperty('--accent', e.target.value);
+
+// ---- Dialoge ----
+addEventListener('click', e => {
+  const auf = e.target.closest('[data-open]'); if (auf) { $('#menue').hidePopover?.(); $('#' + auf.dataset.open).showModal(); }
+  const zu = e.target.closest('[data-close]'); if (zu) { const d = zu.closest('dialog'); d && d.close(); }
+  const t = e.target.closest('[data-toast]'); if (t) toast(t.dataset.toast);
+  if (e.target.closest('[data-close-pop]')) $('#menue').hidePopover();
+});
+$$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+let toastTimer; function toast(text) { $('#toast-text').textContent = text; $('#toast').classList.add('zeigen'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('zeigen'), 3800); }
+$('#toast-zurueck').onclick = () => $('#toast').classList.remove('zeigen');
+
+// ---- Login (Entwurf) ----
+function anmelden(an) {
+  document.body.classList.toggle('angemeldet', an);
+  $('#login-sim').classList.toggle('an', an); $('#login-sim').textContent = an ? 'Abmelden' : 'Als Inhaber';
+  zeichneStart();
+  merkeAdresse($('.ansicht.sichtbar').id.slice(2));
+}
+// Adresse mitführen, damit Neuladen und Geräte-Vorschau dieselbe Ansicht zeigen; manche Umgebungen verbieten das, dann ohne.
+function merkeAdresse(name) {
+  try { history.replaceState(null, '', '?ansicht=' + name + (document.body.classList.contains('angemeldet') ? '&inhaber=1' : '')); } catch (_) {}
+}
+$('#login-ok').onclick = () => { $('#login').close(); anmelden(true); toast('Angemeldet. Redaktionsfunktionen sind jetzt eingeblendet.'); };
+$('#login-sim').onclick = () => anmelden(!document.body.classList.contains('angemeldet'));
+$('#abmelden').onclick = () => { $('#menue').hidePopover(); anmelden(false); };
+
+// ---- Mehr davon / Weniger ----
+addEventListener('click', e => {
+  const b = e.target.closest('.reaktion button'); if (!b) return;
+  e.preventDefault();
+  const r = b.parentElement, an = b.getAttribute('aria-pressed') !== 'true';
+  $$('button', r).forEach(x => x.setAttribute('aria-pressed', 'false'));
+  b.setAttribute('aria-pressed', String(an)); r.classList.toggle('gesetzt', an);
+  const kat = (b.closest('.karte, .aufmacher, .artikel')?.querySelector('.dach')?.textContent || 'dieses Thema').split('·')[0].trim();
+  if (an) toast(b.classList.contains('mehr') ? `Notiert: mehr zu ${kat}. Fließt ins nächste Briefing.` : `Notiert: weniger zu ${kat}.`);
+});
+
+// ---- Interesse (Karten und Dialog) ----
+const worte = ['nie von selbst', 'sehr selten', 'selten', 'gelegentlich', 'oft', 'bevorzugt'];
+addEventListener('click', e => {
+  const b = e.target.closest('.gewicht button'); if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const g = b.parentElement; $$('button', g).forEach(x => x.setAttribute('aria-pressed', x === b));
+  const txt = g.parentElement.querySelector('.gewicht-text'); if (txt) txt.textContent = worte[+b.textContent];
+  toast(`${g.getAttribute('aria-label').replace('Interesse ', '')}: ${worte[+b.textContent]}`);
+}, true);
+
+// ---- Freigabe-Vorschau ----
+$('#zurueck-an').onclick = () => $('#anmerkung').classList.toggle('offen');
+function diff(zeigen) { $$('#v-vorschau del').forEach(d => d.style.display = zeigen ? '' : 'none'); $$('#v-vorschau ins').forEach(i => i.style.background = zeigen ? '' : 'none'); }
+$('#diff-an').onclick = e => { const z = e.target.textContent.includes('zeigen'); e.target.textContent = z ? 'Änderungen ausblenden' : 'Änderungen zeigen'; diff(z); };
+diff(false);
+addEventListener('click', e => {
+  if (e.target.closest('[data-freigeben]')) toast('Freigegeben. Die Website wird neu gebaut – in wenigen Sekunden online.');
+  if (e.target.closest('[data-zurueckgeben]')) { $('#anmerkung').classList.remove('offen'); kModus(false); toast(kommentare.length ? `Zurück an den Agenten, mit ${kommentare.length} Anmerkung${kommentare.length > 1 ? 'en' : ''} an den markierten Stellen.` : 'Zurück an den Agenten, mit deiner Anmerkung.'); }
+  const er = e.target.closest('[data-erledigt]'); if (er) { const k = er.closest('.wartekarte'); k.style.transition = 'opacity .3s, transform .3s'; k.style.opacity = 0; k.style.transform = 'scale(.95)'; setTimeout(() => k.remove(), 300); toast('Vorschlag erledigt.'); }
+});
+
+// ---- Kommentieren in der Vorschau ----
+// Ablauf wie im Verwalter: Knopf an → Stelle anklicken (Absatz, Bild, Kasten) oder Text markieren → Anmerkung schreiben.
+// Auf der echten Seite gehen Anmerkungen mit Stellen-Bezug (Absatz-Nummer bzw. markierter Text) an den Agenten.
+let kommentare = [], kZiel = null;
+function kModus(an) {
+  document.body.classList.toggle('k-modus', an);
+  $('#kommentieren').setAttribute('aria-pressed', String(an));
+  if (!an) kBoxZu();
+}
+$('#kommentieren').onclick = () => kModus(!document.body.classList.contains('k-modus'));
+function kBoxAuf(ziel, zitat, rechteck) {
+  kZiel = ziel; $('#k-zitat').textContent = zitat.length > 160 ? zitat.slice(0, 160) + ' …' : zitat;
+  const box = $('#k-box'); box.hidden = false;
+  const links = Math.min(rechteck.left + scrollX, scrollX + innerWidth - box.offsetWidth - 16);
+  box.style.left = Math.max(16, links) + 'px'; box.style.top = (rechteck.bottom + scrollY + 10) + 'px';
+  $('#k-feld').value = ''; setTimeout(() => $('#k-feld').focus(), 30);
+}
+function kBoxZu() {
+  $('#k-box').hidden = true;
+  if (kZiel?.vorlaeufig) { const m = kZiel.el; m.replaceWith(...m.childNodes); }
+  kZiel = null;
+}
+$('#k-text').addEventListener('mouseup', e => {
+  if (!document.body.classList.contains('k-modus') || e.target.closest('.k-nr, .k-mark')) return;
+  const sel = getSelection();
+  if (sel && !sel.isCollapsed && $('#k-text').contains(sel.anchorNode)) {
+    const bereich = sel.getRangeAt(0), text = sel.toString().trim();
+    if (!text) return;
+    const mark = document.createElement('mark'); mark.className = 'k-mark';
+    try { bereich.surroundContents(mark); } catch (_) { mark.textContent = ''; }
+    sel.removeAllRanges();
+    if (mark.isConnected) { kBoxAuf({ el: mark, art: 'text', vorlaeufig: true }, text, mark.getBoundingClientRect()); return; }
+  }
+  const block = e.target.closest('#k-text > *'); if (!block) return;
+  kBoxAuf({ el: block, art: 'stelle' }, block.textContent.trim() || 'Bild', block.getBoundingClientRect());
+});
+$('#k-abbrechen').onclick = kBoxZu;
+$('#k-speichern').onclick = () => {
+  const text = $('#k-feld').value.trim(); if (!text || !kZiel) return;
+  const nr = kommentare.length + 1, el = kZiel.el;
+  if (kZiel.art === 'text') { const s = document.createElement('sup'); s.textContent = nr; el.append(s); }
+  else { el.classList.add('kommentiert'); const n = document.createElement('span'); n.className = 'k-nr'; n.textContent = nr; el.append(n); }
+  el.dataset.k = nr;
+  kommentare.push({ nr, text, zitat: $('#k-zitat').textContent, el });
+  kZiel.vorlaeufig = false; kZiel = null; $('#k-box').hidden = true;
+  zeichneKommentare(); toast(`Anmerkung ${nr} gespeichert.`);
+};
+$('#k-feld').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) $('#k-speichern').click(); });
+function zeichneKommentare() {
+  $('#k-liste ol').innerHTML = kommentare.map(k => `<li data-gehe="${k.nr}"><b>${k.nr}</b><span class="k-text">${k.text.replace(/</g, '&lt;')}</span><button class="weg" data-loesche="${k.nr}" aria-label="Anmerkung ${k.nr} löschen" title="Löschen">✕</button><q>${k.zitat.replace(/</g, '&lt;')}</q></li>`).join('');
+  $('#k-liste .k-leer').hidden = kommentare.length > 0;
+  const z = $('#k-zahl'); z.hidden = !kommentare.length; z.textContent = kommentare.length;
+}
+$('#k-liste').addEventListener('click', e => {
+  const weg = e.target.closest('[data-loesche]');
+  if (weg) {
+    const k = kommentare.find(x => x.nr === +weg.dataset.loesche);
+    if (k.el.classList.contains('k-mark')) { k.el.querySelector('sup')?.remove(); k.el.replaceWith(...k.el.childNodes); }
+    else { k.el.classList.remove('kommentiert'); k.el.querySelector('.k-nr')?.remove(); }
+    kommentare = kommentare.filter(x => x !== k); zeichneKommentare(); return;
+  }
+  const geh = e.target.closest('[data-gehe]');
+  if (geh) kommentare.find(x => x.nr === +geh.dataset.gehe)?.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+// ---- Daten für Raster, Suche, Filter ----
+const KATS = ['Wissenschaft', 'Klima', 'Technik', 'Gesellschaft', 'Wirtschaft', 'Energie', 'Kultur', 'Raumfahrt'];
+const TAGS = ['Klimamodelle', 'Ozean', 'Messdaten', 'Nordatlantik', 'KI', 'Datenschutz', 'Energie', 'Bahn', 'Open Source', 'Passkeys', 'Städte', 'Kipppunkte'];
+const ARTS = [
+  { t: 'Der stille Abschied vom Passwort', s: 'Passkeys sind überall angekommen – nur nicht bei den Nutzern.', k: 'Technik', d: '8. Nov. · 6 Min.', i: '1461749280684-dccba630e2f6', tags: ['Passkeys', 'Datenschutz'] },
+  { t: 'Bibliotheken als dritte Orte', s: 'Warum Städte wieder in Lesesäle investieren.', k: 'Kultur', d: '7. Nov. · 8 Min.', i: '1507842217343-583bb7270b66', tags: ['Städte'] },
+  { t: 'Kurz erklärt: Was ein Strompreis-Floor bedeutet', s: 'Briefing in fünf Punkten.', k: 'Wirtschaft', d: '6. Nov. · 3 Min.', i: '1454165804606-c3d57bc86b40', tags: ['Energie'] },
+  { t: 'Die Rückkehr der Nachtzüge', s: 'Ein Comeback mit Fahrplanlücken.', k: 'Gesellschaft', d: '5. Nov. · 9 Min.', i: '1474487548417-781cb71495f3', tags: ['Bahn', 'Städte'] },
+  { t: 'Mikroplastik im Boden: Was man messen kann', s: 'Methoden, Grenzwerte und offene Fragen.', k: 'Wissenschaft', d: '4. Nov. · 11 Min.', i: '1532094349884-543bc11b234d', tags: ['Messdaten'] },
+  { t: 'Open-Source-Modelle im Vergleich', s: 'Lizenz ist nicht gleich offen.', k: 'Technik', d: '3. Nov. · 7 Min.', i: '1518770660439-4636190af475', tags: ['KI', 'Open Source'] },
+  { t: 'Wie Meeresbojen funken', s: 'Messketten im Ozean senden ihre Daten nur einmal im Jahr.', k: 'Wissenschaft', d: '1. Nov. · 5 Min.', i: '1446776811953-b23d57bd21aa', tags: ['Ozean', 'Messdaten', 'Nordatlantik'] },
+  { t: 'Kurz erklärt: Was ein Kipppunkt ist', s: 'Bekanntestes Beispiel ist die atlantische Umwälzung.', k: 'Wissenschaft', d: '28. Okt. · 4 Min.', i: '1473341304170-971dccb5ac1e', tags: ['Klimamodelle', 'Kipppunkte'] },
+  { t: 'Was Klimaszenarien für Versicherer bedeuten', s: 'Klimamodelle werden zur Grundlage für Prämien.', k: 'Wirtschaft', d: '15. Okt. · 9 Min.', i: '1497435334941-8c899ee9e8e9', tags: ['Klimamodelle', 'Energie'] },
+  { t: 'Warum Städte Hitzepläne brauchen', s: 'Schatten, Wasser, Wege – was wirklich hilft.', k: 'Gesellschaft', d: '10. Okt. · 7 Min.', i: '1517245386807-bb43f82c33c4', tags: ['Städte', 'Klimamodelle'] },
+  { t: 'Das Meer als Wärmespeicher', s: 'Wo die Energie der Erwärmung landet.', k: 'Wissenschaft', d: '2. Okt. · 8 Min.', i: '1505761671935-60b3a7427bad', tags: ['Ozean', 'Klimamodelle', 'Messdaten'] },
+  { t: 'KI in der Wettervorhersage', s: 'Schneller als die Physik – aber auch besser?', k: 'Technik', d: '25. Sep. · 10 Min.', i: '1451187580459-43490279c0fa', tags: ['KI', 'Klimamodelle'] },
+];
+const GOLF = { t: 'Warum der Golfstrom nicht kippt – noch nicht', s: 'Die Umwälzströmung im Atlantik ist seit 2004 messbar schwächer geworden …', k: 'Wissenschaft', d: '9. Nov. · 12 Min.', i: '1559827260-dc66d52bef19', tags: ['Klimamodelle', 'Ozean', 'Messdaten', 'Nordatlantik'] };
+const ALLE = [GOLF, ...ARTS];
+
+function karte(a, i) {
+  return `<article class="karte neu" style="animation-delay:${i * 40}ms">` +
+    (document.body.classList.contains('angemeldet') ? `<div class="reaktion mini"><button class="mehr" aria-pressed="false" aria-label="Mehr davon"><svg class="ico"><use href="#i-hoch"/></svg></button><button class="weniger" aria-pressed="false" aria-label="Weniger davon"><svg class="ico"><use href="#i-runter"/></svg></button></div>` : '') +
+    `<a class="foto" href="#" data-view="artikel" tabindex="-1" aria-hidden="true"><img loading="lazy" src="${IMG(a.i)}" alt=""></a>` +
+    `<span class="klein dach">${a.k}</span><h3><a href="#" data-view="artikel">${a.t}</a></h3><p class="teaser">${a.s}</p><p class="meta">${a.d}</p></article>`;
+}
+function seitenleiste(el, seite, gesamt, wohin) {
+  const nr = n => `<li><a href="#" data-seite="${n}" ${n === seite ? 'aria-current="page"' : ''}>${n}</a></li>`;
+  el.innerHTML = `<a href="#" class="weiter-knopf zurueck" data-seite="${seite - 1}" aria-disabled="${seite <= 1}">← Neuere</a>` +
+    `<ol>${Array.from({ length: gesamt }, (_, i) => nr(i + 1)).join('')}</ol><span class="stand">Seite ${seite} von ${gesamt}</span>` +
+    `<a href="#" class="weiter-knopf" data-seite="${seite + 1}" aria-disabled="${seite >= gesamt}">Ältere →</a>`;
+  el.dataset.ziel = wohin;
+}
+addEventListener('click', e => {
+  const s = e.target.closest('[data-seite]'); if (!s) return;
+  e.preventDefault();
+  const nav = s.closest('.seiten'), n = +s.dataset.seite;
+  if (nav.id === 'seiten-start') { startSeite = n; zeichneStart(); $('#raster').scrollIntoView({ block: 'start' }); }
+  else { tagSeite = n; zeichneFilter(); $('#tag-raster').scrollIntoView({ block: 'start' }); }
+});
+
+// ---- Startseite: 6 Artikel je Seite, Seitenzahlen ----
+let startSeite = 1; const PRO = 6, START_GESAMT = 4;
+function zeichneStart() {
+  const liste = Array.from({ length: PRO }, (_, i) => ARTS[((startSeite - 1) * PRO + i) % ARTS.length]);
+  $('#raster').innerHTML = liste.map(karte).join('');
+  seitenleiste($('#seiten-start'), startSeite, START_GESAMT, 'start');
+}
+
+// ---- Suche: inline, mit Kategorien, Schlagwörtern und Artikeln ----
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const hl = (text, q) => { if (!q) return text; const i = norm(text).indexOf(norm(q)); return i < 0 ? text : text.slice(0, i) + '<mark>' + text.slice(i, i + q.length) + '</mark>' + text.slice(i + q.length); };
+const panel = $('#panel'), feld = $('#suchfeld');
+function suche() {
+  const q = feld.value.trim(), n = norm(q);
+  const k = KATS.filter(x => !q || norm(x).includes(n)).slice(0, 4);
+  const t = TAGS.filter(x => !q || norm(x).includes(n)).slice(0, 6);
+  const a = ALLE.filter(x => !q || norm(x.t + ' ' + x.s).includes(n)).slice(0, 4);
+  panel.innerHTML =
+    (k.length ? `<h3>Kategorien</h3><div class="reihe">${k.map(x => `<a class="chip kat neu" href="#" data-view="kategorien"><svg class="ico"><use href="#i-ordner"/></svg>${hl(x, q)}</a>`).join('')}</div>` : '') +
+    (t.length ? `<h3>Schlagwörter</h3><div class="reihe">${t.map(x => `<a class="chip tag neu" href="#" data-view="tag" data-tag="${x}">${hl(x, q)}</a>`).join('')}</div>` : '') +
+    (a.length ? `<h3>${q ? 'Artikel' : 'Zuletzt erschienen'}</h3><ul class="treffer">${a.map((x, i) => `<li><a href="#" data-view="artikel" class="${i === 0 ? 'sel' : ''}"><img src="${IMG(x.i, 200)}" alt=""><span><span class="t">${hl(x.t, q)}</span><span class="s">${hl(x.s, q)}</span></span></a></li>`).join('')}</ul>` : '') +
+    (!k.length && !t.length && !a.length ? `<p class="leer">Nichts gefunden zu „${q}“.</p>` : '') +
+    `<div class="panel-fuss"><span><kbd>↑</kbd> <kbd>↓</kbd> wählen</span><span><kbd>Enter</kbd> öffnen</span><span><kbd>Esc</kbd> schließen</span></div>`;
+}
+feld.addEventListener('input', suche); feld.addEventListener('focus', suche);
+feld.addEventListener('keydown', e => {
+  const items = $$('.treffer a', panel); let i = items.findIndex(x => x.classList.contains('sel'));
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); items[i]?.classList.remove('sel'); i = (i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length; items[i]?.classList.add('sel'); }
+  if (e.key === 'Enter') { e.preventDefault(); items[i]?.click(); feld.blur(); }
+  if (e.key === 'Escape') feld.blur();
+});
+panel.addEventListener('mousedown', e => e.preventDefault()); // Fokus halten, damit der Klick ankommt
+panel.addEventListener('click', () => setTimeout(() => feld.blur(), 0));
+$('#suche-zu').addEventListener('mousedown', e => { e.preventDefault(); feld.blur(); });
+const mac = /Mac|iPhone|iPad/.test(navigator.platform);
+$$('.taste').forEach(k => k.textContent = mac ? '⌘ K' : 'Strg K');
+
+// ---- Schlagwort-Filter: additiv, mit Seitenzahlen ----
+let filter = ['Klimamodelle'], tagSeite = 1; const TAG_PRO = 3;
+function zeichneFilter() {
+  const treffer = ALLE.filter(a => filter.every(f => a.tags.includes(f)));
+  const verwandt = [...new Set(treffer.flatMap(a => a.tags))].filter(t => !filter.includes(t));
+  $('#aktiv').innerHTML = filter.length ? filter.map(f => `<li><button class="chip tag aktiv" data-weg="${f}" title="Filter entfernen">${f} <span class="x">✕</span></button></li>`).join('') : '<li class="meta">kein Filter – alle Artikel</li>';
+  $('#vorschlaege').innerHTML = verwandt.length ? verwandt.map(t => `<li><button class="chip tag" data-dazu="${t}">${t} <span class="zahl">${treffer.filter(a => a.tags.includes(t)).length}</span></button></li>`).join('') : '<li class="meta">keine weiteren Schlagwörter in diesen Treffern</li>';
+  $('#tag-titel').textContent = filter.length ? filter.map(f => '#' + f).join(' + ') : 'Alle Artikel';
+  const z = $('#anzahl'); z.textContent = treffer.length; z.classList.remove('neu'); void z.offsetWidth; z.classList.add('neu');
+  $('#url').textContent = filter.length ? '/suche/?' + filter.map(f => 'tag=' + norm(f).replace(/\s+/g, '-')).join('&') : '/suche/';
+  const gesamt = Math.max(1, Math.ceil(treffer.length / TAG_PRO)); tagSeite = Math.min(tagSeite, gesamt);
+  $('#tag-raster').innerHTML = treffer.slice((tagSeite - 1) * TAG_PRO, tagSeite * TAG_PRO).map(karte).join('');
+  seitenleiste($('#seiten-tag'), tagSeite, gesamt, 'tag');
+}
+addEventListener('click', e => {
+  const weg = e.target.closest('[data-weg]'), dazu = e.target.closest('[data-dazu]');
+  if (weg) { filter = filter.filter(f => f !== weg.dataset.weg); tagSeite = 1; zeichneFilter(); }
+  if (dazu) { filter.push(dazu.dataset.dazu); tagSeite = 1; zeichneFilter(); }
+});
+$('#leeren').onclick = () => { filter = []; tagSeite = 1; zeichneFilter(); };
+
+// ---- Inhaltsverzeichnis: Marker läuft mit, Navigation weicht randlosen Bildern ----
+const ivLinks = $$('.iv a');
+function setzeMarker(a) {
+  if (!a) return;
+  const marker = $('.iv .marker');
+  ivLinks.forEach(x => x.toggleAttribute('aria-current', x === a));
+  marker.style.transform = `translateY(${a.offsetTop}px)`; marker.style.height = a.offsetHeight + 'px';
+  $('#iv-jetzt').textContent = a.textContent;
+}
+const ioIV = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) setzeMarker(ivLinks.find(a => a.getAttribute('href') === '#' + e.target.id)); });
+}, { rootMargin: '-15% 0px -70% 0px' });
+$$('#v-artikel .text h2[id]').forEach(h => ioIV.observe(h));
+const imBild = new Set();
+const ioFull = new IntersectionObserver(es => {
+  es.forEach(e => e.isIntersecting ? imBild.add(e.target) : imBild.delete(e.target));
+  $('#seitenspalte').classList.toggle('weg', imBild.size > 0);
+}, { rootMargin: '-10% 0px -10% 0px' });
+$$('.abb[data-layout="full"]').forEach(f => ioFull.observe(f));
+
+// ---- Fokusmodus: nur der Text, im Vollbild ----
+function fokus(an) {
+  document.body.classList.toggle('fokus', an);
+  if (an) { root.requestFullscreen?.().catch(() => {}); $('#v-artikel .artikelkopf').scrollIntoView({ block: 'start' }); }
+  else if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+}
+$('#fokus-an').onclick = () => fokus(true);
+$('#fokus-raus').onclick = () => fokus(false);
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) document.body.classList.remove('fokus'); });
+let mausTimer; addEventListener('mousemove', () => { if (!document.body.classList.contains('fokus')) return; document.body.classList.add('maus'); clearTimeout(mausTimer); mausTimer = setTimeout(() => document.body.classList.remove('maus'), 1500); });
+
+// ---- Tastenkombinationen ----
+addEventListener('keydown', e => {
+  const tippt = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if ((e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey)) || (e.key === '/' && !tippt)) { e.preventDefault(); feld.focus(); feld.select(); }
+  if (e.key.toLowerCase() === 'f' && !tippt && !e.ctrlKey && !e.metaKey && $('#v-artikel').classList.contains('sichtbar')) fokus(!document.body.classList.contains('fokus'));
+  if (e.key === 'Escape' && document.body.classList.contains('fokus')) fokus(false);
+  if (e.key === 'Escape' && document.body.classList.contains('k-modus')) { if (!$('#k-box').hidden) kBoxZu(); else kModus(false); }
+});
+
+// ---- Geräte-Vorschau: dieselbe Datei in Handy- bzw. Tabletgröße ----
+let geraet = [390, 844];
+function zeigeGeraet() {
+  const f = $('#geraet-frame'), [w, h] = geraet, faktor = Math.min(1, (innerHeight - 110) / h);
+  f.style.width = w + 'px'; f.style.height = h + 'px'; f.style.zoom = faktor;
+  $('#geraet-name').textContent = (w < 600 || h < 600 ? 'Handy' : 'Tablet') + ` · ${w} × ${h}`;
+}
+addEventListener('click', e => {
+  const g = e.target.closest('[data-geraet]'); if (g) {
+    geraet = g.dataset.geraet.split('x').map(Number);
+    const aktiv = $('.ansicht.sichtbar').id.slice(2);
+    $('#geraet-frame').src = location.pathname + '?geraet=1&ansicht=' + aktiv + (document.body.classList.contains('angemeldet') ? '&inhaber=1' : '');
+    zeigeGeraet(); $('#geraet').showModal();
+  }
+  if (e.target.closest('[data-geraet-drehen]')) { geraet = [geraet[1], geraet[0]]; zeigeGeraet(); }
+});
+
+// ---- Start ----
+// Klebende Leisten setzen genau unter der Kategorie-Leiste an: ihre echte Höhe messen statt schätzen
+new ResizeObserver(() => root.style.setProperty('--nav-h', $('.nav').offsetHeight + 'px')).observe($('.nav'));
+zeichneStart(); zeichneFilter(); document.body.dataset.ansicht = 'start';
+if (params.get('inhaber') === '1') anmelden(true);
+if (params.get('ansicht')) zeige(params.get('ansicht'), true);
+if (location.hash === '#anmelden') $('#login').showModal();
+</script>
+</body>
+</html>

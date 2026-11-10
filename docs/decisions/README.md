@@ -16,3 +16,6 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben â€
 | 010 | [Sanitizer mit HTML5-Parser und Whitelist](010-sanitizer-html5-parser-whitelist.md) | Akzeptiert |
 | 011 | [Medien: HTTP-Client mit SSRF-Schutz und Bildvarianten](011-medien-http-client-ssrf-bildvarianten.md) | Akzeptiert |
 | 012 | [Artikel-Statusmaschine und Live-Lesepfad](012-artikel-statusmaschine-live-lesepfad.md) | Akzeptiert |
+| 013 | [Aufbau der Ã¶ffentlichen Website und verbindlicher Entwurf](013-website-aufbau-und-entwurf.md) | Akzeptiert |
+| 014 | [Builder: Vollbau, Sperre, Manifest, Markdown](014-builder-vollbau-manifest.md) | Akzeptiert |
+| 015 | [Theme: Budgets und Skriptmodule](015-theme-budgets-skriptmodule.md) | Akzeptiert |

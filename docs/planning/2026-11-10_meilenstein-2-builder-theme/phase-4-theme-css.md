@@ -58,3 +58,6 @@
 - [ ] Doc: `docs/conventions/frontend.md` → Budget-Zeile auf ADR-015 umstellen (CSS ≤ 48 000 Byte, `site.js` ≤ 5 000, `suche.js` ≤ 9 000, `artikel.js` ≤ 7 000); Zeile „Gestaltung: `docs/design/entwurf-website.html` ist verbindlich (ADR-013)".
 
 ## Report-Back
+
+**Ergebnis:** `app/theme/style.css` = 41 784 Byte (Budget 48 000, ok). Aufgebaut aus dem Entwurfs-`<style>` nach den Übernahme-Tabellen (ohne Redaktions-/Entwurfsteile), plus Bausteine, Lightbox, Einbettung, Druck. Klammern ausgeglichen. `.kurz` → `.tldr, .sidenote` / `.kurz-titel` / `.tldr:first-child`.
+**Offen (nicht belegt):** AK 2–6 verlangen Browser-Sicht (Breiten 1400/820/390, Kontrast, Reduced-Motion, Druckvorschau, 600-px-Höhe bei `.seitenspalte`) — in dieser Sitzung nicht ausgeführt. `--ink-3` unverändert (Entwurfswerte): hell `#6f675b` auf `#f6f1e7`/`#efe7d8` und dunkel `#a39a8a` — Kontrast nicht gemessen. Einbettungs-/Lightbox-Selektoren (`dialog.lightbox`, `.einbettung-start`) folgen dem Plan; das Skript dazu kommt in Phase 6.

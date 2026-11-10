@@ -22,7 +22,8 @@
 
 ## Regeln
 
-- Budgets: CSS unter 30 KB, öffentliches `site.js` unter 5 KB.
+- Budgets (ADR-015): `style.css` ≤ 48 000 Byte, `site.js` ≤ 5 000, `suche.js` ≤ 9 000, `artikel.js` ≤ 7 000.
+- Gestaltung: `docs/design/entwurf-website.html` ist verbindlich (ADR-013).
 - Jede Ausgabe in Templates wird escaped (Helfer `e()`); nur Artikel-HTML aus dem Sanitizer geht roh hinaus.
 - Ohne JavaScript funktioniert alles außer Suche, Videos und Login.
 - Dark Mode über `prefers-color-scheme`, `prefers-reduced-motion` beachten, Druck-Stylesheet mit ausgeschriebenen Quell-URLs.

@@ -200,7 +200,8 @@ set "SMOKE_FAILS=0"
 call :expect / 200
 call :expect /dispatch-app/.env 403
 call :expect /dispatch-app/config.php 403
-call :expect /dispatch/mcp 401
+call :expect /dispatch/mcp 405
+call :expectPost /dispatch/mcp 401
 for %%U in (!NEIGHBOR_URLS!) do call :expect "%%~U" 200
 if "!SMOKE_FAILS!"=="0" goto :done
 echo.
@@ -233,6 +234,19 @@ if "!ACTUAL_STATUS!"=="%~2" (
     exit /b 0
 )
 echo          FEHL !ACTUAL_STATUS! statt %~2  %~1
+set /a SMOKE_FAILS+=1
+exit /b 0
+
+rem Wie :expect, aber mit POST und leerem Rumpf (der MCP-Endpunkt antwortet auf GET mit 405).
+:expectPost
+set "EXPECT_URL=!PUBLIC_BASE_URL!%~1"
+set "ACTUAL_STATUS=000"
+for /f %%S in ('curl -s --max-time 30 -o NUL -w "%%{http_code}" -X POST -H "Content-Type: application/json" -d "{}" "!EXPECT_URL!"') do set "ACTUAL_STATUS=%%S"
+if "!ACTUAL_STATUS!"=="%~2" (
+    echo          ok   %~2  POST %~1
+    exit /b 0
+)
+echo          FEHL !ACTUAL_STATUS! statt %~2  POST %~1
 set /a SMOKE_FAILS+=1
 exit /b 0
 

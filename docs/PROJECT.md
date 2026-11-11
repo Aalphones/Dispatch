@@ -74,7 +74,9 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 | Deployment per SFTP oder `git pull` | `deploy.cmd` mit Nachprüfung (ADR-005) |
 | `/` auf der Domain | bisher Weiterleitung nach `/card/`, künftig die Startseite des Blogs |
 | Tabellen `tokens`, `login_attempts` und die OAuth-Tabellen schon im Kern | `tokens` → Meilenstein 3, `login_attempts` → Meilenstein 4, OAuth-Tabellen → Meilenstein 5; Meilenstein 1 legt nur Migrationen 001–009 an |
-| CLI mit `token:create` | `bin/dispatch` ohne `token:create` (Tokens entstehen mit Meilenstein 3) |
+| CLI mit `token:create` | `bin/dispatch token:create|list|revoke`, auch mit `--remote` gegen den Server über das Deploy-Token (ADR-017); dazu `category:create` (auch `--remote`), bis die Redaktion Kategorien anlegen kann (Meilenstein 4) |
+| Agenten schließen Queue-Aufträge mit `complete_queue_item` ab; Vorschau-Link im Tool-Ergebnis | kein `complete_queue_item` (der Auftrag wird mit `submit_post` zu `review`), Agenten-Rechte nach ADR-009, kein Vorschau-Link vor Meilenstein 4 (ADR-018) |
+| „Mehr davon / Weniger“ als Zustand der Kategorie | Reaktion je Artikel, im Briefing sichtbar (ADR-019) |
 | Formprüfung im Artikel-Service | reine Klasse `Util\FormCheck` ohne Datenbankzugriff (ADR-012) |
 
 ## Meilensteine
@@ -82,7 +84,7 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 0. **Strato-Probe und Deploy-Skript:** Brücke, gesperrter Code-Ordner, Wurzel-`.htaccess`, Diagnose-Route (PHP-Version, Erweiterungen, Authorization-Header, MySQL, ausgehendes HTTPS, GD mit WebP), `deploy.cmd` mit Rauchtest der Nachbarn. Bis der Builder läuft (Meilenstein 2), zeigt `/` eine statische Platzhalter-Seite mit Name und Unterzeile; die Weiterleitung nach `/card/` entfällt schon jetzt.
 1. **Kern (erledigt):** Migrationen, Domänen-Services, Sanitizer, Formprüfung, Medien, Queue, Statistik-Tabellen, Audit-Log, CLI `bin/dispatch`.
 2. **Builder und Theme (erledigt):** alle Seitentypen nach Entwurf, Suche mit additiven Filtern, Fokusmodus, Feed, Sitemap, Manifest-Aufräumen (Plan: `docs/planning/2026-11-10_meilenstein-2-builder-theme/`).
-3. **MCP-Server mit Tokens.** Das Briefing enthält zusätzlich die „Mehr davon / Weniger"-Reaktionen des Inhabers.
+3. **MCP-Server mit Tokens (erledigt):** Endpunkt `/dispatch/mcp` mit beiden Protokoll-Generationen, Tokens mit Scopes, 33 Tools, 6 Resources, 3 Prompts, Reaktionen im Briefing (Plan: `docs/archive/2026-11/2026-11-10_meilenstein-3-mcp-server/`). Das Briefing enthält zusätzlich die „Mehr davon / Weniger"-Reaktionen des Inhabers.
 4. **Redaktions-API und Redaktionsmodus** nach Entwurf, inklusive Interessen-Dialog, „Mehr davon / Weniger" und Anmerkungen an Stellen der Vorschau.
 5. **OAuth 2.1** für die Claude-Apps.
 6. **Probebetrieb** mit geplanter Claude-Aufgabe.

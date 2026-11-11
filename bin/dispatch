@@ -164,6 +164,15 @@ function readDeployEnv(string $path): array
  */
 function callTokenEndpoint(string $deployEnvPath, array $payload): array
 {
+    return callDeployEndpoint($deployEnvPath, '/dispatch/api/tokens', $payload);
+}
+
+/**
+ * @param array<string, mixed> $payload
+ * @return array{result: array<string, mixed>, baseUrl: string}
+ */
+function callDeployEndpoint(string $deployEnvPath, string $path, array $payload): array
+{
     $env = readDeployEnv($deployEnvPath);
     foreach (['PUBLIC_BASE_URL', 'DISPATCH_DEPLOY_TOKEN'] as $key) {
         if (($env[$key] ?? '') === '') {
@@ -175,7 +184,7 @@ function callTokenEndpoint(string $deployEnvPath, array $payload): array
     }
 
     $baseUrl = rtrim($env['PUBLIC_BASE_URL'], '/');
-    $curl = curl_init($baseUrl . '/dispatch/api/tokens');
+    $curl = curl_init($baseUrl . $path);
     curl_setopt_array($curl, [
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
@@ -295,6 +304,8 @@ Befehle:
                   zeigt die MCP-Tokens ohne Hash
   token:revoke <id> [--remote]
                   widerruft ein MCP-Token
+  category:create <slug> <name> [--description=…] [--remote]
+                  legt eine aktive Kategorie als Inhaber an (--remote: auf dem Server über deploy.env)
   reaction <slug> more|less|none [Notiz]
                   setzt oder löscht „Mehr davon / Weniger“ für einen Artikel
 
@@ -399,6 +410,24 @@ switch ($command) {
             (new TokenService(Connection::open()))->revoke($tokenId, Actor::cli());
         }
         echo 'Token ', $tokenId, ' widerrufen.', PHP_EOL;
+        break;
+
+    case 'category:create':
+        ['options' => $options, 'positional' => $positional] = parseArguments(array_slice($argv, 2));
+        if (count($positional) < 2) {
+            throw new RuntimeException('Aufruf: php bin/dispatch category:create <slug> <name> [--description=Text] [--remote]');
+        }
+        $categoryFields = ['slug' => $positional[0], 'name' => implode(' ', array_slice($positional, 1)), 'active' => true];
+        if (is_string($options['description'] ?? null)) {
+            $categoryFields['description'] = $options['description'];
+        }
+        if (isset($options['remote'])) {
+            $categoryResult = callDeployEndpoint($root . '/deploy.env', '/dispatch/api/categories', $categoryFields)['result'];
+            $categoryRecord = $categoryResult['category'];
+        } else {
+            $categoryRecord = (new CategoryService(Connection::open(), $config))->create($categoryFields, Actor::owner())['category'];
+        }
+        echo 'Kategorie angelegt: ', $categoryRecord['slug'], ' (ID ', $categoryRecord['id'], ')', PHP_EOL;
         break;
 
     case 'reaction':

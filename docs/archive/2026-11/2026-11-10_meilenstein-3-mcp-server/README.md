@@ -13,7 +13,7 @@ Nicht in diesem Meilenstein: OAuth und `resource_metadata` im 401 (Meilenstein 5
 | 3 | [Domänen-Ergänzungen: Artikel, Medien, Statistik, Briefing](phase-3-domaene.md) | heikel | complete |
 | 4 | [Tools: Kontext, Queue, Artikel; Anweisungen und Workflows](phase-4-tools-redaktion.md) | standard | complete |
 | 5 | [Tools: Medien, Statistik, Website; Resources und Prompts](phase-5-tools-medien-resources.md) | standard | complete |
-| 6 | [Strato, Abnahme mit echten Clients, Doku](phase-6-strato-abschluss.md) | standard | pending |
+| 6 | [Strato, Abnahme mit echten Clients, Doku](phase-6-strato-abschluss.md) | standard | complete |
 
 Reihenfolge ist Pflicht. ADRs dieses Meilensteins: 016 (Phase 2), 017 (Phase 1), 018 (Phase 3), 019 (Phase 1) — die Nummern sind reserviert.
 
@@ -160,10 +160,23 @@ public function categoryStats(): array; // category_id => ['post_count', 'last_p
 
 ## Summary
 
+Agenten arbeiten über `https://quantum-canvas.de/dispatch/mcp` mit dem Blog: Tokens mit Scopes (CLI, auch `--remote`), Endpunkt mit beiden Protokoll-Generationen, 33 Tools, 6 Resources, 3 Prompts, Briefing mit Reaktionen. Abnahme lokal und mit Claude Code gegen Strato; ein Testartikel steht auf `review`.
+
 ## Files touched
+
+`app/src/Mcp/`, `app/src/Auth/`, `app/src/Domain/` (Token, Reaktion, Briefing, Statistik, Site-Info; Ergänzungen an Post/Media/Queue), `app/src/Api/TokenController.php`, `app/src/Api/CategoryController.php`, `app/mcp/`, `app/migrations/010–011`, `bin/dispatch`, `deploy.cmd`, `docs/` (PROJECT, ADR-016 bis 019, code-map, models, knowledge).
 
 ## Commits
 
+810a33a, 4bb83c8, 3ab10c7, 1dc5714, 585ad9e; Phase 6 und Abschluss siehe `git log`.
+
 ## Deviations from plan
 
+- Standard-Token (`blog:read`, `blog:write`) sieht 30 statt 33 Tools; die übrigen drei brauchen `blog:admin`.
+- Rauchtest in `deploy.cmd`: `GET /dispatch/mcp` → 405, zusätzlich `POST` → 401.
+- Neu: `category:create` und `POST /dispatch/api/categories`, weil Strato ohne Kategorie keine Einreichung zuließ.
+- Kein Inspector; beide Protokolle per `node`-Skript, dazu Claude Code.
+
 ## Follow-ups
+
+Siehe `docs/knowledge/GAPS.md`: Kategorien durch Agenten, Statistik-Zählung, Herkunft bei Upload-Bildern, Queue-Auftrag ohne Kategorie, ungeprüfte Bild-Metadaten. Der Testartikel 1 (Auftrag 1) auf Strato wartet auf die Freigabe (Meilenstein 4).

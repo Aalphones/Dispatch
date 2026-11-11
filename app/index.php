@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Dispatch\Api\CategoryController;
 use Dispatch\Api\DeployController;
 use Dispatch\Api\TokenController;
 use Dispatch\Http\Request;
@@ -15,6 +16,7 @@ $request = Request::fromGlobals();
 // Pfad → [erlaubte Methode, Handler]; bekannter Pfad mit anderer Methode ergibt 405.
 $routes = [
     '/dispatch/api/deploy' => ['POST', static fn () => (new DeployController($config))->handle($request)],
+    '/dispatch/api/categories' => ['POST', static fn () => (new CategoryController($config))->handle($request)],
     '/dispatch/api/tokens' => ['POST', static fn () => (new TokenController())->handle($request)],
 ];
 

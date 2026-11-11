@@ -1,5 +1,4 @@
 # STATE
 
-**Aktiver Plan:** Meilenstein 3 — MCP-Server mit Tokens → `docs/planning/2026-11-10_meilenstein-3-mcp-server/`
-**Phase:** 6 von 6 (Strato, Abnahme mit echten Clients, Doku) — pending; Phase 1 bis 5 abgeschlossen.
-**Nächster Schritt:** Phase 6 umsetzen nach der Phasen-Datei. Lokal: PHP 8.5 liegt unter `%LOCALAPPDATA%MicrosoftWinGetPackagesPHP.PHP.8.5_*`, `mysqld` nach Neustart manuell starten, Skripte mit `DISPATCH_ENV_FILE=app/.env.local`; lokale HTTPS-Importe brauchen `php -d curl.cainfo=<Git>/mingw64/etc/ssl/certs/ca-bundle.crt`.
+**Aktiver Plan:** (kein aktiver Plan) — Meilenstein 3 archiviert in `docs/archive/2026-11/2026-11-10_meilenstein-3-mcp-server/`.
+**Nächster Schritt:** Meilenstein 4 (Redaktions-API und Redaktionsmodus) planen. Lokal: PHP 8.5 unter `%LOCALAPPDATA%\Microsoft\WinGet\Packages\PHP.PHP.8.5_*`, Skripte mit `DISPATCH_ENV_FILE=app/.env.local`; MySQL lässt sich nach Neustart nicht mehr einfach starten (Datenverzeichnis unbekannt).

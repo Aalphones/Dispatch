@@ -5,19 +5,27 @@ import { el, icon } from './ui.js';
 
 let button = null;
 let menu = null;
+let fab = null;
 
-// Einträge, deren Dialog noch nicht gebaut ist, stehen auf `ready: false` und bleiben ausgeblendet.
+// Die Dialoge laden ihr Modul erst beim ersten Öffnen.
+const DIALOGS = {
+	einreichen: async () => (await import('./queue.js')).oeffnen(),
+	interessen: async () => (await import('./category.js')).interessen(),
+	statistik: async () => (await import('./stats.js')).dialogOeffnen(),
+	zugaenge: async () => (await import('./token.js')).oeffnen(),
+};
+
 function entries(overview) {
 	const waiting = overview.review + overview.returned;
 
 	return [
-		{ ready: true, href: '/#wartet', icon: 'check', label: 'Freigaben', count: waiting },
-		{ ready: true, href: '/#wartet', icon: 'stift', label: 'Vorschläge', count: overview.changes },
-		{ ready: false, dialog: 'einreichen', icon: 'plus', label: 'Thema einreichen', separatorAfter: true },
-		{ ready: false, dialog: 'interessen', icon: 'herz', label: 'Interessen' },
-		{ ready: false, dialog: 'statistik', icon: 'chart', label: 'Statistik' },
-		{ ready: false, dialog: 'zugaenge', icon: 'schluessel', label: 'Zugänge für Agenten', separatorAfter: true },
-		{ ready: true, action: abmelden, icon: 'tuer', label: 'Abmelden' },
+		{ href: '/#wartet', icon: 'check', label: 'Freigaben', count: waiting },
+		{ href: '/#wartet', icon: 'stift', label: 'Vorschläge', count: overview.changes },
+		{ action: DIALOGS.einreichen, icon: 'plus', label: 'Thema einreichen', separatorAfter: true },
+		{ action: DIALOGS.interessen, icon: 'herz', label: 'Interessen' },
+		{ action: DIALOGS.statistik, icon: 'chart', label: 'Statistik' },
+		{ action: DIALOGS.zugaenge, icon: 'schluessel', label: 'Zugänge für Agenten', separatorAfter: true },
+		{ action: abmelden, icon: 'tuer', label: 'Abmelden' },
 	];
 }
 
@@ -42,7 +50,7 @@ function menuItem(entry) {
 
 function renderMenu(overview) {
 	const items = [el('div', { class: 'kopfzeile', text: 'Angemeldet als Herausgeber' })];
-	for (const entry of entries(overview).filter((candidate) => candidate.ready)) {
+	for (const entry of entries(overview)) {
 		items.push(menuItem(entry));
 		if (entry.separatorAfter) {
 			items.push(el('hr'));
@@ -73,13 +81,18 @@ export async function aktualisieren() {
 }
 
 export function start() {
+	fab = el('button', { type: 'button', class: 'fab', 'data-red': true, onclick: () => DIALOGS.einreichen() }, [icon('plus'), el('span', { class: 'text', text: 'Thema einreichen' })]);
 	menu = el('div', { id: 'menue', popover: 'auto', class: 'menue' });
 	button = el('button', { type: 'button', class: 'konto', popovertarget: 'menue', 'aria-label': 'Redaktionsmenü' });
 	document.body.append(menu);
+	if (document.body.dataset.seite !== 'vorschau') {
+		document.body.append(fab);
+	}
 	document.querySelector('.kopf-rechts').append(button);
 	onEnde(() => {
 		button.remove();
 		menu.remove();
+		fab.remove();
 		button = null;
 		menu = null;
 	});

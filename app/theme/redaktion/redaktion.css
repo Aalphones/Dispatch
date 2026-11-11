@@ -182,3 +182,110 @@ body.k-modus .v-ansicht .text { user-select: text; }
   .reaktion.mini button { min-width: 2.75rem; justify-content: center; }
   .karte:nth-child(n) .reaktion.mini { position: static; margin-top: .45rem; width: fit-content; box-shadow: none; }
 }
+
+/* Dialoge: Thema einreichen, Interessen, Statistik, Zugänge (Entwurf: Block „Redaktion“, artifacts/entwurf-zugaenge.html) */
+.fab { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40; display: flex; align-items: center; gap: .5rem; background: var(--accent-ink); color: var(--paper); border: 0; border-radius: 999px; padding: .85rem 1.15rem .85rem .95rem; font: 700 .88rem var(--sans); box-shadow: var(--shadow-2); cursor: pointer; transition: transform var(--t-mid) var(--ease-spring); }
+.fab:hover { transform: translateY(-2px) scale(1.03); }
+.fab .ico { font-size: 1.15rem; transition: transform var(--t-mid) var(--ease-spring); }
+.fab:hover .ico { transform: rotate(90deg); }
+body.fokus .fab { display: none !important; }
+.toast span { white-space: pre-line; }
+.zu { transition: background var(--t-fast), transform var(--t-mid) var(--ease-spring); }
+.zu:hover { transform: rotate(90deg); }
+.dlg-rumpf .hinweis { text-align: left; }
+.dlg-kopf h2:focus { outline: none; }
+label.feld select, label.feld textarea { font: 1rem var(--sans); padding: .6rem .7rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); transition: border-color var(--t-fast), box-shadow var(--t-fast); }
+label.feld textarea:focus, label.feld select:focus { border-color: var(--accent-ink); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+label.feld input[aria-invalid="true"] { border-color: var(--bad); }
+.feldfehler { color: var(--bad); font: 500 .8rem var(--sans); margin: -.55rem 0 .9rem; }
+.feldfehler[hidden] { display: none; }
+.feldhilfe { font: 400 .78rem var(--sans); color: var(--ink-3); }
+.stand { animation: rein var(--t-mid) var(--ease-out); }
+
+.ablage { display: block; width: 100%; font: inherit; color: var(--ink-3); background: none; border: 2px dashed var(--rule); border-radius: 12px; padding: 1.3rem; text-align: center; cursor: pointer; margin-bottom: .9rem; transition: border-color var(--t-fast), background var(--t-fast); }
+.ablage:hover, .ablage.ueber { border-color: var(--accent-ink); background: var(--accent-soft); }
+.liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.liste li { display: flex; align-items: center; gap: .8rem; border: 1px solid var(--rule); border-radius: 10px; padding: .65rem .8rem; }
+.liste li .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.liste li small { display: block; color: var(--ink-3); }
+.liste.dateien { margin: -.3rem 0 .9rem; }
+progress { width: 100%; height: .5rem; accent-color: var(--accent-ink); margin-bottom: .9rem; }
+
+.gewicht.hell { background: var(--paper); border-color: var(--rule); backdrop-filter: none; }
+.gewicht.hell button { color: var(--ink-3); }
+.gewicht.hell button[aria-pressed="true"] { background: var(--accent-ink); color: var(--paper); }
+.zeitraum { margin-bottom: 1.1rem; }
+.zwischen { margin-top: 1.2rem; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin-bottom: 1.2rem; }
+.kpi { background: var(--paper-2); border-radius: 10px; padding: .7rem .8rem; }
+.kpi b { display: block; font: 700 1.4rem var(--serif); }
+.kpi span { font-size: .75rem; color: var(--ink-3); }
+.balken { display: flex; align-items: flex-end; gap: 4px; height: 7rem; border-bottom: 1px solid var(--rule); padding-top: .5rem; }
+.balken i { flex: 1; background: var(--accent-ink); border-radius: 3px 3px 0 0; opacity: .8; transform-origin: bottom; animation: wachsen var(--t-slow) var(--ease-out) both; }
+@keyframes wachsen { from { transform: scaleY(0); } }
+
+.interessen-liste { display: grid; gap: .6rem; }
+.int { border: 1px solid var(--rule); border-radius: 10px; padding: .75rem .9rem; display: flex; align-items: center; gap: .6rem .9rem; flex-wrap: wrap; }
+.int.unter { margin-left: 1.5rem; border-style: dashed; }
+.int b { font: 700 1rem var(--serif); flex: 1; min-width: 8rem; }
+.int .gewicht-text { font: .76rem var(--sans); color: var(--ink-3); min-width: 7.5rem; }
+.signale { font: .75rem var(--sans); color: var(--ink-3); width: 100%; display: flex; gap: .4rem 1rem; flex-wrap: wrap; align-items: center; }
+.signale:empty { display: none; }
+.signale .mehr-s { color: var(--ok); }
+.signale .weniger-s { color: var(--bad); }
+.stichwoerter { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+.stichwoerter .chip { cursor: default; padding: .3rem .3rem .3rem .6rem; }
+.stichwoerter .chip:hover { transform: none; }
+.chip .x { border: 0; background: none; color: inherit; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 .25rem; border-radius: 4px; }
+.chip-eingabe { font: .8rem var(--sans); padding: .3rem .6rem; border: 1px dashed var(--rule); border-radius: 999px; background: var(--paper); color: var(--ink); width: 10rem; }
+.chip-eingabe:focus { border-color: var(--accent-ink); outline: none; }
+
+/* Zugänge und „Neuer Zugang“ */
+.liste li.zugang { flex-wrap: wrap; align-items: flex-start; }
+.zugang > .ico { margin-top: .2rem; color: var(--accent-ink); }
+.zugang .t b { font: 600 .95rem var(--sans); }
+.rechte { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .3rem; }
+.recht { font: 600 .68rem var(--sans); letter-spacing: .02em; padding: .1rem .45rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--ink-2); }
+.recht.admin { border-color: var(--accent-line); color: var(--accent-ink); background: var(--accent-soft); }
+.zugang.geht { animation: weg var(--t-mid) var(--ease-out) forwards; }
+@keyframes weg { to { opacity: 0; transform: translateX(16px); } }
+.nachfrage { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--t-mid) var(--ease-out); flex-basis: 100%; }
+.nachfrage > div { overflow: hidden; }
+.nachfrage.offen { grid-template-rows: 1fr; }
+.nachfrage p { margin: .6rem 0 .5rem; font-size: .85rem; color: var(--bad); }
+.nachfrage .zeile { display: flex; gap: .5rem; justify-content: flex-end; }
+.leer { text-align: center; padding: 1.6rem 1rem; border: 2px dashed var(--rule); border-radius: 12px; color: var(--ink-3); }
+.leer .ico { width: 1.8rem; height: 1.8rem; color: var(--accent-ink); display: block; margin: 0 auto .5rem; }
+fieldset.rechtewahl { border: 0; padding: 0; margin: 0 0 .9rem; }
+fieldset.rechtewahl legend { font: 600 .82rem var(--sans); padding: 0; margin-bottom: .45rem; }
+.wahl { display: grid; grid-template-columns: auto 1fr auto; gap: .2rem .7rem; align-items: start; padding: .65rem .8rem; border: 1px solid var(--rule); border-radius: 10px; margin-bottom: .45rem; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
+.wahl:hover { border-color: var(--ink-3); }
+.wahl:has(input:checked) { border-color: var(--accent-line); background: var(--accent-soft); }
+.wahl input { width: 1.15rem; height: 1.15rem; margin: .1rem 0 0; accent-color: var(--accent-ink); }
+.wahl b { font: 600 .9rem var(--sans); }
+.wahl small { grid-column: 2; color: var(--ink-3); font-size: .8rem; }
+.erfolg { display: flex; gap: .6rem; align-items: center; color: var(--ok); font: 600 .92rem var(--sans); margin: 0 0 .4rem; }
+.erfolg .ico { width: 1.3rem; height: 1.3rem; }
+.warn-hinweis { background: color-mix(in oklab, var(--warn) 12%, var(--paper)); color: var(--ink-2); border-left: 3px solid var(--warn); }
+.ergebnis-titel { font: 600 .82rem var(--sans); margin: 0; }
+.kopierfeld { display: flex; gap: .5rem; align-items: stretch; margin: .3rem 0 1rem; }
+.kopierfeld code, .kopierfeld pre { flex: 1; min-width: 0; margin: 0; font: .82rem/1.45 ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 8px; padding: .6rem .7rem; overflow-wrap: anywhere; white-space: pre-wrap; user-select: all; }
+.kopierfeld .knopf { flex: none; align-self: flex-start; }
+.kopierfeld .knopf.ok { color: var(--ok); border-color: var(--ok); }
+
+@media (max-width: 575px) { .kopierfeld { flex-direction: column; } .kopierfeld .knopf { align-self: stretch; } }
+@media (max-width: 46rem) {
+  .fab .text { display: none; }
+  .fab { padding: 1rem; right: 1rem; bottom: 1rem; }
+  dialog, dialog.breit { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 16px 16px 0 0; max-height: 92dvh; transform: translateY(40px); border-bottom: 0; }
+  dialog[open] { transform: none; }
+  @starting-style { dialog[open] { transform: translateY(40px); } }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .zwei { grid-template-columns: 1fr; }
+  .int.unter { margin-left: .6rem; }
+  .int .gewicht-text { min-width: 0; }
+  .gewicht.zeitraum { display: flex; }
+  .gewicht.zeitraum button { flex: 1; }
+  .chip-eingabe { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .balken i, .stand, .zugang.geht { animation: none; } }

@@ -16,6 +16,50 @@ async function send(method, path, body, jwt) {
 	return fetch(API + path, { method, headers, body: payload, credentials: 'same-origin' });
 }
 
+function fail(data, status) {
+	return {
+		error: data && data.error ? data.error : 'http_error',
+		message: data && data.message ? data.message : 'Der Aufruf ist fehlgeschlagen.',
+		status,
+	};
+}
+
+// `fetch` kennt keinen Upload-Fortschritt, deshalb XMLHttpRequest.
+function sendWithProgress(path, body, jwt, onProgress) {
+	return new Promise((resolve, reject) => {
+		const request = new XMLHttpRequest();
+		request.open('POST', API + path);
+		request.setRequestHeader('Authorization', 'Bearer ' + jwt);
+		request.upload.onprogress = (event) => {
+			if (event.lengthComputable) {
+				onProgress(event.loaded / event.total);
+			}
+		};
+		request.onerror = () => reject(fail(null, 0));
+		request.onload = () => {
+			let data = null;
+			try {
+				data = JSON.parse(request.responseText);
+			} catch {}
+			resolve({ status: request.status, data });
+		};
+		request.send(body);
+	});
+}
+
+/** Multipart-POST mit Fortschritt (0–1); wie `api` bei 401 einmal mit neuem Token wiederholt. */
+export async function upload(path, body, onProgress) {
+	let result = await sendWithProgress(path, body, await token(), onProgress);
+	if (result.status === 401) {
+		result = await sendWithProgress(path, body, await token(true), onProgress);
+	}
+	if (result.status < 200 || result.status >= 300) {
+		throw fail(result.data, result.status);
+	}
+
+	return result.data;
+}
+
 /** Bei 401 holt es einmal ein neues Token und wiederholt den Aufruf. */
 export async function api(method, path, body) {
 	let response = await send(method, path, body, await token());
@@ -31,11 +75,7 @@ export async function api(method, path, body) {
 		data = await response.json();
 	} catch {}
 	if (!response.ok) {
-		throw {
-			error: data && data.error ? data.error : 'http_error',
-			message: data && data.message ? data.message : 'Der Aufruf ist fehlgeschlagen.',
-			status: response.status,
-		};
+		throw fail(data, response.status);
 	}
 
 	return data;

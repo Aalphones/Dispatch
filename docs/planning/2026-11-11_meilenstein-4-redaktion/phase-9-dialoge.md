@@ -28,12 +28,17 @@ Der Entwurf zeigt alle Zustände (Anleitung: `artifacts/README.md`); sein Stilbl
 
 ## Checkliste
 
-- [ ] `app/theme/redaktion/queue.js`
-- [ ] `app/theme/redaktion/category.js` (Interessen-Dialog)
-- [ ] `app/theme/redaktion/stats.js` (Dialog)
-- [ ] `app/theme/redaktion/token.js`
-- [ ] `konto.js`: Menü-Einträge einblenden; FAB
-- [ ] `redaktion.css`: Dialog-Stile nach Entwurf, Formular „Neuer Zugang“
-- [ ] Doku: `docs/code-map.md`
+- [x] `app/theme/redaktion/queue.js`
+- [x] `app/theme/redaktion/category.js` (Interessen-Dialog)
+- [x] `app/theme/redaktion/stats.js` (Dialog)
+- [x] `app/theme/redaktion/token.js`
+- [x] `konto.js`: Menü-Einträge einblenden; FAB
+- [x] `redaktion.css`: Dialog-Stile nach Entwurf, Formular „Neuer Zugang“
+- [x] Doku: `docs/code-map.md`
 
 ## Report-Back
+
+Status: complete. Lokal gegengeprüft mit Chrome (headless, Fernsteuerung) gegen `php -S` und lokale MySQL (Teststatistik und Testzugänge danach gelöscht), 1280 und 390 px: AK 1–6 grün — FAB und Menü öffnen „Thema einreichen“ (Dateiauswahl `image/*,video/*,audio/*`, kein `capture`; leerer Titel → Fehler am Feld; 51-MB-Datei abgewiesen; Upload mit Fortschritt, Toast); Interessen mit Baum, Gewicht 0–5, Chips (Enter fügt hinzu, × entfernt) und Speichern über `PATCH`; Statistik mit 7/14/30/90 Tagen, KPIs, Balken, Meistgelesen, Herkunft und Suchbegriffen, Klick auf Begriff öffnet „Thema einreichen“ mit Titel; Zugänge: Liste, Widerrufen mit Nachfrage im Dialog, „Neuer Zugang“ mit Feldfehlern (leer, ungültig, `name_taken`), Ergebnis mit Befehl zuerst, „Fertig“ verwirft den Klartext; Esc schließt, Fokus kehrt zum Auslöser zurück; Seitenbreite 390, Fuß der Dialoge sichtbar.
+
+- Der Dialog „Thema einreichen“ hat statt „Kamera öffnen“ die Fläche „Dateien auswählen“ (AK: Handy bietet Kamera und Galerie an).
+- 🟡 Nicht geprüft: „Überall abmelden“ bis zum Ende (nur die Nachfrage, sonst wäre die Testsitzung weg); Vorschlag-Zeile „Übernehmen“ (keine Testdaten mit Signalen); Tastatur auf einem echten Handy.

@@ -106,6 +106,12 @@ export function dialog(id, content, className = '') {
 		box.setAttribute('aria-labelledby', heading.id);
 	}
 	if (!box.open) {
+		const opener = document.activeElement;
+		box.addEventListener('close', () => {
+			if (opener instanceof HTMLElement && opener.isConnected) {
+				opener.focus();
+			}
+		}, { once: true });
 		box.showModal();
 	}
 
@@ -115,4 +121,36 @@ export function dialog(id, content, className = '') {
 /** Das i-Zeichen mit Hilfetext; per Tastatur erreichbar. */
 export function info(text) {
 	return el('span', { class: 'info', tabindex: '0', role: 'note', 'aria-label': text, 'data-tipp': text }, 'i');
+}
+
+/** Kopf mit Überschrift und ✕, Rumpf und fester Fuß eines Dialogs (Entwurf: .dlg-kopf, .dlg-rumpf, .dlg-fuss). */
+export function rahmen(title, body, footer) {
+	return [
+		el('div', { class: 'dlg-kopf' }, [
+			el('h2', { tabindex: '-1', text: title }),
+			el('button', { type: 'button', class: 'zu', 'data-close': true, 'aria-label': 'Schließen', text: '✕' }),
+		]),
+		el('div', { class: 'dlg-rumpf' }, body),
+		el('div', { class: 'dlg-fuss' }, footer),
+	];
+}
+
+/** Eine Fehlerzeile für Dialoge: bleibt unsichtbar, bis `zeigeFehler` Text setzt; `role=alert` liest sie vor. */
+export function fehlerZeile(id) {
+	return el('p', { class: 'feldfehler', id, role: 'alert', hidden: true });
+}
+
+export function zeigeFehler(line, text) {
+	line.textContent = text;
+	line.hidden = text === '';
+}
+
+/** 1 234 567 → „1,2 MB“. */
+export function groesse(bytes) {
+	const MEGA = 1024 * 1024;
+	if (bytes >= MEGA) {
+		return (bytes / MEGA).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' MB';
+	}
+
+	return Math.max(1, Math.round(bytes / 1024)).toLocaleString('de-DE') + ' KB';
 }

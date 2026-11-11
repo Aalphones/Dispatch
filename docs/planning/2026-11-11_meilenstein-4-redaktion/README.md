@@ -16,7 +16,7 @@ Nicht in diesem Meilenstein: OAuth, verbundene Claude-Apps und OAuth-Clients im 
 | 6 | [Redaktionsmodus: Login, Sitzung, Konto-Menü](phase-6-redaktion-grundgeruest.md) | heikel | complete |
 | 7 | [Vorschau-Seite mit Freigabe und Kommentieren](phase-7-vorschau-freigabe.md) | standard | complete |
 | 8 | [Startseite, Artikel, Kategorien: Redaktion in der Seite](phase-8-redaktion-in-seiten.md) | standard | complete |
-| 9 | [Dialoge: Thema einreichen, Interessen, Statistik, Zugänge](phase-9-dialoge.md) | standard | pending |
+| 9 | [Dialoge: Thema einreichen, Interessen, Statistik, Zugänge](phase-9-dialoge.md) | standard | complete |
 | 10 | [Strato, Abnahme, Doku](phase-10-strato-abschluss.md) | standard | pending |
 
 Reihenfolge ist Pflicht. ADRs dieses Meilensteins (Nummern reserviert): **020** Anmeldung des Inhabers (Phase 1), **021** Redaktions-API (Phase 2), **022** Zähl-Aufruf (Phase 5), **023** Redaktionsmodus im Browser (Phase 6). Phase 3 ergänzt ADR-021 um das Diff-Verfahren.

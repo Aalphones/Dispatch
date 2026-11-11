@@ -39,6 +39,8 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/stats?days=14` | JWT | `Api\StatsController::overview` | 4 |
 | GET | `/dispatch/api/stats/posts/{id}?days=30` | JWT | `Api\StatsController::post` | 4 |
 
+| POST | `/dispatch/api/hit` | Origin | `Api\HitController::handle` (Zähl-Beacon, [ADR-022](decisions/022-zaehl-aufruf.md); immer 204, verworfene Aufrufe zählen nichts) | 5 |
+
 `GET posts/by-slug/{slug}` liefert jetzt `stats` (30 Tage, wie `stats/posts/{id}`).
 
 Fachliche Fehler der Redaktions-API: 400 `invalid_value`/`invalid_json`, 404 `not_found`, sonst 409 mit dem Fehlercode und `details` ([ADR-021](decisions/021-redaktions-api.md)). Aktionen mit Neubau antworten mit `rebuilt` und `rebuild_error`.

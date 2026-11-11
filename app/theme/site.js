@@ -48,6 +48,20 @@ if (searchField) {
 	});
 }
 
+// Gezählt wird nur, wer nicht widerspricht (DNT, GPC), nicht angemeldet ist und keine Vorschau sieht.
+function isCounted() {
+	try {
+		return navigator.doNotTrack !== '1' && navigator.globalPrivacyControl !== true
+			&& !localStorage.getItem('dispatch.angemeldet') && document.body.dataset.seite !== 'vorschau';
+	} catch {
+		return false;
+	}
+}
+
+if (root.dataset.zaehler && isCounted()) {
+	import(root.dataset.zaehler).catch(() => null);
+}
+
 if (document.body.dataset.seite === 'suche') {
 	loadSearch().then((module) => module && module.seite());
 }

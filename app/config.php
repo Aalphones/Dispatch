@@ -41,4 +41,6 @@ return [
     ],
     'publish_mode' => 'review',
     'stats_enabled' => true,
+    // Anfragen, die zu diesem User-Agent-Muster passen (oder keinen haben), zählen nicht.
+    'stats_bot_pattern' => '/bot|crawl|spider|slurp|preview|headless|lighthouse|curl|wget|python|httpclient|java\//i',
 ];

@@ -77,6 +77,14 @@ function suggest(ix, q) {
 	return out.length ? out : [h('p', { class: 'leer' }, 'Nichts gefunden zu „' + q.trim() + '“.')];
 }
 
+// Meldet den Begriff 1,5 s nach der Eingabe an zaehler.js, das Doppelmeldungen verwirft.
+let timer;
+const report = (q) => load().then((ix) => {
+	const st = stems(q);
+	if (q.trim().length > 1 && st.length) dispatchEvent(new CustomEvent('dispatch:suche', { detail: { q, n: find(ix, st, [], '').length } }));
+}).catch(() => {});
+const later = (q) => { clearTimeout(timer); timer = setTimeout(report, 1500, q); };
+
 export function start(field) {
 	const panel = $('panel');
 	const cancel = $('suche-zu');
@@ -85,7 +93,7 @@ export function start(field) {
 		panel.replaceChildren(...suggest(ix, field.value));
 		sel = -1;
 	}).catch(() => {});
-	field.addEventListener('input', render);
+	field.addEventListener('input', () => { render(); later(field.value); });
 	render();
 	field.addEventListener('keydown', (ev) => {
 		const items = [...panel.querySelectorAll('.treffer a')];
@@ -159,6 +167,7 @@ export function seite() {
 
 	function draw() {
 		if (field) field.value = p.get('q') || '';
+		later(p.get('q') || '');
 		load().then((ix) => {
 			const st = stems(p.get('q') || '');
 			const hits = find(ix, st, p.getAll('tag'), p.get('kategorie')).sort(orders[p.get('sort')] || rank);

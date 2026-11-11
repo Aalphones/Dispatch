@@ -7,9 +7,12 @@ namespace Dispatch\Domain;
 use Dispatch\Db\Like;
 use PDO;
 
-/** Liest die Zugriffsstatistik; geschrieben wird sie erst ab Meilenstein 4. */
+/** Liest die Zugriffsstatistik und schreibt die Zählungen des Zähl-Aufrufs (ADR-022). */
 final class StatsRepository
 {
+    /** Obergrenze des Stundenzählers, damit er nicht über SMALLINT hinauswächst. */
+    private const HOUR_COUNTER_CAP = 1000;
+
     private const SUMS = 'SUM(d.views) AS views, SUM(d.visitors) AS visitors, SUM(d.engaged_seconds) AS engaged_seconds,
         SUM(d.reads_half) AS reads_half, SUM(d.reads_full) AS reads_full';
 
@@ -127,6 +130,81 @@ final class StatsRepository
             'count' => (int) $row['count'],
             'hits' => (int) $row['hits'],
         ], $statement->fetchAll());
+    }
+
+    /** Zählt einen Beacon des Tages-Hashs in der laufenden Stunde und liefert den neuen Stand. */
+    public function countHourlyHit(string $day, string $visitorHash, string $now, string $hourAgo): int
+    {
+        // Reihenfolge der Zuweisungen zählt: hits_last_hour liest hour_started noch vor dessen Zurücksetzen.
+        $this->pdo->prepare(
+            'INSERT INTO stats_visitors (day, visitor_hash, hits_last_hour, hour_started) VALUES (?, ?, 1, ?)
+             ON DUPLICATE KEY UPDATE
+                 hits_last_hour = IF(hour_started < ?, 1, LEAST(hits_last_hour + 1, ' . self::HOUR_COUNTER_CAP . ')),
+                 hour_started = IF(hour_started < ?, ?, hour_started)'
+        )->execute([$day, $visitorHash, $now, $hourAgo, $hourAgo, $now]);
+
+        $statement = $this->pdo->prepare('SELECT hits_last_hour FROM stats_visitors WHERE day = ? AND visitor_hash = ?');
+        $statement->execute([$day, $visitorHash]);
+
+        return (int) $statement->fetchColumn();
+    }
+
+    /** @return bool true, wenn der Besucher diesen Pfad heute zum ersten Mal aufruft */
+    public function markVisitorPath(string $day, string $visitorHash, string $path): bool
+    {
+        $statement = $this->pdo->prepare('INSERT IGNORE INTO stats_visitor_paths (day, visitor_hash, path) VALUES (?, ?, ?)');
+        $statement->execute([$day, $visitorHash, $path]);
+
+        return $statement->rowCount() === 1;
+    }
+
+    public function addView(string $day, string $path, ?int $postId, bool $isNewVisitor): void
+    {
+        $newVisitors = $isNewVisitor ? 1 : 0;
+        $this->pdo->prepare(
+            'INSERT INTO stats_daily (day, path, post_id, views, visitors) VALUES (?, ?, ?, 1, ?)
+             ON DUPLICATE KEY UPDATE views = views + 1, visitors = visitors + ?, post_id = ?'
+        )->execute([$day, $path, $postId, $newVisitors, $newVisitors, $postId]);
+    }
+
+    public function addRead(string $day, string $path, ?int $postId, int $seconds, bool $isHalf, bool $isFull): void
+    {
+        $half = $isHalf ? 1 : 0;
+        $full = $isFull ? 1 : 0;
+        $this->pdo->prepare(
+            'INSERT INTO stats_daily (day, path, post_id, engaged_seconds, reads_half, reads_full) VALUES (?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE engaged_seconds = engaged_seconds + ?, reads_half = reads_half + ?,
+                 reads_full = reads_full + ?, post_id = ?'
+        )->execute([$day, $path, $postId, $seconds, $half, $full, $seconds, $half, $full, $postId]);
+    }
+
+    /** `$hits` (nur Suche) überschreibt den bisherigen Wert; ohne bleibt `extra` unberührt. */
+    public function addDimension(string $day, string $path, string $dimension, string $value, ?int $hits): void
+    {
+        $extra = $hits === null ? null : json_encode(['hits' => $hits], JSON_THROW_ON_ERROR);
+        $this->pdo->prepare(
+            'INSERT INTO stats_dimensions (day, path, dimension, value, count, extra) VALUES (?, ?, ?, ?, 1, ?)
+             ON DUPLICATE KEY UPDATE count = count + 1, extra = COALESCE(?, extra)'
+        )->execute([$day, $path, $dimension, $value, $extra, $extra]);
+    }
+
+    /** Der Live-Artikel zu einem Slug; archivierte und nie veröffentlichte zählen nicht. */
+    public function livePostId(string $slug): ?int
+    {
+        $statement = $this->pdo->prepare(
+            "SELECT id FROM posts WHERE slug = ? AND published_revision IS NOT NULL AND status <> 'archived'"
+        );
+        $statement->execute([$slug]);
+        $id = $statement->fetchColumn();
+
+        return $id === false ? null : (int) $id;
+    }
+
+    /** Löscht die Besucher-Tabellen aller Tage vor `$day`; danach ist kein Wiedererkennen möglich. */
+    public function purgeVisitorsBefore(string $day): void
+    {
+        $this->pdo->prepare('DELETE FROM stats_visitors WHERE day < ?')->execute([$day]);
+        $this->pdo->prepare('DELETE FROM stats_visitor_paths WHERE day < ?')->execute([$day]);
     }
 
     /**

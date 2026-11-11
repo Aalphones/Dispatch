@@ -12,7 +12,7 @@ Nicht in diesem Meilenstein: OAuth, verbundene Claude-Apps und OAuth-Clients im 
 | 2 | [API: Übersicht, Vorschau, Freigabe, Vorschläge, Neubau](phase-2-api-freigabe.md) | heikel | complete |
 | 3 | [Änderungsansicht gegenüber der Live-Fassung](phase-3-aenderungsansicht.md) | heikel | complete |
 | 4 | [API: Queue, Zugänge, Kategorien, Reaktionen, Statistik](phase-4-api-rest.md) | standard | complete |
-| 5 | [Zähl-Aufruf der Statistik](phase-5-zaehlen.md) | heikel | pending |
+| 5 | [Zähl-Aufruf der Statistik](phase-5-zaehlen.md) | heikel | complete |
 | 6 | [Redaktionsmodus: Login, Sitzung, Konto-Menü](phase-6-redaktion-grundgeruest.md) | heikel | pending |
 | 7 | [Vorschau-Seite mit Freigabe und Kommentieren](phase-7-vorschau-freigabe.md) | standard | pending |
 | 8 | [Startseite, Artikel, Kategorien: Redaktion in der Seite](phase-8-redaktion-in-seiten.md) | standard | pending |

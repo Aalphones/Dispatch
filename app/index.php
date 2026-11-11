@@ -6,6 +6,7 @@ use Dispatch\Api\AuthController;
 use Dispatch\Api\CategoryController;
 use Dispatch\Api\ChangeController;
 use Dispatch\Api\DeployController;
+use Dispatch\Api\HitController;
 use Dispatch\Api\OverviewController;
 use Dispatch\Api\PostController;
 use Dispatch\Api\PreviewController;
@@ -34,6 +35,7 @@ $router->add('POST', '/dispatch/api/posts/{id}/reaction', static fn (array $para
 $router->add('GET', '/dispatch/api/reactions', static fn () => (new ReactionController())->list($request));
 $router->add('GET', '/dispatch/api/stats', static fn () => (new StatsController())->overview($request));
 $router->add('GET', '/dispatch/api/stats/posts/{id}', static fn (array $params) => (new StatsController())->post($request, (int) $params['id']));
+$router->add('POST', '/dispatch/api/hit', static fn () => (new HitController($config))->handle($request));
 $router->add('POST', '/dispatch/api/auth/login', static fn () => (new AuthController())->login($request));
 $router->add('POST', '/dispatch/api/auth/refresh', static fn () => (new AuthController())->refresh($request));
 $router->add('POST', '/dispatch/api/auth/logout', static fn () => (new AuthController())->logout($request));

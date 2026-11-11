@@ -12,6 +12,7 @@ final class Assets
         'site' => 'js',
         'suche' => 'js',
         'artikel' => 'js',
+        'zaehler' => 'js',
         'vorschau' => 'js',
     ];
 

@@ -48,12 +48,18 @@
 
 ## Checkliste
 
-- [ ] `app/src/Domain/StatsRecorder.php` (`record(array $beacon, string $ip, string $ua): void`), Upserts in `StatsRepository` (`INSERT … ON DUPLICATE KEY UPDATE`)
-- [ ] `app/src/Api/HitController.php` (Prüfungen oben, immer `Response::empty(204)`), Route `POST hit`
-- [ ] `config.php`: `stats_bot_pattern`
-- [ ] `app/theme/zaehler.js`, `site.js` (Laden), `suche.js` (Ereignis), `Assets`, `layout.php`
-- [ ] ADR-022 „Zähl-Aufruf“: Beacon-Format, Verwerfen-Regeln, Salt-Datei statt Datenbank (ein Lesen pro Aufruf, Löschen ohne Cron beim ersten Aufruf des Tages), Besucher je Pfad über `stats_visitor_paths`, jedes Ereignis genau einmal je Pfad. Verworfen: Salt aus einem festen Geheimnis ableiten (wäre über Tage reproduzierbar)
-- [ ] `docs/knowledge/GAPS.md`: Punkt „Statistik-Zählung“ entfernen (entschieden in ADR-022)
-- [ ] Doku: `docs/routes.md`, `docs/models.md` (013, Bedeutung der Dimensionen), `docs/code-map.md`, `docs/conventions/frontend.md` (Budgets)
+- [x] `app/src/Domain/StatsRecorder.php` (`record(array $beacon, string $ip, string $ua): void`), Upserts in `StatsRepository` (`INSERT … ON DUPLICATE KEY UPDATE`)
+- [x] `app/src/Api/HitController.php` (Prüfungen oben, immer `Response::empty(204)`), Route `POST hit`
+- [x] `config.php`: `stats_bot_pattern`
+- [x] `app/theme/zaehler.js`, `site.js` (Laden), `suche.js` (Ereignis), `Assets`, `layout.php`
+- [x] ADR-022 „Zähl-Aufruf“: Beacon-Format, Verwerfen-Regeln, Salt-Datei statt Datenbank (ein Lesen pro Aufruf, Löschen ohne Cron beim ersten Aufruf des Tages), Besucher je Pfad über `stats_visitor_paths`, jedes Ereignis genau einmal je Pfad. Verworfen: Salt aus einem festen Geheimnis ableiten (wäre über Tage reproduzierbar)
+- [x] `docs/knowledge/GAPS.md`: Punkt „Statistik-Zählung“ entfernen (entschieden in ADR-022)
+- [x] Doku: `docs/routes.md`, `docs/models.md` (013, Bedeutung der Dimensionen), `docs/code-map.md`, `docs/conventions/frontend.md` (Budgets)
 
 ## Report-Back
+
+Phase 5 komplett, lokal gegengeprüft (PHP-Server + MySQL, `curl`): AK 1, 3, 4, 8 über den Endpunkt (Aufruf/Neuladen: `views 2`, `visitors 1`; Lesen 40 s mit Tiefe 100; Suche `wasserstoff` mit `extra.hits = 0`; `curl`-User-Agent, `DNT: 1`, fehlender `Origin`, `/vorschau/` → 204 ohne Zählung; 64 Beacons → 60 gezählt; Salt auf gestern → gestrige Besucherzeilen gelöscht, neuer Salt). Byte-Budgets: `site.js` 2 321, `suche.js` 9 433, `zaehler.js` 2 489. Nicht im Browser gelaufen: AK 2, 5 (Brief), 6, 7 — `zaehler.js`/`suche.js` sind nur auf Syntax und Größe geprüft.
+- Unter Windows sperrt `flock` die Datei für jeden anderen Lesezugriff: der Salt wird beim Erneuern über das Handle gelesen (in ADR-022 vermerkt).
+- Die Suche meldet nur über den 1,5-s-Zeitgeber (auch beim Absenden, weil die Suchseite beim Laden meldet); `zaehler.js` entdoppelt über `sessionStorage['dispatch.suche']`.
+- Ein Tab-Wechsel ohne aktive Sekunden sendet kein `read` (Tiefe geht erst mit dem nächsten Wechsel hinaus).
+- Ein alter lokaler PHP-Server (Port 8080) lief noch aus Phase 4 und wurde beendet; keiner läuft mehr.

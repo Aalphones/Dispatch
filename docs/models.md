@@ -244,11 +244,15 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 |---|---|---|
 | `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT |
 | `day` | DATE | |
-| `path` | VARCHAR(300) | leer = seitenübergreifend |
+| `path` | VARCHAR(300) | Pfad der Seite, auf der das Ereignis geschah; Suchen unter `/suche/` |
 | `dimension` | ENUM | `referrer`, `utm`, `device`, `outbound`, `search` |
 | `value` | VARCHAR(300) | UNIQUE mit `day`, `path`, `dimension` |
 | `count` | INT UNSIGNED | Default 0 |
-| `extra` | JSON NULL | |
+| `extra` | JSON NULL | nur `search`: `{"hits": n}` (Trefferzahl der letzten Suche) |
+
+Bedeutung von `value` (ADR-022, je Aufruf einmal gezählt): `referrer` = Domain der Herkunftsseite, leer → `direkt`, eigene Domain zählt nicht; `utm` = `utm_source`; `device` = `mobil`/`tablet`/`desktop`; `outbound` = Zieldomain eines Links; `search` = kleingeschriebener Suchbegriff (2–100 Zeichen).
+
+Beacon-Felder (`POST /dispatch/api/hit`): `t` = `view` (`p` Pfad, `r`, `u`, `d`), `read` (`p`, `s` Sekunden 0–3600, `h` 0/50/100), `out` (`p`, `z`), `search` (`q`, `n`). `stats_daily.post_id` = Live-Artikel zu `/artikel/{slug}/`, sonst `NULL`.
 
 ## stats_visitors (008)
 
@@ -298,7 +302,7 @@ Fehlversuche der Anmeldung für die Login-Bremse (ADR-020). Keine IP im Klartext
 
 ## stats_visitor_paths (013)
 
-Je Besucher-Hash und Tag die schon gezählten Pfade, damit ein Ereignis je Pfad genau einmal zählt (befüllt ab Phase 5).
+Je Besucher-Hash und Tag die schon gezählten Pfade, damit ein Ereignis je Pfad genau einmal zählt. Der erste Aufruf eines neuen Tages löscht alle früheren Tage (zusammen mit `stats_visitors`, ADR-022).
 
 | Spalte | Typ | Hinweis |
 |---|---|---|

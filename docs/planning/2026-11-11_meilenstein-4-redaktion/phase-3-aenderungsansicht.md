@@ -25,11 +25,15 @@
 
 ## Checkliste
 
-- [ ] `app/src/Util/Diff.php` (Blöcke, Paarung, Wort-LCS, Deckel)
-- [ ] Quellen- und Bild-Diff in `PostController::diff` (oder privater Helfer dort)
-- [ ] `ContentRenderer` auf `ins`/`del`/Klassen prüfen, ggf. erlauben
-- [ ] Route `GET posts/{id}/diff`
-- [ ] ADR-021 um Abschnitt „Änderungsansicht“ ergänzen (Verfahren oben in drei Sätzen; verworfen: zeichengenaues Diff über das ganze HTML — zerreißt Tags)
-- [ ] Doku: `docs/routes.md`, `docs/code-map.md` (`Util/Diff`)
+- [x] `app/src/Util/Diff.php` (Blöcke, Paarung, Wort-LCS, Deckel)
+- [x] Quellen- und Bild-Diff in `PostController::diff` (oder privater Helfer dort)
+- [x] `ContentRenderer` auf `ins`/`del`/Klassen prüfen, ggf. erlauben
+- [x] Route `GET posts/{id}/diff`
+- [x] ADR-021 um Abschnitt „Änderungsansicht“ ergänzen (Verfahren oben in drei Sätzen; verworfen: zeichengenaues Diff über das ganze HTML — zerreißt Tags)
+- [x] Doku: `docs/routes.md`, `docs/code-map.md` (`Util/Diff`)
 
 ## Report-Back
+
+**Status: complete.** Gegenproben (Scratchpad-Skript) alle grün: gleicher Text, ein Wort, Einfügen, Löschen, Überschrift→Absatz, 2 500 Wörter (0,6 s bei 2 000 Wörtern ohne Gemeinsamkeit, 71 MB Spitze), > 400 Blöcke, Abbildung getauscht, Sanitizer-Gegenprobe (nur ins/del/diff-Klassen entfernt). Live gegen die Demo-Datenbank: `posts/1/diff` 200 mit Kontrakt-Schlüsseln und `blocks_changed = 0`, unbekannte ID 404; geänderter Stand zeigt `<ins>`, `<del>`, `diff-neu` in der Darstellung. 🟡 Der 409 `no_live_version` ist nicht live gelaufen (Demo-Datenbank hat nur freigegebene Artikel); er läuft über denselben `ApiErrors`-Pfad wie die übrigen 409.
+
+Abweichungen (in ADR-021 festgehalten): Entfernte/neue Blöcke stecken in einem Wrapper-`div.diff-weg|diff-neu`, weil `ContentRenderer` `figure[data-media]` und Galerien ersetzt und die Klasse sonst verlöre (`ins`/`del`/Klassen selbst erhält er unverändert, ohne Änderung dort). Textlose Blöcke haben das Markup als Signatur. Listen, Tabellen, Abbildungen und `details` werden nicht paarweise vermischt.

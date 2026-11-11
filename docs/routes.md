@@ -19,6 +19,7 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/posts?status=review,draft` | JWT | `Api\PostController::list` | 2 |
 | GET | `/dispatch/api/posts/by-slug/{slug}` | JWT | `Api\PostController::bySlug` | 2 |
 | GET | `/dispatch/api/posts/{id}/preview` | JWT | `Api\PreviewController::byLogin` | 2 |
+| GET | `/dispatch/api/posts/{id}/diff` | JWT | `Api\PostController::diff` (`Util\Diff`) | 3 |
 | GET | `/dispatch/api/preview?id&exp&sig` | Signatur | `Api\PreviewController::bySignature` | 2 |
 | POST | `/dispatch/api/posts/{id}/approve` | JWT | `Api\PostController::approve` (+ Neubau) | 2 |
 | POST | `/dispatch/api/posts/{id}/return` | JWT | `Api\PostController::return` | 2 |

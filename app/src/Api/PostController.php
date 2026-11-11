@@ -8,10 +8,15 @@ use Dispatch\Auth\ApiAuth;
 use Dispatch\Db\Connection;
 use Dispatch\Domain\Actor;
 use Dispatch\Domain\DomainError;
+use Dispatch\Domain\MediaRepository;
 use Dispatch\Domain\PostService;
 use Dispatch\Domain\ReactionService;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
+use Dispatch\Site\Builder;
+use Dispatch\Util\Diff;
+use Dispatch\Util\FormCheck;
+use PDO;
 
 /** Artikel-Übersicht und Freigabe-Aktionen des Inhabers (ADR-021). */
 final class PostController
@@ -133,6 +138,101 @@ final class PostController
         }
 
         Response::empty(204);
+    }
+
+    /** Arbeitsstand gegenüber der Live-Fassung: Text, Quellen, Medien (ADR-021). */
+    public function diff(Request $request, int $id): never
+    {
+        ApiAuth::owner($request);
+
+        try {
+            $pdo = Connection::open();
+            $posts = new PostService($pdo, $this->config);
+
+            $post = $posts->get($id);
+            if ($post['published_revision'] === null || $post['status'] === 'archived') {
+                throw new DomainError('no_live_version', 'Der Artikel hat keine Live-Fassung, mit der sich vergleichen ließe.', ['id' => $id]);
+            }
+
+            $live = $posts->revision($id, (int) $post['published_revision']);
+            $draft = $posts->previewSnapshot($id);
+
+            $text = Diff::html((string) $live['content_html'], (string) $draft['content_html']);
+            $sources = $this->sourceChanges((array) $live['sources'], (array) $draft['sources']);
+            $media = $this->mediaChanges($pdo, $live, $draft);
+            $html = (new Builder($this->config, $pdo))->previewMain(['content_html' => $text['html']] + $draft);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json([
+            'html' => $html,
+            'sources' => $sources,
+            'media' => $media,
+            'summary' => [
+                'blocks_changed' => $text['blocks_changed'],
+                'sources_added' => count($sources['added']),
+                'sources_removed' => count($sources['removed']),
+                'media_changed' => count($media['added']) + count($media['removed']),
+            ],
+        ]);
+    }
+
+    /**
+     * Schlüssel einer Quelle ist die URL, ohne URL der Titel.
+     *
+     * @param list<array<string, mixed>> $live
+     * @param list<array<string, mixed>> $draft
+     * @return array{added: list<array{title: string, url: string}>, removed: list<array{title: string, url: string}>}
+     */
+    private function sourceChanges(array $live, array $draft): array
+    {
+        $liveByKey = $this->sourcesByKey($live);
+        $draftByKey = $this->sourcesByKey($draft);
+
+        return [
+            'added' => array_values(array_diff_key($draftByKey, $liveByKey)),
+            'removed' => array_values(array_diff_key($liveByKey, $draftByKey)),
+        ];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $sources
+     * @return array<string, array{title: string, url: string}>
+     */
+    private function sourcesByKey(array $sources): array
+    {
+        $byKey = [];
+        foreach ($sources as $source) {
+            $url = trim((string) ($source['url'] ?? ''));
+            $title = (string) ($source['title'] ?? '');
+            $byKey[$url !== '' ? $url : $title] = ['title' => $title, 'url' => $url];
+        }
+
+        return $byKey;
+    }
+
+    /**
+     * Medien-UIDs aus Titelbild und `data-media`; `alt` stammt aus der Mediathek.
+     *
+     * @param array<string, mixed> $live
+     * @param array<string, mixed> $draft
+     * @return array{added: list<array{uid: string, alt: string}>, removed: list<array{uid: string, alt: string}>}
+     */
+    private function mediaChanges(PDO $pdo, array $live, array $draft): array
+    {
+        $liveUids = FormCheck::mediaUids($live);
+        $draftUids = FormCheck::mediaUids($draft);
+        $addedUids = array_values(array_diff($draftUids, $liveUids));
+        $removedUids = array_values(array_diff($liveUids, $draftUids));
+
+        $known = (new MediaRepository($pdo))->findManyByUid(array_merge($addedUids, $removedUids));
+        $describe = static fn (string $uid): array => ['uid' => $uid, 'alt' => (string) ($known[$uid]['alt'] ?? '')];
+
+        return [
+            'added' => array_map($describe, $addedUids),
+            'removed' => array_map($describe, $removedUids),
+        ];
     }
 
     private function posts(): PostService

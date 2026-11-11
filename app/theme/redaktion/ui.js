@@ -11,7 +11,8 @@ const ICONS = {
 	herz: '<path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6a5 5 0 1 1 7.5 6.6z"/>',
 	chart: '<path d="M3 3v18h18M7 15l4-4 3 3 5-6"/>',
 	schluessel: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M17 6l3 3M14 9l2 2"/>',
-	tuer: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+	warn: '<path d="M12 3 2 21h20zM12 10v5M12 18h.01"/>',
+	tuer:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
 };
 
 let toastTimer = 0;

@@ -14,7 +14,7 @@ Nicht in diesem Meilenstein: OAuth, verbundene Claude-Apps und OAuth-Clients im 
 | 4 | [API: Queue, Zugänge, Kategorien, Reaktionen, Statistik](phase-4-api-rest.md) | standard | complete |
 | 5 | [Zähl-Aufruf der Statistik](phase-5-zaehlen.md) | heikel | complete |
 | 6 | [Redaktionsmodus: Login, Sitzung, Konto-Menü](phase-6-redaktion-grundgeruest.md) | heikel | complete |
-| 7 | [Vorschau-Seite mit Freigabe und Kommentieren](phase-7-vorschau-freigabe.md) | standard | pending |
+| 7 | [Vorschau-Seite mit Freigabe und Kommentieren](phase-7-vorschau-freigabe.md) | standard | complete |
 | 8 | [Startseite, Artikel, Kategorien: Redaktion in der Seite](phase-8-redaktion-in-seiten.md) | standard | pending |
 | 9 | [Dialoge: Thema einreichen, Interessen, Statistik, Zugänge](phase-9-dialoge.md) | standard | pending |
 | 10 | [Strato, Abnahme, Doku](phase-10-strato-abschluss.md) | standard | pending |

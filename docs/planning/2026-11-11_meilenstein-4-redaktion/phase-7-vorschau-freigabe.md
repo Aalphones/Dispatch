@@ -27,11 +27,17 @@
 
 ## Checkliste
 
-- [ ] `app/theme/vorschau.js`
-- [ ] `app/theme/redaktion/post.js` (Vorschau-Teil: Leiste, Freigeben, Zurückgeben, Verwerfen, Diff)
-- [ ] `app/theme/redaktion/kommentar.js`
-- [ ] `redaktion.css`: Freigabe-Leiste, Kommentarmodus, Diff-Stile, Handy-Regeln (ohne Innenabstand-Freiraum)
-- [ ] `start.js`: Seite `vorschau` → `post.vorschau()`
-- [ ] Doku: `docs/code-map.md`
+- [x] `app/theme/vorschau.js`
+- [x] `app/theme/redaktion/post.js` (Vorschau-Teil: Leiste, Freigeben, Zurückgeben, Verwerfen, Diff)
+- [x] `app/theme/redaktion/kommentar.js`
+- [x] `redaktion.css`: Freigabe-Leiste, Kommentarmodus, Diff-Stile, Handy-Regeln (ohne Innenabstand-Freiraum)
+- [x] `start.js`: Seite `vorschau` → `post.vorschau()`
+- [x] Doku: `docs/code-map.md`
 
 ## Report-Back
+
+Status: complete. Lokal gegengeprüft mit Chrome (headless, Fernsteuerung) gegen `php -S`: AK 1–8 grün (Verwerfen-Dialog, Freigeben mit Weiterleitung, Diff-Kopf „n Absätze geändert“, zwei Anmerkungen überleben Neuladen, Zurückgeben leert `sessionStorage`, 390 px: Leiste fest, „Freigeben“ volle Breite, kein Quer-Rollbalken). `vorschau.js` 1 090 Byte.
+
+- Abweichung: Der grüne Eintrag „Titelbild“ der Prüfung entfällt — die Vorschau-Antwort trägt dazu kein Feld; fehlt ein verlangtes Titelbild, erscheint es als roter Fehler. Quellen und Wörter stehen grün.
+- Freiraum unter der Handy-Leiste: `body.mit-freigabe::after` mit der gemessenen Leistenhöhe (`--freigabe-h`, ResizeObserver), kein Innenabstand am Artikel.
+- 🟡 Nicht geprüft: Text über mehrere Absätze markieren (fällt auf den Block der Auswahl zurück), Antippen auf einem echten Touch-Gerät (getestet mit künstlichem `mouseup`).

@@ -29,4 +29,7 @@ export async function start(jwt) {
 	document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: new URL('redaktion.css', import.meta.url).href }));
 	document.body.classList.add('angemeldet');
 	await startKonto();
+	if (document.body.dataset.seite === 'vorschau') {
+		(await import('./post.js')).vorschau();
+	}
 }

@@ -18,6 +18,8 @@ final class StatsService
     private const DEFAULT_DAYS = 30;
     private const MAX_DAYS = 366;
     private const DIMENSION_LIMIT = 50;
+    private const REPORT_MAX_DAYS = 365;
+    private const TOP_POSTS_LIMIT = 10;
     private const PATH_PREFIX_MAX_LENGTH = 300;
 
     private StatsRepository $stats;
@@ -78,6 +80,118 @@ final class StatsService
         }
 
         return $result;
+    }
+
+    /**
+     * Gesamtbild der letzten `$days` Tage für den Redaktionsmodus.
+     *
+     * @return array<string, mixed>
+     */
+    public function report(int $days): array
+    {
+        [$from, $to] = $this->lastDays($days);
+        $totals = $this->stats->totals($from, $to, []);
+
+        return [
+            'from' => $from,
+            'to' => $to,
+            'views' => $totals['views'],
+            'visitors' => $totals['visitors'],
+            'read_full_pct' => $this->readFullPercent($totals),
+            'avg_seconds' => $this->averageSeconds($totals),
+            'daily' => $this->dailyViews($from, $to, []),
+            'top_posts' => array_map(fn (array $row): array => [
+                'id' => $row['id'],
+                'title' => $row['title'],
+                'slug' => $row['slug'],
+                'views' => $row['views'],
+                'read_full_pct' => $this->readFullPercent($row),
+            ], $this->stats->topPosts($from, $to, self::TOP_POSTS_LIMIT)),
+            'referrers' => $this->valueCounts('referrer', $from, $to),
+            'searches_without_hits' => $this->stats->searchesWithoutResults($from, $to, self::DIMENSION_LIMIT),
+            'devices' => $this->valueCounts('device', $from, $to),
+        ];
+    }
+
+    /**
+     * Kennzahlen eines Artikels der letzten `$days` Tage.
+     *
+     * @param int|string $idOrSlug
+     * @return array<string, mixed>
+     */
+    public function postReport(int|string $idOrSlug, int $days): array
+    {
+        $post = $this->findPost($idOrSlug);
+        [$from, $to] = $this->lastDays($days);
+        $filter = ['post_id' => (int) $post['id']];
+        $totals = $this->stats->totals($from, $to, $filter);
+
+        return [
+            'views' => $totals['views'],
+            'read_full_pct' => $this->readFullPercent($totals),
+            'avg_seconds' => $this->averageSeconds($totals),
+            'daily' => $this->dailyViews($from, $to, $filter),
+        ];
+    }
+
+    /** @return array{0: string, 1: string} die letzten `$days` Tage bis heute, als `Y-m-d` (UTC) */
+    private function lastDays(int $days): array
+    {
+        if ($days < 1 || $days > self::REPORT_MAX_DAYS) {
+            throw new DomainError('invalid_value', sprintf('days muss eine ganze Zahl von 1 bis %d sein.', self::REPORT_MAX_DAYS), ['field' => 'days']);
+        }
+        $today = new DateTimeImmutable('today', new DateTimeZone('UTC'));
+
+        return [$today->modify('-' . ($days - 1) . ' days')->format('Y-m-d'), $today->format('Y-m-d')];
+    }
+
+    /** @param array<string, mixed> $totals views, reads_full */
+    private function readFullPercent(array $totals): int
+    {
+        if ($totals['views'] === 0) {
+            return 0;
+        }
+
+        return (int) round($totals['reads_full'] / $totals['views'] * 100);
+    }
+
+    /** @param array<string, mixed> $totals engaged_seconds, reads_half */
+    private function averageSeconds(array $totals): int
+    {
+        return (int) round($totals['engaged_seconds'] / max($totals['reads_half'], 1));
+    }
+
+    /**
+     * Jeder Tag des Zeitraums, auch ohne Aufrufe (Diagramm ohne Lücken).
+     *
+     * @param array{post_id?: int} $filter
+     * @return list<array{day: string, views: int}>
+     */
+    private function dailyViews(string $from, string $to, array $filter): array
+    {
+        $viewsByDay = [];
+        foreach ($this->stats->totalsBy('day', $from, $to, $filter) as $row) {
+            $viewsByDay[$row['key']] = $row['views'];
+        }
+
+        $daily = [];
+        $day = new DateTimeImmutable($from, new DateTimeZone('UTC'));
+        $end = new DateTimeImmutable($to, new DateTimeZone('UTC'));
+        while ($day <= $end) {
+            $key = $day->format('Y-m-d');
+            $daily[] = ['day' => $key, 'views' => $viewsByDay[$key] ?? 0];
+            $day = $day->modify('+1 day');
+        }
+
+        return $daily;
+    }
+
+    /** @return list<array{value: string, count: int}> */
+    private function valueCounts(string $dimension, string $from, string $to): array
+    {
+        $rows = $this->stats->dimension($dimension, $from, $to, [], self::DIMENSION_LIMIT);
+
+        return array_map(static fn (array $row): array => ['value' => $row['value'], 'count' => $row['count']], $rows);
     }
 
     /** @return array{0: string, 1: string} von und bis als `Y-m-d` (UTC) */

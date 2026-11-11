@@ -9,7 +9,7 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | POST | `/dispatch/mcp` | `dmcp_`-Token | `Mcp\McpController` | M3 |
 | POST | `/dispatch/api/deploy` | Deploy | `Api\DeployController` | M1 |
 | POST | `/dispatch/api/categories` | Deploy | `Api\CategoryController` | M3 |
-| POST | `/dispatch/api/tokens` | Deploy | `Api\TokenController` | M3 |
+| POST | `/dispatch/api/tokens` | JWT/Deploy | `Api\TokenController::handle` (Deploy + `action` im Body = Kommandozeilenweg wie in M3; sonst neuer Zugang, 201 mit Klartext und `command`) | M3, 4 |
 | POST | `/dispatch/api/auth/login` | — (Login-Bremse) | `Api\AuthController::login` | 1 |
 | POST | `/dispatch/api/auth/refresh` | Cookie + `Origin` | `Api\AuthController::refresh` | 1 |
 | POST | `/dispatch/api/auth/logout` | Cookie | `Api\AuthController::logout` | 1 |
@@ -28,6 +28,18 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/changes` | JWT | `Api\ChangeController::list` | 2 |
 | POST | `/dispatch/api/changes/{id}/apply` | JWT | `Api\ChangeController::apply` (+ Neubau) | 2 |
 | POST | `/dispatch/api/changes/{id}/reject` | JWT | `Api\ChangeController::reject` | 2 |
+
+| POST | `/dispatch/api/queue` | JWT | `Api\QueueController::add` (multipart, `files[]`; abgelehnte Dateien in `rejected`; zu große Anfrage → 413) | 4 |
+| GET | `/dispatch/api/tokens` | JWT | `Api\TokenController::list` (nicht widerrufene `mcp`-Zugänge) | 4 |
+| DELETE | `/dispatch/api/tokens/{id}` | JWT/Deploy | `Api\TokenController::revokeById` | 4 |
+| GET | `/dispatch/api/categories` | JWT | `Api\CategoryController::list` (mit `signals`, `suggestion`) | 4 |
+| PATCH | `/dispatch/api/categories/{id}` | JWT | `Api\CategoryController::patch` (nur `interest`, `keywords`, `avoid`; sonst 400 `invalid_field`) | 4 |
+| POST | `/dispatch/api/posts/{id}/reaction` | JWT | `Api\ReactionController::set` | 4 |
+| GET | `/dispatch/api/reactions` | JWT | `Api\ReactionController::list` | 4 |
+| GET | `/dispatch/api/stats?days=14` | JWT | `Api\StatsController::overview` | 4 |
+| GET | `/dispatch/api/stats/posts/{id}?days=30` | JWT | `Api\StatsController::post` | 4 |
+
+`GET posts/by-slug/{slug}` liefert jetzt `stats` (30 Tage, wie `stats/posts/{id}`).
 
 Fachliche Fehler der Redaktions-API: 400 `invalid_value`/`invalid_json`, 404 `not_found`, sonst 409 mit dem Fehlercode und `details` ([ADR-021](decisions/021-redaktions-api.md)). Aktionen mit Neubau antworten mit `rebuilt` und `rebuild_error`.
 

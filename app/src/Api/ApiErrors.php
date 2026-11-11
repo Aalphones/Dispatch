@@ -10,7 +10,7 @@ use Dispatch\Http\Response;
 /** Übersetzt fachliche Fehler in die Antwort der Redaktions-API: Eingabefehler 400, Unbekanntes 404, alles andere 409. */
 final class ApiErrors
 {
-    private const BAD_REQUEST = ['invalid_value', 'invalid_json'];
+    private const BAD_REQUEST = ['invalid_value', 'invalid_json', 'invalid_field'];
 
     public static function respond(DomainError $error): never
     {

@@ -55,6 +55,12 @@ final class ReactionService
         return $this->reactions->find($postId);
     }
 
+    /** @return array<int, string> Artikel-ID → `more`|`less`, alle gespeicherten Reaktionen */
+    public function all(): array
+    {
+        return $this->reactions->all();
+    }
+
     /**
      * @return list<array<string, mixed>> neueste zuerst: post_id, slug, title, reaction, note, updated_at, categories, tags
      */

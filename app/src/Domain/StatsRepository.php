@@ -45,6 +45,26 @@ final class StatsRepository
     }
 
     /**
+     * @return list<array<string, mixed>> id, slug, title, Summen; meiste Aufrufe zuerst
+     */
+    public function topPosts(string $from, string $to, int $limit): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT p.id, p.slug, p.title, ' . self::SUMS . '
+             FROM stats_daily d JOIN posts p ON p.id = d.post_id
+             WHERE d.day BETWEEN ? AND ?
+             GROUP BY p.id, p.slug, p.title ORDER BY views DESC, p.id LIMIT ' . max(1, $limit)
+        );
+        $statement->execute([$from, $to]);
+
+        return array_map(function (array $row): array {
+            $row['id'] = (int) $row['id'];
+
+            return $this->castTotals($row);
+        }, $statement->fetchAll());
+    }
+
+    /**
      * Suchbegriffe, deren Trefferzahl (`extra.hits`) in jeder gezählten Zeile 0 war.
      *
      * @return list<array{value: string, count: int}> häufigste zuerst

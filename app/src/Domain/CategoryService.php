@@ -27,7 +27,13 @@ final class CategoryService
     private const MAX_LIST_ENTRIES = 30;
     private const MAX_LIST_ENTRY_LENGTH = 60;
 
+    private const SIGNAL_DAYS = 90;
+    private const SIGNAL_MARGIN = 2;
+    private const INTEREST_MIN = 0;
+    private const INTEREST_MAX = 5;
+
     private CategoryRepository $categories;
+    private ReactionRepository $reactions;
     private ChangeService $changes;
     private AuditRepository $audit;
 
@@ -35,6 +41,7 @@ final class CategoryService
     public function __construct(private readonly PDO $pdo, array $config)
     {
         $this->categories = new CategoryRepository($pdo);
+        $this->reactions = new ReactionRepository($pdo);
         $this->changes = new ChangeService($pdo, $config);
         $this->audit = new AuditRepository($pdo);
     }
@@ -43,6 +50,67 @@ final class CategoryService
     public function list(bool $includeInactive = false): array
     {
         return $this->categories->all($includeInactive);
+    }
+
+    /**
+     * Aktive Kategorien mit Interessen und den Reaktionen der letzten 90 Tage (Redaktionsmodus).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function overview(): array
+    {
+        $counts = $this->reactions->countsByPrimaryCategory(self::SIGNAL_DAYS);
+
+        return array_map(
+            fn (array $category): array => $this->withSignals($category, $counts[$category['id']] ?? ['more' => 0, 'less' => 0]),
+            $this->categories->all(false)
+        );
+    }
+
+    /** @return array<string, mixed> eine Kategorie im Format von overview() */
+    public function describe(int $id): array
+    {
+        $counts = $this->reactions->countsByPrimaryCategory(self::SIGNAL_DAYS);
+
+        return $this->withSignals($this->get($id), $counts[$id] ?? ['more' => 0, 'less' => 0]);
+    }
+
+    /**
+     * @param array<string, mixed> $category
+     * @param array{more: int, less: int} $signals
+     * @return array<string, mixed>
+     */
+    private function withSignals(array $category, array $signals): array
+    {
+        return [
+            'id' => $category['id'],
+            'slug' => $category['slug'],
+            'name' => $category['name'],
+            'parent_id' => $category['parent_id'],
+            'position' => $category['position'],
+            'interest' => $category['interest'],
+            'keywords' => $category['keywords'],
+            'avoid' => $category['avoid'],
+            'signals' => $signals,
+            'suggestion' => $this->suggestInterest($category['interest'], $signals),
+        ];
+    }
+
+    /**
+     * Ein Schritt in die Richtung, in die die Reaktionen deutlich zeigen (Abstand mindestens 2); sonst kein Vorschlag.
+     *
+     * @param array{more: int, less: int} $signals
+     */
+    private function suggestInterest(int $interest, array $signals): ?int
+    {
+        if ($signals['less'] >= $signals['more'] + self::SIGNAL_MARGIN && $interest > self::INTEREST_MIN) {
+            return $interest - 1;
+        }
+        if ($signals['more'] >= $signals['less'] + self::SIGNAL_MARGIN && $interest < self::INTEREST_MAX) {
+            return $interest + 1;
+        }
+
+        return null;
     }
 
     /**

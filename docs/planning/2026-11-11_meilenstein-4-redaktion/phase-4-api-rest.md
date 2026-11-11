@@ -18,12 +18,18 @@
 
 ## Checkliste
 
-- [ ] `app/src/Api/QueueController.php`
-- [ ] `TokenController` um `list`, `create` (JWT oder Deploy), `revoke` erweitern; bestehenden Deploy-Weg erhalten
-- [ ] `CategoryController` um `list`, `patch`; `signals`/`suggestion` per Abfrage in `CategoryRepository` oder `ReactionRepository`
-- [ ] `app/src/Api/ReactionController.php`
-- [ ] `app/src/Api/StatsController.php`; `StatsRepository` ergänzen
-- [ ] Routen in `app/index.php`
-- [ ] Doku: `docs/routes.md`, `docs/code-map.md`
+- [x] `app/src/Api/QueueController.php`
+- [x] `TokenController` um `list`, `create` (JWT oder Deploy), `revoke` erweitern; bestehenden Deploy-Weg erhalten
+- [x] `CategoryController` um `list`, `patch`; `signals`/`suggestion` per Abfrage in `CategoryRepository` oder `ReactionRepository`
+- [x] `app/src/Api/ReactionController.php`
+- [x] `app/src/Api/StatsController.php`; `StatsRepository` ergänzen
+- [x] Routen in `app/index.php`
+- [x] Doku: `docs/routes.md`, `docs/code-map.md`
 
 ## Report-Back
+Phase 4 komplett, lokal gegengeprüft (PHP-Server + MySQL): alle Routen, 401 ohne JWT, Deploy-Weg (`action`) und Token ohne Passwort, Upload mit abgelehnter Datei, 413 bei überschrittenem `post_max_size`.
+- `priority` fehlt im Formular → `normal` (3), nicht der Dienst-Standard 2.
+- Ungültige `links` fallen erst im Dienst auf, nachdem Dateien gespeichert wurden: die Medien bleiben in der Mediathek (Dubletten werden beim erneuten Senden wiedererkannt).
+- `GET categories` / `GET reactions` antworten als `{"categories":[…]}` bzw. `{"reactions":{…}}`; neuer Fehlercode `invalid_field` → 400.
+- `Request` kennt jetzt `form()`, `files()`, `contentLength()`.
+- Lokale Testreste: Queue-Aufträge 9 und 10 samt Testbild.

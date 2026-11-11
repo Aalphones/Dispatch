@@ -12,9 +12,34 @@ final class Request
 
     private ?string $body = null;
 
-    /** @param array<string, mixed> $server */
-    private function __construct(private readonly array $server)
+    /**
+     * @param array<string, mixed> $server
+     * @param array<string, mixed> $form $_POST (multipart/form-data oder urlencoded)
+     * @param array<string, mixed> $files $_FILES
+     */
+    private function __construct(
+        private readonly array $server,
+        private readonly array $form = [],
+        private readonly array $files = [],
+    ) {
+    }
+
+    /** @return array<string, mixed> */
+    public function form(): array
     {
+        return $this->form;
+    }
+
+    /** @return array<string, mixed> Rohform von $_FILES */
+    public function files(): array
+    {
+        return $this->files;
+    }
+
+    /** Länge laut Kopfzeile; bei überschrittenem post_max_size bleiben $_POST und $_FILES leer. */
+    public function contentLength(): int
+    {
+        return (int) ($this->server['CONTENT_LENGTH'] ?? 0);
     }
 
     /** php://input lässt sich nur einmal lesen, deshalb wird der Body gemerkt. */
@@ -29,7 +54,7 @@ final class Request
 
     public static function fromGlobals(): self
     {
-        return new self($_SERVER);
+        return new self($_SERVER, $_POST, $_FILES);
     }
 
     public function method(): string

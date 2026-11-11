@@ -60,6 +60,39 @@ final class ReactionRepository
         return $statement->fetchAll();
     }
 
+    /** @return array<int, string> Artikel-ID → Reaktion */
+    public function all(): array
+    {
+        $reactions = [];
+        foreach ($this->pdo->query('SELECT post_id, reaction FROM post_reactions ORDER BY post_id')->fetchAll() as $row) {
+            $reactions[(int) $row['post_id']] = (string) $row['reaction'];
+        }
+
+        return $reactions;
+    }
+
+    /** @return array<int, array{more: int, less: int}> Kategorie-ID (Hauptkategorie des Artikels) → Anzahl der Reaktionen */
+    public function countsByPrimaryCategory(int $days): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT pc.category_id, r.reaction, COUNT(*) AS total
+             FROM post_reactions r JOIN post_categories pc ON pc.post_id = r.post_id AND pc.is_primary = 1
+             WHERE r.updated_at >= UTC_TIMESTAMP() - INTERVAL ? DAY
+             GROUP BY pc.category_id, r.reaction'
+        );
+        $statement->bindValue(1, $days, PDO::PARAM_INT);
+        $statement->execute();
+
+        $counts = [];
+        foreach ($statement->fetchAll() as $row) {
+            $categoryId = (int) $row['category_id'];
+            $counts[$categoryId] ??= ['more' => 0, 'less' => 0];
+            $counts[$categoryId][(string) $row['reaction']] = (int) $row['total'];
+        }
+
+        return $counts;
+    }
+
     /** @return list<string> Kategorie-Slugs, Hauptkategorie zuerst */
     public function categorySlugs(int $postId): array
     {

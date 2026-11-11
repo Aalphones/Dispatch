@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dispatch\Api;
 
+use Dispatch\Auth\ApiAuth;
 use Dispatch\Auth\DeployToken;
 use Dispatch\Db\Connection;
 use Dispatch\Domain\Actor;
@@ -14,9 +15,8 @@ use Dispatch\Http\Response;
 use Dispatch\Util\Env;
 
 /**
- * Kategorie anlegen für `bin/dispatch category:create --remote`, geschützt mit dem Deploy-Token.
- * Wer den Deploy-Token hat, handelt als Inhaber; bis zur Verwaltungsoberfläche (Meilenstein 4)
- * ist das der einzige Weg, auf dem Server eine Kategorie ohne Datenbankzugriff anzulegen.
+ * Kategorie anlegen für `bin/dispatch category:create --remote`, geschützt mit dem Deploy-Token
+ * (wer ihn hat, handelt als Inhaber); Liste und Interessen für den Redaktionsmodus per Anmeldung.
  */
 final class CategoryController
 {
@@ -43,5 +43,42 @@ final class CategoryController
         }
 
         Response::json($result, 201);
+    }
+
+    public function list(Request $request): never
+    {
+        ApiAuth::owner($request);
+
+        Response::json(['categories' => (new CategoryService(Connection::open(), $this->config))->overview()]);
+    }
+
+    /** Interessen des Inhabers: nur die internen Felder, sofort wirksam. */
+    public function patch(Request $request, int $id): never
+    {
+        $actor = ApiAuth::owner($request);
+
+        try {
+            $fields = $request->json();
+            foreach (array_keys($fields) as $field) {
+                if (!in_array($field, CategoryService::INTERNAL_FIELDS, true)) {
+                    throw new DomainError(
+                        'invalid_field',
+                        sprintf('Das Feld „%s“ lässt sich hier nicht ändern. Erlaubt: %s.', (string) $field, implode(', ', CategoryService::INTERNAL_FIELDS)),
+                        ['field' => (string) $field]
+                    );
+                }
+            }
+            if ($fields === []) {
+                throw new DomainError('invalid_value', 'Der Body braucht mindestens eines von: ' . implode(', ', CategoryService::INTERNAL_FIELDS) . '.');
+            }
+
+            $service = new CategoryService(Connection::open(), $this->config);
+            $service->update($id, $fields, $actor);
+            $category = $service->describe($id);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json(['category' => $category]);
     }
 }

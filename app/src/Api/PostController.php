@@ -11,6 +11,7 @@ use Dispatch\Domain\DomainError;
 use Dispatch\Domain\MediaRepository;
 use Dispatch\Domain\PostService;
 use Dispatch\Domain\ReactionService;
+use Dispatch\Domain\StatsService;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
 use Dispatch\Site\Builder;
@@ -23,6 +24,7 @@ final class PostController
 {
     private const STATUSES = ['draft', 'review', 'published', 'archived'];
     private const LIST_LIMIT = 200;
+    private const STATS_DAYS = 30;
 
     /** @param array<string, mixed> $config */
     public function __construct(private readonly array $config)
@@ -68,6 +70,7 @@ final class PostController
         try {
             $post = $this->posts()->getBySlug($slug);
             $reaction = (new ReactionService(Connection::open()))->get((int) $post['id']);
+            $stats = (new StatsService(Connection::open()))->postReport((int) $post['id'], self::STATS_DAYS);
         } catch (DomainError $error) {
             ApiErrors::respond($error);
         }
@@ -80,7 +83,7 @@ final class PostController
             'published_revision' => $publishedRevision,
             'has_new_version' => $publishedRevision !== null && $post['revision'] > $publishedRevision && $post['status'] === 'review',
             'reaction' => $reaction,
-            'stats' => null,
+            'stats' => $stats,
         ]);
     }
 

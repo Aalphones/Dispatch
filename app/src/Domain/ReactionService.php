@@ -49,6 +49,12 @@ final class ReactionService
         });
     }
 
+    /** @return array{reaction: string, note: string|null}|null */
+    public function get(int $postId): ?array
+    {
+        return $this->reactions->find($postId);
+    }
+
     /**
      * @return list<array<string, mixed>> neueste zuerst: post_id, slug, title, reaction, note, updated_at, categories, tags
      */

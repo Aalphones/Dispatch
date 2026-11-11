@@ -12,6 +12,7 @@ final class Assets
         'site' => 'js',
         'suche' => 'js',
         'artikel' => 'js',
+        'vorschau' => 'js',
     ];
 
     private const HASH_LENGTH = 8;

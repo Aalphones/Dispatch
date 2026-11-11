@@ -22,13 +22,19 @@
 
 ## Checkliste
 
-- [ ] `app/src/Auth/PreviewLink.php` (`url`, `verify(int $id, int $exp, string $sig): bool`)
-- [ ] `Builder::articleMain` herausziehen, `collectArticles` darauf umstellen, byte-gleich prüfen
-- [ ] `Builder::collectPreview`, `templates/preview.php`, `config.php` (`vorschau`), `app/theme/vorschau.js` (Platzhalter)
-- [ ] `app/src/Api/OverviewController.php`, `PostController.php`, `ChangeController.php`, `PreviewController.php`; Routen in `app/index.php`
-- [ ] Hilfsfunktion für den Neubau nach Kontrakt (private Methode in einer gemeinsamen Klasse `app/src/Api/Rebuild.php`, `run(array $config, PDO $pdo): array{rebuilt: bool, rebuild_error: ?string}`)
-- [ ] `PostTools::submit_post`: `preview_url`
-- [ ] ADR-021 „Redaktions-API“: Router mit Platzhaltern; JWT/Deploy-Anmeldung je Route; Neubau synchron im Request (Strato: `max_execution_time` 240 s, lokaler Bau ≈ 3 s), Fehler im Bau macht die Freigabe nicht rückgängig; Vorschau rendert über dieselbe Methode wie der Builder; signierte Links mit dem JWT-Schlüssel. Verworfen: Neubau per Warteschlange (kein Cron auf Strato), Vorschau als eigene Template-Kopie (zwei Darstellungen driften)
-- [ ] Doku: `docs/routes.md`, `docs/code-map.md` (neue Controller, `Builder::articleMain`, `collectPreview`)
+- [x] `app/src/Auth/PreviewLink.php` (`url`, `verify(int $id, int $exp, string $sig): bool`)
+- [x] `Builder::articleMain` herausziehen, `collectArticles` darauf umstellen, byte-gleich prüfen
+- [x] `Builder::collectPreview`, `templates/preview.php`, `config.php` (`vorschau`), `app/theme/vorschau.js` (Platzhalter)
+- [x] `app/src/Api/OverviewController.php`, `PostController.php`, `ChangeController.php`, `PreviewController.php`; Routen in `app/index.php`
+- [x] Hilfsfunktion für den Neubau nach Kontrakt (private Methode in einer gemeinsamen Klasse `app/src/Api/Rebuild.php`, `run(array $config, PDO $pdo): array{rebuilt: bool, rebuild_error: ?string}`)
+- [x] `PostTools::submit_post`: `preview_url`
+- [x] ADR-021 „Redaktions-API“: Router mit Platzhaltern; JWT/Deploy-Anmeldung je Route; Neubau synchron im Request (Strato: `max_execution_time` 240 s, lokaler Bau ≈ 3 s), Fehler im Bau macht die Freigabe nicht rückgängig; Vorschau rendert über dieselbe Methode wie der Builder; signierte Links mit dem JWT-Schlüssel. Verworfen: Neubau per Warteschlange (kein Cron auf Strato), Vorschau als eigene Template-Kopie (zwei Darstellungen driften)
+- [x] Doku: `docs/routes.md`, `docs/code-map.md` (neue Controller, `Builder::articleMain`, `collectPreview`)
 
 ## Report-Back
+
+**Status: complete.** Gegenproben gegen `php -S localhost:8080` mit selbst gebautem JWT: `overview` (Zähler), `posts` (Felder, unbekannter Status → 400), `posts/by-slug`, Vorschau mit JWT und mit Signatur (richtig 200; verfälscht und abgelaufen 403), `dmcp_`-Token und fehlende Anmeldung → 401, `approve` (veröffentlicht, Neubau `rebuilt: true`, `vorschau/index.html` gebaut), `approve` bei gehaltener Bau-Sperre (Aktion gilt, `rebuilt: false`, `rebuild_error` gesetzt, Antwort nach 10 s), `return` (Entwurf mit Anmerkung, `returned` im Überblick), `discard` eines veröffentlichten Artikels → 409 `invalid_transition`, `changes` mit `before`, `apply` (Neubau), zweites `apply` → 409 `not_pending`, `reject` → 204. `Builder::articleMain`: Prüfsummen aller 15 `artikel/*/index.html` vor und nach dem Umbau gleich, zweiter Bau schreibt 0 Dateien.
+
+Abweichungen: `QueueService::markDone` rief `approve` schon auf — dort nichts ergänzt. Die Anmerkung (`review_note`) darf jetzt 20 000 statt 2 000 Zeichen haben (Kontrakt). Die Wartezeit auf die Bau-Sperre beträgt im Neubau 10 s statt 30 s (PHP-Zeitlimit des Dev-Servers ließ 30 s als 500 enden). `articleMain` nimmt den PostView und holt Vor-/Nachfolger über die Live-Liste; `previewMain(snapshot)` ist der Einstieg der Vorschau. Zusätzlich `Api\ApiErrors` (Fehler → Status) und `Request::query()`; die Fehlermeldung von `Request::json` nennt kein Login-Beispiel mehr.
+
+Nicht geprüft: Queue-Auftrag `done` nach `approve` nicht am laufenden System (kein verknüpfter Auftrag lokal; der Code ruft `markDone` in derselben Transaktion), `unpublish` und MCP-`submit_post` (`preview_url`) nur per Syntaxprüfung; `DELETE` über die Strato-`.htaccess` (Phase 10).

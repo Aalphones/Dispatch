@@ -166,6 +166,12 @@ final class PostRepository
         return $counts;
     }
 
+    /** Entwürfe, die der Inhaber mit einer Anmerkung zurückgegeben hat. */
+    public function countReturned(): int
+    {
+        return (int) $this->pdo->query("SELECT COUNT(*) FROM posts WHERE status = 'draft' AND review_note IS NOT NULL AND review_note <> ''")->fetchColumn();
+    }
+
     public function mediaUid(int $mediaId): ?string
     {
         $statement = $this->pdo->prepare('SELECT uid FROM media WHERE id = ?');

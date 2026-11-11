@@ -47,6 +47,14 @@ final class Request
         return $path;
     }
 
+    public function query(string $name): ?string
+    {
+        parse_str((string) ($this->server['QUERY_STRING'] ?? ''), $parameters);
+        $value = $parameters[$name] ?? null;
+
+        return is_string($value) ? $value : null;
+    }
+
     public function header(string $name): ?string
     {
         $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
@@ -83,7 +91,7 @@ final class Request
     {
         $decoded = json_decode($this->body(), true);
         if (!is_array($decoded) || ($decoded !== [] && array_is_list($decoded))) {
-            throw new DomainError('invalid_json', 'Der Body muss ein JSON-Objekt sein, z. B. {"user":"…","password":"…"}.');
+            throw new DomainError('invalid_json', 'Der Body muss ein JSON-Objekt sein.');
         }
 
         return $decoded;

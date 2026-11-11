@@ -63,6 +63,27 @@ final class SiteData
     }
 
     /**
+     * Die Live-Daten, ergänzt um die Medien eines Arbeitsstands, plus dessen PostView. Nur für die Vorschau:
+     * der Artikel steht nicht in `posts`, sodass Karten, Zähler und Feed unberührt bleiben.
+     *
+     * @param array<string, mixed> $snapshot Arbeitsstand in der Form eines Live-Snapshots (PostService::previewSnapshot)
+     * @return array{site: self, post: array<string, mixed>}
+     */
+    public function withPreview(PDO $pdo, array $snapshot): array
+    {
+        $media = $this->media + self::loadMedia($pdo, [$snapshot]);
+
+        $categoriesBySlug = [];
+        foreach ($this->categories as $category) {
+            $categoriesBySlug[$category['slug']] = $category;
+        }
+
+        $site = new self($this->settings, $this->posts, $this->categories, $this->tags, $this->documents, $media, $this->issueNumber);
+
+        return ['site' => $site, 'post' => self::buildPost($snapshot, $categoriesBySlug, $media)];
+    }
+
+    /**
      * @param list<array<string, mixed>> $snapshots
      * @return array<string, array<string, mixed>>
      */

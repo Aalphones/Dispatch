@@ -40,7 +40,7 @@ final class PostService
     private const ORIGINS = ['scheduled', 'manual'];
     private const SOURCE_KINDS = ['web', 'news', 'study', 'official', 'dataset', 'book', 'interview', 'video', 'podcast', 'social', 'other'];
 
-    private const REVIEW_NOTE_MAX_LENGTH = 2000;
+    private const REVIEW_NOTE_MAX_LENGTH = 20000;
     private const SEARCH_MIN_LENGTH = 2;
     private const SEARCH_MAX_LIMIT = 50;
     private const TITLE_MAX_LENGTH = 200;
@@ -256,6 +256,25 @@ final class PostService
             'editor_notes' => $post['editor_notes'],
             'categories' => $this->posts->categories($id),
             'sources' => $this->posts->sources($id),
+        ];
+    }
+
+    /**
+     * Der Arbeitsstand in der Form eines Live-Snapshots (mit `published_at`, `updated_at`), damit die Vorschau ihn wie
+     * einen veröffentlichten Artikel darstellt. Ohne Veröffentlichung steht die Änderungszeit als Datum.
+     *
+     * @return array<string, mixed>
+     */
+    public function previewSnapshot(int $id): array
+    {
+        $post = $this->posts->find($id);
+        if ($post === null) {
+            throw $this->notFound($id);
+        }
+
+        return $this->snapshot($id) + [
+            'published_at' => $post['published_at'] ?? $post['updated_at'],
+            'updated_at' => $post['updated_at'],
         ];
     }
 

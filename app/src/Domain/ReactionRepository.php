@@ -20,6 +20,16 @@ final class ReactionRepository
         return $statement->fetchColumn() !== false;
     }
 
+    /** @return array{reaction: string, note: string|null}|null */
+    public function find(int $postId): ?array
+    {
+        $statement = $this->pdo->prepare('SELECT reaction, note FROM post_reactions WHERE post_id = ?');
+        $statement->execute([$postId]);
+        $row = $statement->fetch();
+
+        return $row === false ? null : ['reaction' => (string) $row['reaction'], 'note' => $row['note']];
+    }
+
     public function upsert(int $postId, string $reaction, ?string $note): void
     {
         $statement = $this->pdo->prepare(

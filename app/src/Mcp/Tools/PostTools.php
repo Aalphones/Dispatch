@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dispatch\Mcp\Tools;
 
+use Dispatch\Auth\PreviewLink;
 use Dispatch\Auth\Scopes;
 use Dispatch\Domain\Actor;
 use Dispatch\Domain\DomainError;
@@ -157,11 +158,15 @@ final class PostTools
         $registry->add(new Tool(
             'submit_post',
             'Artikel einreichen',
-            'Prüft den Artikel (wie validate_post) und legt ihn dem Inhaber zur Freigabe vor; Status wird review, öffentlich ändert sich nichts. Bei Formfehlern kommt die Fehlerliste statt der Einreichung. Beispiel: {"id": 12}. Danach ist der Lauf mit dem Abschlussbericht beendet; zurückziehen geht mit withdraw_post.',
+            'Prüft den Artikel (wie validate_post) und legt ihn dem Inhaber zur Freigabe vor; Status wird review, öffentlich ändert sich nichts. Bei Formfehlern kommt die Fehlerliste statt der Einreichung. Das Ergebnis enthält preview_url: den Vorschau-Link, den der Inhaber ohne Anmeldung nur lesend öffnen kann (sieben Tage gültig). Beispiel: {"id": 12}. Danach ist der Lauf mit dem Abschlussbericht beendet; zurückziehen geht mit withdraw_post.',
             Schema::object(['id' => Schema::integer('Artikel-ID')], ['id']),
             Tool::annotations('Artikel einreichen', 'W'),
             Scopes::WRITE,
-            static fn (array $args, Actor $actor): ToolResult => ToolResult::json(self::present($posts->submit((int) $args['id'], $actor), false))
+            static function (array $args, Actor $actor) use ($posts): ToolResult {
+                $post = self::present($posts->submit((int) $args['id'], $actor), false);
+
+                return ToolResult::json($post + ['preview_url' => PreviewLink::url((int) $post['id'])]);
+            }
         ));
 
         $registry->add(new Tool(

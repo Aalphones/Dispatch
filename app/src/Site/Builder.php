@@ -109,11 +109,8 @@ final class Builder
     {
         $assets = Assets::collect($this->config);
 
-        $renderer = new ContentRenderer();
         foreach ($this->site->posts as $post) {
-            $rendered = $renderer->render($post, $this->site);
-            $rendered['html'] = $this->applyLayoutDefaults($rendered['html'], (string) $post['layout']);
-            $this->rendered[$post['id']] = $rendered;
+            $this->rendered[$post['id']] = $this->renderPost($post);
         }
 
         $index = SearchIndex::build($this->site, $this->rendered);
@@ -138,6 +135,7 @@ final class Builder
             + $this->collectCategories()
             + $this->collectTags()
             + $this->collectSearch()
+            + $this->collectPreview()
             + $this->collectDocuments()
             + $this->collectNotFound()
             + $this->collectTechnical();
@@ -200,15 +198,65 @@ final class Builder
         return $files;
     }
 
+    /**
+     * @param array<string, mixed> $post PostView
+     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string}
+     */
+    private function renderPost(array $post): array
+    {
+        $rendered = (new ContentRenderer())->render($post, $this->site);
+        $rendered['html'] = $this->applyLayoutDefaults($rendered['html'], (string) $post['layout']);
+
+        return $rendered;
+    }
+
+    /**
+     * Inhalt von `<main>` einer Artikelseite — die einzige Stelle, die einen Artikel in die Variablen von
+     * `article.php` übersetzt. Der Bau und die Vorschau (ADR-021) rufen sie beide; ein Artikel, der nicht in
+     * den Live-Daten steht, bekommt keine Vor-/Nachfolger.
+     *
+     * @param array<string, mixed> $post PostView
+     */
+    public function articleMain(array $post): string
+    {
+        $position = array_search($post['id'], array_column($this->site->posts, 'id'), true);
+        $primary = $post['primary_category'];
+
+        return $this->render((string) $this->config['app_dir'] . '/templates/article.php', [
+            'post' => $post,
+            'rendered' => $this->rendered[$post['id']] ?? $this->renderPost($post),
+            'krumen' => $this->breadcrumbs($primary, $this->categoriesBySlug()),
+            'related' => $this->relatedPosts($post),
+            'older' => $position === false ? null : ($this->site->posts[$position + 1] ?? null),
+            'newer' => is_int($position) && $position > 0 ? $this->site->posts[$position - 1] : null,
+            'site' => $this->site,
+            'assets' => $this->assetUrls,
+        ]);
+    }
+
+    /**
+     * `<main>`-Inhalt für einen Arbeitsstand (Vorschau). Schreibt nichts; liest die Live-Daten und den Arbeitsstand.
+     *
+     * @param array<string, mixed> $snapshot Arbeitsstand in der Form eines Live-Snapshots
+     */
+    public function previewMain(array $snapshot): string
+    {
+        $this->site = SiteData::load($this->pdo, $this->config);
+        $this->assetUrls = Assets::collect($this->config)['urls'];
+
+        $preview = $this->site->withPreview($this->pdo, $snapshot);
+        $this->site = $preview['site'];
+
+        return $this->articleMain($preview['post']);
+    }
+
     /** @return array<string, string> */
     private function collectArticles(): array
     {
         $categories = $this->categoriesBySlug();
 
         $files = [];
-        foreach ($this->site->posts as $position => $post) {
-            $rendered = $this->rendered[$post['id']];
-
+        foreach ($this->site->posts as $post) {
             $primary = $post['primary_category'];
             $activeCategory = '';
             if ($primary !== null) {
@@ -224,14 +272,7 @@ final class Builder
                 $title = $post['title'] . ' · ' . $this->site->settings['site_title'];
             }
 
-            $files[$this->pageFile($post['url'])] = $this->page('article', [
-                'post' => $post,
-                'rendered' => $rendered,
-                'krumen' => $this->breadcrumbs($primary, $categories),
-                'related' => $this->relatedPosts($post),
-                'older' => $this->site->posts[$position + 1] ?? null,
-                'newer' => $position > 0 ? $this->site->posts[$position - 1] : null,
-            ], [
+            $files[$this->pageFile($post['url'])] = $this->layout($this->articleMain($post), [
                 'title' => $title,
                 'description' => $description,
                 'canonical' => $post['url'],
@@ -359,6 +400,20 @@ final class Builder
         ]);
 
         return ['suche/index.html' => $html];
+    }
+
+    /** Leere Hülle für die Vorschau: `vorschau.js` holt den Arbeitsstand per API und setzt ihn in `#vorschau-inhalt`. @return array<string, string> */
+    private function collectPreview(): array
+    {
+        $html = $this->page('preview', [], [
+            'title' => 'Vorschau · ' . $this->site->settings['site_title'],
+            'canonical' => '/vorschau/',
+            'robots' => 'noindex',
+            'bodyPage' => 'vorschau',
+            'scripts' => [$this->assetUrls['vorschau']],
+        ]);
+
+        return ['vorschau/index.html' => $html];
     }
 
     /** @return array<string, string> */
@@ -613,11 +668,22 @@ final class Builder
     public function page(string $template, array $vars, array $meta): string
     {
         $shared = ['site' => $this->site, 'assets' => $this->assetUrls];
-        $appDir = (string) $this->config['app_dir'];
 
-        $content = $this->render($appDir . '/templates/' . $template . '.php', $vars + $shared);
+        $content = $this->render((string) $this->config['app_dir'] . '/templates/' . $template . '.php', $vars + $shared);
 
-        return $this->render($appDir . '/templates/layout.php', $shared + [
+        return $this->layout($content, $meta);
+    }
+
+    /**
+     * Setzt fertigen `<main>`-Inhalt in `layout.php`.
+     *
+     * @param array<string, mixed> $meta
+     */
+    private function layout(string $content, array $meta): string
+    {
+        return $this->render((string) $this->config['app_dir'] . '/templates/layout.php', [
+            'site' => $this->site,
+            'assets' => $this->assetUrls,
             'content' => $content,
             'meta' => $meta,
             'baseUrl' => rtrim((string) $this->config['base_url'], '/'),

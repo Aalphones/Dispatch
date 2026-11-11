@@ -23,3 +23,7 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 017 | [MCP-Tokens, Scopes und Wege zum Anlegen](017-mcp-tokens-und-scopes.md) | Akzeptiert |
 | 018 | [MCP-Werkzeuge und Agentenrechte](018-mcp-werkzeuge-und-agentenrechte.md) | Akzeptiert |
 | 019 | [Reaktionen „Mehr davon / Weniger“](019-reaktionen-mehr-davon-weniger.md) | Akzeptiert |
+| 020 | [Anmeldung des Inhabers](020-anmeldung-des-inhabers.md) | Akzeptiert |
+| 021 | [Redaktions-API](021-redaktions-api.md) | Akzeptiert |
+| 022 | [Zähl-Aufruf der Statistik](022-zaehl-aufruf.md) | Akzeptiert |
+| 023 | [Redaktionsmodus im Browser](023-redaktionsmodus-im-browser.md) | Akzeptiert |

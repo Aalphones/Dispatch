@@ -30,12 +30,19 @@
 
 ## Checkliste
 
-- [ ] `Assets`: Ordner `app/theme/redaktion/` als `assets/redaktion-<hash>/` (Kontrakt), Manifest-Einträge je Datei; `layout.php`: `data-redaktion`
-- [ ] `layout.php`: Gast-Knopf und `<dialog id="login">`; `style.css`: Gast-Stile
-- [ ] Builder/Templates: Daten-Attribute
-- [ ] `site.js`: Login und Laden
-- [ ] `app/theme/redaktion/start.js`, `sitzung.js`, `api.js`, `ui.js`, `konto.js`, `redaktion.css` (Stile aus dem Entwurf übernehmen: Redaktions-Block, Dialoge, Knöpfe, Toast, Konto angemeldet, Popover)
-- [ ] ADR-023 „Redaktionsmodus im Browser“: Ordner-Asset statt Einzel-Hashes (relative Imports), Login-Logik in `site.js`, Token nur im Speicher + `BroadcastChannel`, neue Budgets, Anmerkungen-Speicherung (Phase 7, Abschnitt dort vorwegnehmen). Verworfen: Import-Pfade beim Bau umschreiben (Reihenfolge der Abhängigkeiten, fehleranfällig)
-- [ ] Doku: `docs/code-map.md` (Ordner `theme/redaktion/`), `docs/conventions/frontend.md` (Budgets, keine `style`-Attribute)
+- [x] `Assets`: Ordner `app/theme/redaktion/` als `assets/redaktion-<hash>/` (Kontrakt), Manifest-Einträge je Datei; `layout.php`: `data-redaktion`
+- [x] `layout.php`: Gast-Knopf und `<dialog id="login">`; `style.css`: Gast-Stile
+- [x] Builder/Templates: Daten-Attribute
+- [x] `site.js`: Login und Laden
+- [x] `app/theme/redaktion/start.js`, `sitzung.js`, `api.js`, `ui.js`, `konto.js`, `redaktion.css` (Stile aus dem Entwurf übernehmen: Redaktions-Block, Dialoge, Knöpfe, Toast, Konto angemeldet, Popover)
+- [x] ADR-023 „Redaktionsmodus im Browser“: Ordner-Asset statt Einzel-Hashes (relative Imports), Login-Logik in `site.js`, Token nur im Speicher + `BroadcastChannel`, neue Budgets, Anmerkungen-Speicherung (Phase 7, Abschnitt dort vorwegnehmen). Verworfen: Import-Pfade beim Bau umschreiben (Reihenfolge der Abhängigkeiten, fehleranfällig)
+- [x] Doku: `docs/code-map.md` (Ordner `theme/redaktion/`), `docs/conventions/frontend.md` (Budgets, keine `style`-Attribute)
 
 ## Report-Back
+
+Status: complete. Lokal gegengeprüft mit Chrome (headless, Fernsteuerung) gegen `php -S`: AK 1–5, 7 (Ordnersuche `style=` leer; die einzige Konsolenzeile ist der gewollte 401 beim falschen Passwort), 8 (390 px) grün; AK 6 durch Hash-Wechsel und Ordner-Löschung bestätigt. Fünf Tabs ohne offenen Tab: ein Refresh (200), die übrigen Tabs holen das Token per BroadcastChannel. Budgets: `site.js` 4 266, `style.css` 47 545 Byte.
+
+- 🟡 Nicht geprüft: `ueberallAbmelden()` gegen einen zweiten Browser (Refresh-Seite ist Phase 1).
+- Daten-Attribute: `data-post-id` an Karten/Aufmacher und `data-category-id` waren schon da; neu ist nur `body[data-post-id]` auf Artikelseiten.
+- `start.js` ruft noch keine seitenbezogenen Module (kommen mit Phase 7–9); Menüeinträge für Thema einreichen, Interessen, Statistik, Zugänge sind ausgeblendet (`ready: false` in `konto.js`).
+- Der Zähler im Konto nutzt `overview` (`review + returned + changes`); „Freigaben“ = `review + returned`, „Vorschläge“ = `changes`.

@@ -62,6 +62,65 @@ if (root.dataset.zaehler && isCounted()) {
 	import(root.dataset.zaehler).catch(() => null);
 }
 
+// Redaktionsmodus (ADR-023): Ohne Merkzeichen kein Aufruf außer dem Anmelden; danach lädt start.js alles Weitere.
+const MARK = 'dispatch.angemeldet';
+const loginDialog = document.getElementById('login');
+const loginForm = document.getElementById('login-form');
+const loginError = document.getElementById('login-fehler');
+
+function startEditorial(token) {
+	return root.dataset.redaktion ? import(root.dataset.redaktion).then((module) => module.start(token)).catch(() => null) : null;
+}
+
+function isMarked() {
+	try {
+		return localStorage.getItem(MARK) === '1';
+	} catch {
+		return false;
+	}
+}
+
+function openLogin() {
+	loginError.hidden = true;
+	if (!loginDialog.open) loginDialog.showModal();
+}
+
+async function login(event) {
+	event.preventDefault();
+	const form = new FormData(loginForm);
+	let message = 'Anmeldung gerade nicht möglich.';
+	try {
+		const response = await fetch('/dispatch/api/auth/login', {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ user: form.get('user'), password: form.get('password') }),
+		});
+		if (response.ok) {
+			const { access_token: token } = await response.json();
+			localStorage.setItem(MARK, '1');
+			loginForm.reset();
+			loginDialog.close();
+			startEditorial(token);
+			return;
+		}
+		if (response.status === 401) message = 'Name oder Passwort stimmt nicht.';
+		if (response.status === 429) message = 'Zu viele Versuche. Bitte in 15 Minuten erneut.';
+	} catch {}
+	loginError.textContent = message;
+	loginError.hidden = false;
+	loginForm.elements.password.select();
+}
+
+if (loginDialog) {
+	document.getElementById('anmelden').addEventListener('click', openLogin);
+	loginForm.addEventListener('submit', login);
+	loginDialog.addEventListener('click', (event) => event.target.closest('[data-close]') && loginDialog.close());
+	if (!isMarked() && location.hash === '#anmelden') openLogin();
+}
+
+if (isMarked()) startEditorial();
+
 if (document.body.dataset.seite === 'suche') {
 	loadSearch().then((module) => module && module.seite());
 }

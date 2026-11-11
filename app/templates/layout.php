@@ -43,7 +43,7 @@ $mainCategories = array_slice($mainCategories, 0, 6);
 $topTags = array_slice($site->tags, 0, 10);
 ?>
 <!doctype html>
-<html lang="de" data-suche="<?= e($assets['suche'] ?? '') ?>" data-zaehler="<?= e($assets['zaehler'] ?? '') ?>"<?php if (isset($assets['suchindex'])) { ?> data-suchindex="<?= e($assets['suchindex']) ?>"<?php } ?>>
+<html lang="de" data-suche="<?= e($assets['suche'] ?? '') ?>" data-zaehler="<?= e($assets['zaehler'] ?? '') ?>" data-redaktion="<?= e($assets['redaktion'] ?? '') ?>"<?php if (isset($assets['suchindex'])) { ?> data-suchindex="<?= e($assets['suchindex']) ?>"<?php } ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,7 +64,7 @@ $topTags = array_slice($site->tags, 0, 10);
 <script type="application/ld+json"><?= $jsonLd ?></script>
 <?php } ?>
 </head>
-<body data-seite="<?= e((string) ($meta['bodyPage'] ?? '')) ?>">
+<body data-seite="<?= e((string) ($meta['bodyPage'] ?? '')) ?>"<?php if (($meta['bodyPage'] ?? '') === 'artikel' && isset($meta['post']['id'])) { ?> data-post-id="<?= (int) $meta['post']['id'] ?>"<?php } ?>>
 <div class="fortschritt" aria-hidden="true"></div>
 <a class="sprung" href="#inhalt">Zum Inhalt</a>
 
@@ -81,6 +81,7 @@ $topTags = array_slice($site->tags, 0, 10);
           </label>
           <div class="panel" id="panel" role="listbox" aria-label="Vorschläge"></div>
         </form>
+        <button type="button" class="konto nur-gast" id="anmelden" title="Anmelden (nur Herausgeber)"><span class="avatar"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span class="text">Anmelden</span></button>
       </div>
     </div>
   </div>
@@ -120,6 +121,19 @@ $topTags = array_slice($site->tags, 0, 10);
     <div class="unten"><span><?= e($siteTitle) ?> · <?= e($siteTagline) ?></span></div>
   </div>
 </footer>
+
+<dialog id="login" aria-labelledby="login-titel">
+  <form id="login-form">
+    <div class="dlg-kopf"><h2 id="login-titel">Anmelden</h2><button type="button" class="zu" data-close aria-label="Schließen">✕</button></div>
+    <div class="dlg-rumpf">
+      <label class="feld">Benutzername<input name="user" autocomplete="username" required></label>
+      <label class="feld">Passwort<input name="password" type="password" autocomplete="current-password" required></label>
+      <p class="hinweis" id="login-fehler" role="alert" hidden></p>
+      <p class="hinweis">Nur für den Herausgeber. Danach erscheinen die Redaktionsfunktionen direkt in der Website.</p>
+    </div>
+    <div class="dlg-fuss"><button type="button" class="knopf" data-close>Abbrechen</button><button type="submit" class="knopf primaer">Anmelden</button></div>
+  </form>
+</dialog>
 
 <script type="module" src="<?= e($assets['site']) ?>"></script>
 <?php foreach ($scripts as $script) { ?>

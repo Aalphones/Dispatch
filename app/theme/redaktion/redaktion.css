@@ -1,0 +1,44 @@
+/* Redaktionsmodus: nur fÃ¼r den angemeldeten Inhaber geladen (Entwurf entwurf-website.html, Block â€žRedaktionâ€œ). */
+.red { display: none !important; }
+body.angemeldet .red { display: revert !important; }
+body.angemeldet .red.flex { display: flex !important; }
+body.angemeldet .red.grid { display: grid !important; }
+.red-fade { animation: rein var(--t-slow) var(--ease-out) both; }
+
+body.angemeldet .konto { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent-ink); }
+body.angemeldet .konto .avatar { background: var(--accent-ink); color: var(--paper); font: 700 .78rem var(--sans); }
+.zaehler { display: inline-grid; place-items: center; min-width: 1.2rem; height: 1.2rem; padding: 0 .3rem; border-radius: 999px; background: var(--accent-ink); color: var(--paper); font: 700 .68rem var(--sans); }
+
+[popover] { margin: 0; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); border-radius: 12px; box-shadow: var(--shadow-2); padding: .4rem; min-width: 16rem; font: .9rem var(--sans); inset: auto; position: fixed; top: 3.6rem; right: 1rem; opacity: 0; transform: translateY(-6px) scale(.97); transform-origin: top right; transition: opacity var(--t-mid) var(--ease-out), transform var(--t-mid) var(--ease-out), overlay var(--t-mid) allow-discrete, display var(--t-mid) allow-discrete; }
+[popover]:popover-open { opacity: 1; transform: none; }
+@starting-style { [popover]:popover-open { opacity: 0; transform: translateY(-6px) scale(.97); } }
+.menue a, .menue button { display: flex; align-items: center; gap: .65rem; width: 100%; text-align: left; padding: .6rem .7rem; border-radius: 8px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: none; transition: background var(--t-fast); }
+.menue a:hover, .menue button:hover { background: var(--paper-2); }
+.menue .ico { color: var(--ink-3); font-size: 1.05rem; }
+.menue hr { border: 0; border-top: 1px solid var(--rule); margin: .35rem 0; }
+.menue .zaehler { margin-left: auto; }
+.menue .kopfzeile { padding: .5rem .7rem .6rem; font-size: .78rem; color: var(--ink-3); }
+
+.knopf.leise { border-color: transparent; background: transparent; color: var(--ink-2); }
+.knopf.gefahr { color: var(--bad); }
+.knopf.klein-k { padding: .32rem .6rem; font-size: .76rem; }
+dialog { opacity: 0; transform: translateY(12px) scale(.98); transition: opacity var(--t-mid) var(--ease-out), transform var(--t-mid) var(--ease-out), overlay var(--t-mid) allow-discrete, display var(--t-mid) allow-discrete; }
+dialog[open] { opacity: 1; transform: none; }
+@starting-style { dialog[open] { opacity: 0; transform: translateY(12px) scale(.98); } }
+dialog.breit { width: min(54rem, calc(100vw - 2rem)); }
+.zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+.schalter { display: flex; align-items: center; gap: .6rem; font: .88rem var(--sans); margin-bottom: .9rem; }
+.info { display: inline-grid; place-items: center; width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 1px solid var(--rule); font: 700 .68rem var(--serif); color: var(--ink-3); cursor: help; position: relative; vertical-align: middle; flex: none; }
+.info:hover::after, .info:focus::after { content: attr(data-tipp); position: absolute; left: 50%; top: 135%; transform: translateX(-50%); width: min(16rem, 70vw); background: var(--ink); color: var(--paper); font: 400 .78rem/1.4 var(--sans); padding: .55rem .7rem; border-radius: 8px; z-index: 5; text-align: left; }
+
+.toast { position: fixed; left: 50%; bottom: 1.5rem; background: var(--ink); color: var(--paper); font: .86rem var(--sans); padding: .7rem 1rem; border-radius: 12px; box-shadow: var(--shadow-2); z-index: 80; display: flex; gap: .6rem; align-items: center; width: max-content; max-width: calc(100vw - 2rem); transform: translate(-50%, 180%); opacity: 0; visibility: hidden; pointer-events: none; transition: transform var(--t-mid) var(--ease-spring), opacity var(--t-mid), visibility 0s linear var(--t-mid); }
+.toast.zeigen { transform: translate(-50%, 0); opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.toast button { background: none; border: 0; color: inherit; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; font: 600 .82rem var(--sans); flex: none; padding: .2rem .3rem; border-radius: 6px; opacity: .85; }
+.toast button:hover { opacity: 1; background: color-mix(in oklab, var(--paper) 15%, transparent); }
+
+@media (max-width: 46rem) {
+  [popover] { top: calc(3.6rem + env(safe-area-inset-top)); right: .75rem; max-height: calc(100dvh - 5rem); overflow: auto; }
+  .dlg-fuss { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+  .toast { bottom: auto; top: calc(.75rem + env(safe-area-inset-top)); transform: translate(-50%, -160%); }
+  .toast.zeigen { transform: translate(-50%, 0); }
+}

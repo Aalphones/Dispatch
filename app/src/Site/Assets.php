@@ -16,6 +16,8 @@ final class Assets
         'vorschau' => 'js',
     ];
 
+    private const EDITORIAL_FOLDER = 'redaktion';
+
     private const HASH_LENGTH = 8;
 
     /**
@@ -35,7 +37,47 @@ final class Assets
             $urls[$name] = '/' . $path;
         }
 
+        $editorial = self::collectEditorialFolder((string) $config['app_dir'] . '/theme/' . self::EDITORIAL_FOLDER);
+        $files += $editorial['files'];
+        if ($editorial['entry'] !== '') {
+            $urls['redaktion'] = $editorial['entry'];
+        }
+
         return ['files' => $files, 'urls' => $urls];
+    }
+
+    /**
+     * Der Ordner des Redaktionsmodus wird unverändert und als Ganzes unter einem Hash-Namen abgelegt: seine
+     * Module importieren einander relativ, das ginge mit Einzel-Hashes nicht. Ein geänderter Inhalt ergibt einen
+     * neuen Ordnernamen und umgeht damit den Cache.
+     *
+     * @return array{files: array<string, string>, entry: string} Pfad → Inhalt, Adresse von `start.js`
+     */
+    private static function collectEditorialFolder(string $folder): array
+    {
+        $names = [];
+        foreach (is_dir($folder) ? (scandir($folder) ?: []) : [] as $name) {
+            if (is_file($folder . '/' . $name)) {
+                $names[] = $name;
+            }
+        }
+        sort($names, SORT_STRING);
+        if ($names === []) {
+            return ['files' => [], 'entry' => ''];
+        }
+
+        $contents = [];
+        foreach ($names as $name) {
+            $contents[$name] = (string) file_get_contents($folder . '/' . $name);
+        }
+        $target = 'assets/' . self::EDITORIAL_FOLDER . '-' . substr(sha1(implode('', $contents)), 0, self::HASH_LENGTH);
+
+        $files = [];
+        foreach ($contents as $name => $content) {
+            $files[$target . '/' . $name] = $content;
+        }
+
+        return ['files' => $files, 'entry' => '/' . $target . '/start.js'];
     }
 
     /** Auch für Dateien, die der Builder selbst erzeugt (Suchindex). */

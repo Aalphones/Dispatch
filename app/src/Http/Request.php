@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Dispatch\Http;
 
+use Dispatch\Domain\DomainError;
+
 final class Request
 {
     private const BEARER_PREFIX = 'Bearer ';
@@ -51,6 +53,40 @@ final class Request
         $value = $this->server[$key] ?? null;
 
         return is_string($value) ? $value : null;
+    }
+
+    public function cookie(string $name): ?string
+    {
+        $header = $this->server['HTTP_COOKIE'] ?? null;
+        if (!is_string($header)) {
+            return null;
+        }
+
+        foreach (explode(';', $header) as $pair) {
+            $parts = explode('=', trim($pair), 2);
+            if (count($parts) === 2 && $parts[0] === $name) {
+                return urldecode($parts[1]);
+            }
+        }
+
+        return null;
+    }
+
+    /** Nie Weiterleitungs-Header: Strato steht nicht hinter einem eigenen Proxy, X-Forwarded-For wäre frei fälschbar. */
+    public function ip(): string
+    {
+        return (string) ($this->server['REMOTE_ADDR'] ?? '');
+    }
+
+    /** @return array<string, mixed> Body als JSON-Objekt */
+    public function json(): array
+    {
+        $decoded = json_decode($this->body(), true);
+        if (!is_array($decoded) || ($decoded !== [] && array_is_list($decoded))) {
+            throw new DomainError('invalid_json', 'Der Body muss ein JSON-Objekt sein, z. B. {"user":"…","password":"…"}.');
+        }
+
+        return $decoded;
     }
 
     public function bearerToken(): ?string

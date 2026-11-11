@@ -52,6 +52,9 @@ call :needValue DISPATCH_DB_NAME
 call :needValue DISPATCH_DB_USER
 call :needValue DISPATCH_DB_PASSWORD
 call :needValue DISPATCH_DEPLOY_TOKEN
+call :needValue DISPATCH_OWNER_USER
+call :needValue DISPATCH_OWNER_PASSWORD_HASH
+call :needValue DISPATCH_JWT_SECRET
 if defined MISSING goto :fail
 
 rem Der Token geht in einen HTTP-Header und in die .env: nur Buchstaben und Ziffern,
@@ -127,6 +130,9 @@ echo [3/7] app\.env schreiben ...
 >>"app\.env" echo DISPATCH_DB_USER='!DISPATCH_DB_USER!'
 >>"app\.env" echo DISPATCH_DB_PASSWORD='!DISPATCH_DB_PASSWORD!'
 >>"app\.env" echo DISPATCH_DEPLOY_TOKEN='!DISPATCH_DEPLOY_TOKEN!'
+>>"app\.env" echo DISPATCH_OWNER_USER='!DISPATCH_OWNER_USER!'
+>>"app\.env" echo DISPATCH_OWNER_PASSWORD_HASH='!DISPATCH_OWNER_PASSWORD_HASH!'
+>>"app\.env" echo DISPATCH_JWT_SECRET='!DISPATCH_JWT_SECRET!'
 
 :envDone
 rem Vorlauf: WinSCP legt Zielordner beim Abgleich nicht selbst an. Existieren sie

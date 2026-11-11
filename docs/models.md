@@ -276,15 +276,35 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 |---|---|---|
 | `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
 | `token_hash` | CHAR(64) | UNIQUE; SHA-256 (hex) des Klartexts |
-| `kind` | ENUM | `mcp`, `oauth_access`, `oauth_refresh`, `owner_refresh`; M3 nutzt nur `mcp`; Index mit `revoked` |
-| `name` | VARCHAR(120) | bei `mcp`: `^[a-z0-9][a-z0-9-]{0,39}$`, eindeutig unter nicht widerrufenen |
+| `kind` | ENUM | `mcp`, `oauth_access`, `oauth_refresh`, `owner_refresh`; genutzt: `mcp` (M3), `owner_refresh` (M4); Index mit `revoked` |
+| `name` | VARCHAR(120) | bei `mcp`: `^[a-z0-9][a-z0-9-]{0,39}$`, eindeutig unter nicht widerrufenen; bei `owner_refresh`: `owner` |
 | `client_id` | VARCHAR(500) NULL | OAuth (M5) |
-| `scope` | VARCHAR(200) | Scopes durch Leerzeichen getrennt |
-| `family` | CHAR(32) NULL | OAuth-Refresh-Familie (M5) |
-| `expires_at` | DATETIME NULL | `NULL` = läuft nie ab |
+| `scope` | VARCHAR(200) | Scopes durch Leerzeichen getrennt; bei `owner_refresh` leer |
+| `family` | CHAR(32) NULL | Refresh-Familie: bei `owner_refresh` eine je Anmeldung, OAuth-Refresh (M5) ebenso |
+| `expires_at` | DATETIME NULL | `NULL` = läuft nie ab; `owner_refresh`: Anlage + 30 Tage, nach Rotation `revoked = 1` mit jetzt + 30 s (Kulanzfenster), nach Widerruf jetzt |
 | `revoked` | TINYINT(1) | Default 0 |
 | `last_used_at` | DATETIME NULL | bei jeder erfolgreichen Anmeldung |
 | `created_at` | DATETIME | |
+
+## login_attempts (012)
+
+Fehlversuche der Anmeldung für die Login-Bremse (ADR-020). Keine IP im Klartext.
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT |
+| `ip_hash` | CHAR(64) | HMAC-SHA-256 der `REMOTE_ADDR` mit `DISPATCH_JWT_SECRET`; Index mit `attempted_at` |
+| `attempted_at` | DATETIME | UTC; Zeilen älter als 1 Tag löscht jeder Login-Aufruf |
+
+## stats_visitor_paths (013)
+
+Je Besucher-Hash und Tag die schon gezählten Pfade, damit ein Ereignis je Pfad genau einmal zählt (befüllt ab Phase 5).
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `day` | DATE | PK |
+| `visitor_hash` | CHAR(64) | PK |
+| `path` | VARCHAR(300) | PK |
 
 ## post_reactions (011)
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Dispatch\Http;
 
+use Dispatch\Util\Env;
+
 final class Response
 {
     /**
@@ -13,6 +15,18 @@ final class Response
     public static function json(array $body, int $status = 200, array $headers = []): never
     {
         self::raw(json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR), $status, $headers);
+    }
+
+    /** Vor jeder Ausgabe aufrufen (Response::json/empty beenden die Anfrage). `maxAge` 0 löscht den Cookie. */
+    public static function cookie(string $name, string $value, int $maxAge, string $path): void
+    {
+        setcookie($name, $value, [
+            'expires' => $maxAge > 0 ? time() + $maxAge : 1,
+            'path' => $path,
+            'secure' => Env::get('DISPATCH_INSECURE_COOKIES') !== '1',
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
     }
 
     /** @param array<string, string> $headers */

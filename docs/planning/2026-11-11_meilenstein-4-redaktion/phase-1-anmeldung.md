@@ -30,20 +30,28 @@ MySQL 8.4 lokal starten (Datenbank `dispatch_dev`, ADR-008). Gelingt das nicht i
 
 ## Checkliste
 
-- [ ] Schritt 0: MySQL lokal lauffähig, `migrate` grün
-- [ ] `app/migrations/012_login_attempt.sql`, `app/migrations/013_stats_visitor_path.sql`
-- [ ] `app/src/Http/Router.php`; `app/index.php` auf den Router umstellen
-- [ ] `Request`: `cookie(string $name): ?string`, `ip(): string` (`REMOTE_ADDR`, nie Weiterleitungs-Header — Strato steht nicht hinter einem eigenen Proxy), `json(): array` (Body als Objekt, sonst `DomainError('invalid_json')` → 400)
-- [ ] `Response`: `cookie(string $name, string $value, int $maxAge, string $path)` setzt den Cookie per `setcookie` mit Optionen-Array (`httponly`, `secure` nach Umgebung, `samesite` = `Strict`)
-- [ ] `app/src/Auth/Jwt.php`
-- [ ] `app/src/Auth/LoginThrottle.php` (`assertAllowed(string $ip)`, `recordFailure(string $ip)`, `prune()`)
-- [ ] `TokenRepository` erweitern: `insertOwnerRefresh(hash, family, expiresAt)`, `findByHash(hash, kind)` (ohne Gültigkeitsfilter), `revokeOne(id, expiresAt)`, `revokeFamily(family)`, `revokeAllOwnerRefresh()`
-- [ ] `app/src/Auth/OwnerSession.php` (`login`, `refresh`, `logout`, `logoutAll`); Rückgaben enthalten das neue Cookie oder `null`
-- [ ] `app/src/Auth/ApiAuth.php`
-- [ ] `app/src/Api/AuthController.php` (vier Handler)
-- [ ] `deploy.cmd`: drei neue Pflichtwerte (`call :needValue`) und in `app\.env` schreiben; `deploy.env.example` und `dev.env.example` (dort zusätzlich `DISPATCH_INSECURE_COOKIES=1`) ergänzen, ohne echte Werte
-- [ ] `dev-router.php`: prüfen, dass `Set-Cookie` und `Origin` durchgereicht werden (der eingebaute Server tut das; nur bestätigen)
-- [ ] ADR-020 „Anmeldung des Inhabers“: JWT selbst gebaut mit festem Algorithmus; Refresh über die Tabelle `tokens` ohne neue Spalten (Kulanz = `revoked = 1` mit `expires_at` in der Zukunft); Login-Bremse mit IP-Hash statt IP; keine erneute Passworteingabe vor dem Anlegen eines Zugangs (Entscheidung des Inhabers; Schutz gegen ein abgegriffenes JWT bleibt die strenge CSP und die kurze Laufzeit von 15 Minuten). Verworfen: Sitzungen in PHP-Sessions (Cookie für jede API-Anfrage, CSRF-Fläche), eigene Spalte `replaced_at` (Migration für einen Sonderfall)
-- [ ] Doku: `docs/routes.md` neu (Tabelle Methode · Pfad · Auth · Controller · Phase), `docs/models.md` (012, 013, `owner_refresh`-Nutzung), `docs/code-map.md` (`Http/Router`, neue `Auth/`-Klassen), AGENTS.md „Lokal starten“ (drei neue Variablen, `hash-password`)
+- [x] Schritt 0: MySQL lokal lauffähig, `migrate` grün
+- [x] `app/migrations/012_login_attempt.sql`, `app/migrations/013_stats_visitor_path.sql`
+- [x] `app/src/Http/Router.php`; `app/index.php` auf den Router umstellen
+- [x] `Request`: `cookie(string $name): ?string`, `ip(): string` (`REMOTE_ADDR`, nie Weiterleitungs-Header — Strato steht nicht hinter einem eigenen Proxy), `json(): array` (Body als Objekt, sonst `DomainError('invalid_json')` → 400)
+- [x] `Response`: `cookie(string $name, string $value, int $maxAge, string $path)` setzt den Cookie per `setcookie` mit Optionen-Array (`httponly`, `secure` nach Umgebung, `samesite` = `Strict`)
+- [x] `app/src/Auth/Jwt.php`
+- [x] `app/src/Auth/LoginThrottle.php` (`assertAllowed(string $ip)`, `recordFailure(string $ip)`, `prune()`)
+- [x] `TokenRepository` erweitern: `insertOwnerRefresh(hash, family, expiresAt)`, `findByHash(hash, kind)` (ohne Gültigkeitsfilter), `revokeOne(id, expiresAt)`, `revokeFamily(family)`, `revokeAllOwnerRefresh()`
+- [x] `app/src/Auth/OwnerSession.php` (`login`, `refresh`, `logout`, `logoutAll`); Rückgaben enthalten das neue Cookie oder `null`
+- [x] `app/src/Auth/ApiAuth.php`
+- [x] `app/src/Api/AuthController.php` (vier Handler)
+- [x] `deploy.cmd`: drei neue Pflichtwerte (`call :needValue`) und in `app\.env` schreiben; `deploy.env.example` und `dev.env.example` (dort zusätzlich `DISPATCH_INSECURE_COOKIES=1`) ergänzen, ohne echte Werte
+- [x] `dev-router.php`: prüfen, dass `Set-Cookie` und `Origin` durchgereicht werden (der eingebaute Server tut das; nur bestätigen)
+- [x] ADR-020 „Anmeldung des Inhabers“: JWT selbst gebaut mit festem Algorithmus; Refresh über die Tabelle `tokens` ohne neue Spalten (Kulanz = `revoked = 1` mit `expires_at` in der Zukunft); Login-Bremse mit IP-Hash statt IP; keine erneute Passworteingabe vor dem Anlegen eines Zugangs (Entscheidung des Inhabers; Schutz gegen ein abgegriffenes JWT bleibt die strenge CSP und die kurze Laufzeit von 15 Minuten). Verworfen: Sitzungen in PHP-Sessions (Cookie für jede API-Anfrage, CSRF-Fläche), eigene Spalte `replaced_at` (Migration für einen Sonderfall)
+- [x] Doku: `docs/routes.md` neu (Tabelle Methode · Pfad · Auth · Controller · Phase), `docs/models.md` (012, 013, `owner_refresh`-Nutzung), `docs/code-map.md` (`Http/Router`, neue `Auth/`-Klassen), AGENTS.md „Lokal starten“ (drei neue Variablen, `hash-password`)
 
 ## Report-Back
+
+**Status: complete.** Schritt 0: `mysqld` lief nach dem Neustart nicht; mit dem Kurzpfad (`C:\PROGRA~1\MySQL\MYSQLS~1.4`) als `--basedir` startet er aus `Start-Process` (Leerzeichen im Pfad brachen das Argument). `migrate` hat 012 und 013 angelegt.
+
+Gegenproben gegen `php -S localhost:8080` und im Scratchpad: JWT (alle sechs Fälle plus falsches `iss`/`sub`, `HS512`), Login-Fehlermeldung identisch, Cookie-Attribute, Bremse (11. Aufruf 429, `login_attempts` nur Hashes), Refresh in allen vier Zuständen, 403 ohne `X-Dispatch` / mit fremdem oder fehlendem `Origin`, Abmelden, Überall abmelden, `ApiAuth` (kein Header, `dmcp_`, kaputtes JWT → 401 mit `WWW-Authenticate`; `ownerOrDeploy` nimmt das Deploy-Token), 503 `not_configured`, Router (405 mit `Allow`, 404), alte Routen (`tokens`, `categories`, `deploy`) und MCP `tools/list` unverändert. Hash-Weg durch `deploy.cmd`: Hash und Schlüssel kommen unverändert in `.env` an.
+
+Abweichungen: `TokenRepository::revokeOne(id, graceSeconds)` nimmt Sekunden bis zum Ablauf statt eines Zeitstempels (Vergleich bleibt in SQL, php.md). `--remote`-Gegenprobe nicht gegen Strato gelaufen (deploy.env zeigt dorthin); stattdessen dieselben Endpunkte per curl auf localhost. Ein Refresh-Token, das nach dem Abmelden vorgelegt wird, ergibt `session_revoked` (Wiederverwendung laut Kontrakt, `expires_at = jetzt`), nicht `session_expired`.
+
+Nicht geprüft: `deploy.cmd` gegen Strato (Phase 10).

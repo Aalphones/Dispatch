@@ -9,6 +9,7 @@ use PDO;
 final class TokenRepository
 {
     private const KIND_MCP = 'mcp';
+    public const KIND_OWNER_REFRESH = 'owner_refresh';
 
     public function __construct(private readonly PDO $pdo)
     {
@@ -44,6 +45,65 @@ final class TokenRepository
         $row = $statement->fetch();
 
         return $row === false ? null : $row;
+    }
+
+    public function insertOwnerRefresh(string $hash, string $family, int $lifetimeSeconds): int
+    {
+        $statement = $this->pdo->prepare(
+            "INSERT INTO tokens (token_hash, kind, name, scope, family, expires_at, revoked, created_at)
+             VALUES (?, ?, 'owner', '', ?, UTC_TIMESTAMP() + INTERVAL ? SECOND, 0, UTC_TIMESTAMP())"
+        );
+        $statement->execute([$hash, self::KIND_OWNER_REFRESH, $family, $lifetimeSeconds]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * Ohne Gültigkeitsfilter: die Anmeldung unterscheidet gültig, Kulanzfenster und Wiederverwendung selbst.
+     *
+     * @return array{id: int, family: string, revoked: bool, not_expired: bool}|null
+     */
+    public function findByHash(string $hash, string $kind): ?array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT id, family, revoked, (expires_at IS NOT NULL AND expires_at > UTC_TIMESTAMP()) AS not_expired
+             FROM tokens WHERE token_hash = ? AND kind = ?'
+        );
+        $statement->execute([$hash, $kind]);
+        $row = $statement->fetch();
+        if ($row === false) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $row['id'],
+            'family' => (string) $row['family'],
+            'revoked' => (int) $row['revoked'] === 1,
+            'not_expired' => (int) $row['not_expired'] === 1,
+        ];
+    }
+
+    /** Widerruft ein noch gültiges Token; `expires_at` wird auf jetzt + `graceSeconds` gesetzt (Kulanzfenster). false, wenn es schon widerrufen war. */
+    public function revokeOne(int $id, int $graceSeconds): bool
+    {
+        $statement = $this->pdo->prepare(
+            'UPDATE tokens SET revoked = 1, expires_at = UTC_TIMESTAMP() + INTERVAL ? SECOND WHERE id = ? AND revoked = 0'
+        );
+        $statement->execute([$graceSeconds, $id]);
+
+        return $statement->rowCount() === 1;
+    }
+
+    public function revokeFamily(string $family): void
+    {
+        $statement = $this->pdo->prepare('UPDATE tokens SET revoked = 1, expires_at = UTC_TIMESTAMP() WHERE family = ?');
+        $statement->execute([$family]);
+    }
+
+    public function revokeAllOwnerRefresh(): void
+    {
+        $statement = $this->pdo->prepare('UPDATE tokens SET revoked = 1, expires_at = UTC_TIMESTAMP() WHERE kind = ?');
+        $statement->execute([self::KIND_OWNER_REFRESH]);
     }
 
     public function countActive(): int

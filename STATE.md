@@ -1,5 +1,5 @@
 # STATE
 
-**Aktiver Plan:** Meilenstein 4 — Redaktions-API und Redaktionsmodus, `docs/planning/2026-11-11_meilenstein-4-redaktion/` (10 Phasen, Umsetzung im Verwalter angelegt).
-**Phase:** 9/10 — Dialoge: Thema einreichen, Interessen, Statistik, Zugänge (complete)
-**Nächster Schritt:** Phase 10 (Strato-Abschluss). Lokal: MySQL über `mysqld` mit Kurzpfad-`--basedir` `C:\PROGRA~1\MySQL\MYSQLS~1.4` und `--datadir=C:\Users\sasch\mysql-dispatch\data` (läuft gerade), PHP 8.5 unter `%LOCALAPPDATA%\Microsoft\WinGet\Packages\PHP.PHP.8.5_*`, Skripte mit `DISPATCH_ENV_FILE=app/.env.local`; Dev-Server: `php -S localhost:8080 -t public dev-router.php` (läuft gerade keiner). Browser-Prüfung ohne Playwright: Chrome headless mit `--remote-debugging-port` und Node-WebSocket; Test-JWT per PHP (`Jwt::encode(Jwt::newAccessClaims())`), im Tab `import(dataset.redaktion).then(m => m.start(jwt))`.
+**Aktiver Plan:** (kein aktiver Plan) — Meilenstein 4 archiviert nach `docs/archive/2026-11/2026-11-11_meilenstein-4-redaktion/`.
+**Phase:** —
+**Nächster Schritt:** Meilenstein 5 (OAuth 2.1) planen. Lokal: MySQL über `mysqld` mit Kurzpfad-`--basedir` `C:PROGRA~1MySQLMYSQLS~1.4` und `--datadir=C:Userssaschmysql-dispatchdata`, PHP 8.5 unter `%LOCALAPPDATA%MicrosoftWinGetPackagesPHP.PHP.8.5_*`, Skripte mit `DISPATCH_ENV_FILE=app/.env.local`; Dev-Server: `php -S localhost:8080 -t public dev-router.php`. Strato: `deploy.cmd` (Werte in `deploy.env`, auch Anmeldung des Inhabers).

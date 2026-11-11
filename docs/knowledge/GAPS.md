@@ -3,7 +3,8 @@
 Bemerkte, noch nicht geklärte Wissenslücken. Was Meilenstein 0 misst, steht in `docs/PROJECT.md` → Offene Fragen.
 
 - **Ob Claude-Apps sich per CIMD an einer Pfad-Adresse (`/dispatch/mcp`) anmelden** — die Discovery liegt an der Wurzel, die Ressource unter einem Pfad; Meilenstein 5 prüft es.
-- **Kategorie-Anlegen durch Agenten** — `save_category` mit Nicht-Inhaber-Token erzeugt nur einen Änderungsvorschlag; ohne Freigabe-Oberfläche (Meilenstein 4) bleibt Strato ohne Kategorien, bis der Inhaber `category:create --remote` nutzt.
+- **Kategorie-Anlegen durch Agenten** — `save_category` mit Nicht-Inhaber-Token erzeugt nur einen Änderungsvorschlag; auch die Redaktion (Meilenstein 4) legt keine Kategorien an; Strato bekommt sie nur über `category:create --remote`.
 - **Bild-Importe per Upload** — `add_to_queue` mit `data_base64` speichert ohne Herkunftsseite (`source_url`); für fremdes Material fehlt sie.
 - **Queue-Auftrag ohne Kategorie** — `submit_post` übernimmt die Kategorie des Artikels nicht in den Auftrag (`category_id` bleibt `null`), und `editor_notes` behalten veralteten Text; im Abnahmelauf aufgefallen.
 - **Bild-Metadaten ungeprüft** — der Server prüft Urheber und Lizenz eines importierten Bildes nicht gegen die Quelle (Abnahmelauf: aus dem Gedächtnis des Agenten).
+- **Redaktionsmodus nicht automatisiert geprüft** — Abnahme je Phase per Browser-Handprüfung (ADR-004); Mehr-Tab-Verhalten (fünf Tabs, Wiederverwendung nach 30 s) und Handy-Bedienung hängen an der Handprüfung des Inhabers auf Strato.

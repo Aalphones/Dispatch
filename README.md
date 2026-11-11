@@ -31,7 +31,13 @@ Der Dev-Router bildet die `.htaccess`-Regeln nach; der Builder schreibt die Webs
 ### Deployen
 
 1. `deploy.env.example` nach `deploy.env` kopieren und ausfüllen (landet nicht im Git). Den SFTP-Fingerabdruck und den Erzeugungsbefehl für den Deploy-Token erklärt die Vorlage.
-2. `deploy.cmd` doppelklicken — oder `deploy.cmd app` (Code und Brücke) bzw. `deploy.cmd root` (nur Wurzel-`.htaccess`) für Teile.
+2. Für die Anmeldung auf der Website drei Werte in `deploy.env` eintragen (ohne sie antwortet die Anmeldung mit 503 `not_configured`):
+   - `DISPATCH_OWNER_USER` — Login-Name, frei wählbar, ohne `'`.
+   - `DISPATCH_OWNER_PASSWORD_HASH` — bcrypt-Hash des Passworts, nie das Passwort selbst. Erzeugen: `echo <passwort>| php bin/dispatch hash-password`. Den Hash mit allen `$` unverändert und ohne Anführungszeichen einfügen.
+   - `DISPATCH_JWT_SECRET` — mindestens 64 Hex-Zeichen. Erzeugen: `php -r "echo bin2hex(random_bytes(32));"`.
+
+   Lokal dieselben Namen in `app/.env.local` (Vorlage `dev.env.example`, dort zusätzlich `DISPATCH_INSECURE_COOKIES=1`).
+3. `deploy.cmd` doppelklicken — oder `deploy.cmd app` (Code und Brücke) bzw. `deploy.cmd root` (nur Wurzel-`.htaccess`) für Teile.
 
 Vor dem Überschreiben sichert das Skript die vorhandene Wurzel-`.htaccess` nach `deploy-backup\root.htaccess`.
 

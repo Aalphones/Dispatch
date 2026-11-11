@@ -26,3 +26,7 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Deploy-Token | `DISPATCH_DEPLOY_TOKEN`; erlaubt nur Migration und Rebuild nach dem Deploy. |
 | Akteur | Wer eine Änderung auslöst (`Actor`): `owner`, `cli`, `deploy`, `mcp:<name>`, `oauth:<name>`. Nur `owner` ist der Inhaber; der Name steht im Protokoll. |
 | Startinhalte | Markdown-Vorlagen in `app/defaults/` (Richtlinien, Präferenzen, Über, Impressum, Datenschutz); der Seeder legt sie an, überschreibt aber nie Vorhandenes. |
+| Merkzeichen | `localStorage['dispatch.angemeldet'] = '1'`; sagt `site.js`, dass der Redaktionsmodus zu laden ist. Ohne Merkzeichen löst ein Besucher keinen PHP-Aufruf außer dem Zähl-Beacon aus. |
+| Vorschau-Link | Signierte, sieben Tage gültige Adresse `/vorschau/?id=&exp=&sig=`, die einen Arbeitsstand ohne Anmeldung nur lesend zeigt (`submit_post` liefert ihn). |
+| Familie | Alle Refresh-Tokens eines Logins (`tokens.family`); Wiederverwendung eines alten Tokens widerruft die ganze Familie. |
+| Kulanzfenster | 30 Sekunden, in denen ein rotiertes Refresh-Token noch ein neues Access-JWT ergibt (parallele Tabs), ohne neues Cookie. |

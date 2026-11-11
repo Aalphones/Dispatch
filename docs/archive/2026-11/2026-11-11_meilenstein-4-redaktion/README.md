@@ -17,7 +17,7 @@ Nicht in diesem Meilenstein: OAuth, verbundene Claude-Apps und OAuth-Clients im 
 | 7 | [Vorschau-Seite mit Freigabe und Kommentieren](phase-7-vorschau-freigabe.md) | standard | complete |
 | 8 | [Startseite, Artikel, Kategorien: Redaktion in der Seite](phase-8-redaktion-in-seiten.md) | standard | complete |
 | 9 | [Dialoge: Thema einreichen, Interessen, Statistik, Zugänge](phase-9-dialoge.md) | standard | complete |
-| 10 | [Strato, Abnahme, Doku](phase-10-strato-abschluss.md) | standard | pending |
+| 10 | [Strato, Abnahme, Doku](phase-10-strato-abschluss.md) | standard | complete |
 
 Reihenfolge ist Pflicht. ADRs dieses Meilensteins (Nummern reserviert): **020** Anmeldung des Inhabers (Phase 1), **021** Redaktions-API (Phase 2), **022** Zähl-Aufruf (Phase 5), **023** Redaktionsmodus im Browser (Phase 6). Phase 3 ergänzt ADR-021 um das Diff-Verfahren.
 
@@ -151,10 +151,24 @@ Handprüfung (ADR-004), lokal und auf Strato:
 
 ## Summary
 
+Der Inhaber meldet sich auf quantum-canvas.de an (Zugangsdaten per Umgebungswerte, Login mit Bremse, kurzlebiges JWT, rotierendes Refresh-Cookie) und erledigt die Redaktion in der Website: Freigabe-Leiste mit Anmerkungen an Stellen, Änderungsansicht gegenüber der Live-Fassung, Zurückziehen, Vorschläge, Thema einreichen, Interessen, „Mehr davon / Weniger“, Statistik, Zugänge. Die Website zählt Besuche selbst ohne Cookies und ohne IP-Adressen. ADR-020 bis 023. Abnahme auf Strato: 12 von 12 Punkten.
+
 ## Files touched
+
+`app/src/Auth`, `app/src/Api`, `app/src/Http/Router.php`, `app/src/Domain`, `app/src/Util/Diff.php`, `app/src/Site`, `app/theme/` (inkl. `redaktion/`), `app/templates`, `app/migrations/012–013`, `docs/`, `README.md`, `deploy.env.example`, `deploy.cmd`.
 
 ## Commits
 
+7258280, de28ee3, 1a63829, 4a8c18d, cce6761, 6c2379d, 3c6b948, 57ec422, c7f6f8a; Abschluss in Phase 10 (Vorschau-Bilder, Vorschau-Skripte, Konto-Menü, Doku, Archiv).
+
 ## Deviations from plan
 
+- Phase 10 fand vier Lücken erst in der Handprüfung auf Strato: Bilder unveröffentlichter Artikel in der Vorschau (neuer geschützter Endpunkt `preview-media`), `artikel.js` fehlte in der Vorschau (Fokus, Lightbox, Inhaltsverzeichnis-Marker), Freigabe-Leiste nicht bündig oben, Konto-Knopf zeigte „false“ und das Menü hing am Fensterrand.
+- Die Login-Bremsen-Probe sperrte die IP des Inhabers 15 Minuten lang (Bremse künftig zuletzt prüfen).
+
 ## Follow-ups
+
+- Meilenstein 5 (OAuth 2.1) planen.
+- Der Testartikel aus Meilenstein 3 hat weder Zwischenüberschriften noch „Kurz gesagt“; Kommentieren an diesen Bereichen ist nicht mit echtem Inhalt geprüft.
+- Die Redaktion legt keine Kategorien an (`category:create --remote` bleibt).
+- Mehr-Tab-Verhalten und Handy-Bedienung sind nicht automatisiert prüfbar (siehe GAPS).

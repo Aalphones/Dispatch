@@ -21,6 +21,7 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/posts/{id}/preview` | JWT | `Api\PreviewController::byLogin` | 2 |
 | GET | `/dispatch/api/posts/{id}/diff` | JWT | `Api\PostController::diff` (`Util\Diff`) | 3 |
 | GET | `/dispatch/api/preview?id&exp&sig` | Signatur | `Api\PreviewController::bySignature` | 2 |
+| GET | `/dispatch/api/preview-media?id&exp&sig&f=<uid>/<datei>` | Signatur (eine Stunde, von `PreviewLink::protectMedia` in das Vorschau-HTML geschrieben) | `Api\PreviewController::media` (Bilder unveröffentlichter Arbeitsstände; nur Varianten, die der Artikel nutzt) | 10 |
 | POST | `/dispatch/api/posts/{id}/approve` | JWT | `Api\PostController::approve` (+ Neubau) | 2 |
 | POST | `/dispatch/api/posts/{id}/return` | JWT | `Api\PostController::return` | 2 |
 | POST | `/dispatch/api/posts/{id}/unpublish` | JWT | `Api\PostController::unpublish` (+ Neubau) | 2 |

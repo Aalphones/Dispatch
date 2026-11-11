@@ -1,0 +1,31 @@
+# Phase 8 — Startseite, Artikel, Kategorien: Redaktion in der Seite
+
+## Kontext
+
+- `README.md` → „Endpunkte“ (`overview`, `posts`, `changes`, `posts/by-slug`, `reaction`, `categories`, `stats/posts`).
+- Entwurf (verbindlich): Startseite `.wartet` Zeilen 749–770 (Karten `.wartekarte` mit `.status review|zurueck|vorschlag`, `.vorher-nachher`), Reaktionen und `.kennzahl` am Aufmacher Zeilen 782–785; Artikel `.redkasten` Zeilen 813–823 (`.zahlen` mit `.funken`, `.aktionen` mit `.reaktion` und „Zurückziehen“, `.hinweiszeile` „Neue Fassung“); Dialog `#zurueckziehen` Zeilen 1158–1162; Kategorien `.gewicht-inline` Zeilen 949–990 mit Hinweistext; CSS: `.wartet*`, `.redkasten`, `.reaktion`, `.gewicht*`, `.kennzahl`, Handy-Regeln (Zeilen 512–513, 607).
+- Code: Module aus Phase 6 (`api.js`, `ui.js`), Daten-Attribute aus Phase 6.
+
+## AK der Phase
+
+1. **Startseite, „Wartet auf dich“** (nur wenn mindestens ein Eintrag): Überschrift mit Zusammenfassung „n Entwürfe · m Vorschläge“; je Artikel in `review` eine Karte „Zur Freigabe“ mit Meta „Eingereicht <Datum Uhrzeit> · <Wörter> Wörter · <Quellen> Quellen · Formprüfung ok|n Fehler“ und Knopf „Ansehen und freigeben“ → `/vorschau/?id=<id>`; je zurückgegebenem Entwurf (`draft` mit `review_note`) eine Karte „Zurückgegeben“ mit gekürzter Anmerkung (120 Zeichen) und Knopf „Ansehen“; je Vorschlag eine Karte „Vorschlag · <Einstellung|Seite|Kategorie|Medium>“ mit vorher/nachher (`<del>`/`<ins>`, Texte gekürzt) und „Übernehmen“/„Ablehnen“. Übernehmen → Toast „Übernommen. Die Website wird neu gebaut.“, Karte verschwindet, Zähler im Konto-Knopf sinkt.
+2. Die Reihe steht vor dem Aufmacher und ist auf dem Handy waagerecht wischbar (Entwurf Zeile 607).
+3. **„Mehr davon / Weniger“** an Aufmacher und jeder Artikelkarte (über `data-post-id`) und im Redaktionskasten: Zustand aus `posts/by-slug` (Artikelseite) bzw. `GET reactions` (Start-, Kategorie- und Schlagwortseiten, Phase 4). Klick setzt/entfernt (zweiter Klick auf denselben Knopf = keine Reaktion), `aria-pressed` folgt, Toast mit „Rückgängig“.
+4. **Kennzahl am Aufmacher** und **Redaktionskasten** auf Artikelseiten: „<Aufrufe> Aufrufe · <n> % zu Ende gelesen“, im Kasten zusätzlich „Lesezeit Ø m:ss“ und Funken der letzten 7 Tage (Höhen per `element.style.height`). Ohne Daten: „Noch keine Aufrufe“.
+5. **Zurückziehen** im Redaktionskasten → Dialog nach Entwurf → `POST posts/{id}/unpublish` → Toast „Zurückgezogen. Die Website wird neu gebaut.“ → Weiterleitung zur Startseite.
+6. **Neue Fassung:** bei `has_new_version` die `.hinweiszeile` „Neue Fassung — der Agent hat eine Überarbeitung eingereicht (Zusammenfassung aus `posts/{id}/diff` → `summary`)“ mit Knopf „Änderungen ansehen“ → `/vorschau/?id=<id>`.
+7. **Kategorien-Seite:** an jeder Karte `.gewicht-inline` 0–5 mit `aria-pressed` des aktuellen Werts, Hinweiszeile nach Entwurf über dem Raster plus `info`-Icon („0 = Agenten schreiben nie von selbst darüber, 5 = bevorzugt. Selbst eingereichte Themen schreiben sie immer.“). Klick → `PATCH categories/{id}` `{interest}`, Toast „Interesse für <Name>: <n>“.
+8. Handy 390 px: alle Knöpfe mindestens 44 px hoch tippbar, Kasten und Reihe ohne waagerechten Seiten-Rollbalken.
+
+## Checkliste
+
+- [ ] `app/theme/redaktion/post.js` (Startseite: Wartet; Artikelseite: Redaktionskasten, Zurückziehen, neue Fassung)
+- [ ] `app/theme/redaktion/change.js` (Vorschlagskarten)
+- [ ] `app/theme/redaktion/reaction.js`
+- [ ] `app/theme/redaktion/stats.js` (Kennzahl-Teil)
+- [ ] `app/theme/redaktion/category.js` (Gewichte auf der Kategorien-Seite)
+- [ ] `start.js`: Seiten `start`, `artikel`, `kategorien` verdrahten (Werte von `data-seite` aus den Templates lesen)
+- [ ] `redaktion.css`: Stile nach Entwurf
+- [ ] Doku: `docs/code-map.md`
+
+## Report-Back

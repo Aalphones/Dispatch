@@ -66,7 +66,7 @@ function renderButton(overview) {
 		el('span', { class: 'text', text: 'Redaktion' }),
 		counter(count),
 	];
-	button.replaceChildren(...content);
+	button.replaceChildren(...content.filter(Boolean)); // replaceChildren würde false als Text „false“ anhängen
 	button.setAttribute('aria-label', count > 0 ? 'Redaktionsmenü, ' + count + ' offen' : 'Redaktionsmenü');
 }
 
@@ -85,6 +85,14 @@ export function start() {
 	menu = el('div', { id: 'menue', popover: 'auto', class: 'menue' });
 	button = el('button', { type: 'button', class: 'konto', popovertarget: 'menue', 'aria-label': 'Redaktionsmenü' });
 	document.body.append(menu);
+	// Das Menü hängt unter dem Knopf, nicht am Fensterrand (CSS gibt nur einen Rückfallwert vor).
+	menu.addEventListener('beforetoggle', (event) => {
+		if (event.newState === 'open' && button !== null) {
+			const box = button.getBoundingClientRect();
+			menu.style.top = box.bottom + 8 + 'px';
+			menu.style.right = Math.max(8, window.innerWidth - box.right) + 'px';
+		}
+	});
 	if (document.body.dataset.seite !== 'vorschau') {
 		document.body.append(fab);
 	}

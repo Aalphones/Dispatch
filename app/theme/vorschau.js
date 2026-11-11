@@ -22,6 +22,7 @@ async function show() {
 		const response = await fetch('/dispatch/api/preview?' + params);
 		if (response.ok) {
 			box.innerHTML = (await response.json()).html;
+			import(document.documentElement.dataset.artikel).catch(() => {}); // Fokus, Inhaltsverzeichnis, Lightbox
 
 			return;
 		}

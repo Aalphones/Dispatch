@@ -8,10 +8,12 @@ use Dispatch\Auth\ApiAuth;
 use Dispatch\Auth\PreviewLink;
 use Dispatch\Db\Connection;
 use Dispatch\Domain\DomainError;
+use Dispatch\Domain\MediaRepository;
 use Dispatch\Domain\PostService;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
 use Dispatch\Site\Builder;
+use Dispatch\Util\FormCheck;
 
 /**
  * Vorschau eines Arbeitsstands: dieselbe Darstellung wie die Website (`Builder::articleMain`), nie in die Wurzel geschrieben.
@@ -51,6 +53,57 @@ final class PreviewController
         }
     }
 
+    /** Bild eines Arbeitsstands, nur mit gültiger Vorschau-Signatur und nur, wenn der Artikel es nutzt. */
+    public function media(Request $request): never
+    {
+        $id = $this->intParameter($request, 'id');
+        $expires = $this->intParameter($request, 'exp');
+        if ($id === null || $expires === null || !PreviewLink::verify($id, $expires, $request->query('sig') ?? '')) {
+            Response::error('invalid_signature', 'Der Link ist ungültig oder abgelaufen.', 403);
+        }
+
+        $parts = explode('/', (string) ($request->query('f') ?? ''));
+        if (count($parts) !== 2 || preg_match('/^[a-z0-9]+$/', $parts[0]) !== 1 || preg_match('/^[A-Za-z0-9._-]+$/', $parts[1]) !== 1) {
+            Response::error('not_found', 'Datei nicht gefunden.', 404);
+        }
+        [$uid, $name] = $parts;
+
+        try {
+            $pdo = Connection::open();
+            $snapshot = (new PostService($pdo, $this->config))->previewSnapshot($id);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        $medium = in_array($uid, FormCheck::mediaUids($snapshot), true) ? (new MediaRepository($pdo))->findManyByUid([$uid])[$uid] ?? null : null;
+        $allowed = [];
+        if ($medium !== null) {
+            $allowed = $medium['kind'] === 'image' ? [] : ['original.' . $medium['ext']];
+            foreach ((array) $medium['variants'] as $variant) {
+                foreach ((array) $variant['files'] as $file) {
+                    $allowed[] = (string) $file;
+                }
+            }
+        }
+        $path = (string) $this->config['storage_dir'] . '/media/' . $uid . '/' . $name;
+        if (!in_array($name, $allowed, true) || !is_file($path)) {
+            Response::error('not_found', 'Datei nicht gefunden.', 404);
+        }
+
+        $types = ['webp' => 'image/webp', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'avif' => 'image/avif', 'mp4' => 'video/mp4', 'webm' => 'video/webm'];
+        $type = $types[strtolower(pathinfo($name, PATHINFO_EXTENSION))] ?? null;
+        if ($type === null) {
+            Response::error('not_found', 'Datei nicht gefunden.', 404);
+        }
+
+        header('Content-Type: ' . $type);
+        header('Content-Length: ' . filesize($path));
+        header('Cache-Control: private, max-age=3600');
+        header('X-Content-Type-Options: nosniff');
+        readfile($path);
+        exit;
+    }
+
     /** @return array<string, mixed> */
     private function payload(int $id): array
     {
@@ -74,7 +127,7 @@ final class PreviewController
                 'sources' => count($post['sources']),
                 'updated_at' => $snapshot['updated_at'],
             ],
-            'html' => (new Builder($this->config, $pdo))->previewMain($snapshot),
+            'html' => PreviewLink::protectMedia((new Builder($this->config, $pdo))->previewMain($snapshot), $id),
             'form' => [
                 'errors' => $this->findings($form->errors),
                 'warnings' => $this->findings($form->warnings),

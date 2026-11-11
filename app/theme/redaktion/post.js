@@ -181,6 +181,7 @@ export async function vorschau() {
 	const view = el('div', { class: 'v-ansicht' });
 	view.innerHTML = data.html;
 	content.replaceChildren(view);
+	import(document.documentElement.dataset.artikel).catch(() => {}); // Fokus, Inhaltsverzeichnis, Lightbox
 
 	const { bar, hint, buttons, freeText, send, noteBox } = buildBar(data);
 	document.querySelector('.freigabe')?.remove();

@@ -10,6 +10,7 @@ use Dispatch\Util\Env;
 final class PreviewLink
 {
     private const LIFETIME_SECONDS = 7 * 86400;
+    private const MEDIA_LIFETIME_SECONDS = 3600;
 
     public static function url(int $id): string
     {
@@ -29,6 +30,22 @@ final class PreviewLink
         }
 
         return hash_equals(self::sign($id, $expires), $signature);
+    }
+
+    /**
+     * Schreibt `/media/<uid>/<datei>` in einem Vorschau-HTML auf den geschützten Bild-Endpunkt um (eine Stunde gültig):
+     * unveröffentlichte Bilder liegen nicht unter `/media/`.
+     */
+    public static function protectMedia(string $html, int $id): string
+    {
+        $expires = time() + self::MEDIA_LIFETIME_SECONDS;
+        $query = 'id=' . $id . '&amp;exp=' . $expires . '&amp;sig=' . self::sign($id, $expires) . '&amp;f=';
+
+        return (string) preg_replace_callback(
+            '#/media/([a-z0-9]+)/([A-Za-z0-9._-]+)#',
+            static fn (array $m): string => '/dispatch/api/preview-media?' . $query . $m[1] . '%2F' . $m[2],
+            $html
+        );
     }
 
     private static function sign(int $id, int $expires): string

@@ -45,7 +45,7 @@ dialog.breit { width: min(54rem, calc(100vw - 2rem)); }
 
 /* Vorschau mit Freigabe (Entwurf: #v-vorschau) */
 .vorschau-band { text-align: center; font: 700 .7rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--warn); padding: .6rem 0 0; }
-.freigabe { position: sticky; top: var(--nav-h, 0); z-index: 16; background: color-mix(in oklab, var(--paper) 94%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--accent-line); animation: rein var(--t-slow) var(--ease-out) both; }
+.freigabe { position: sticky; top: 0; z-index: 21; background: color-mix(in oklab, var(--paper) 94%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--accent-line); animation: rein var(--t-slow) var(--ease-out) both; }
 .freigabe .wrap { display: flex; gap: .6rem 1rem; align-items: center; flex-wrap: wrap; padding-block: .7rem; font: .85rem var(--sans); }
 .pruefung { display: flex; gap: .35rem; flex-wrap: wrap; margin-right: auto; }
 .pruef { display: inline-flex; align-items: center; gap: .3rem; font: 600 .74rem var(--sans); padding: .3rem .55rem; border-radius: 999px; white-space: nowrap; }

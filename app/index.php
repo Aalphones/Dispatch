@@ -46,6 +46,7 @@ $router->add('GET', '/dispatch/api/posts/by-slug/{slug}', static fn (array $para
 $router->add('GET', '/dispatch/api/posts/{id}/preview', static fn (array $params) => (new PreviewController($config))->byLogin($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/posts/{id}/diff', static fn (array $params) => (new PostController($config))->diff($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/preview',static fn () => (new PreviewController($config))->bySignature($request));
+$router->add('GET', '/dispatch/api/preview-media', static fn () => (new PreviewController($config))->media($request));
 $router->add('POST', '/dispatch/api/posts/{id}/approve', static fn (array $params) => (new PostController($config))->approve($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/posts/{id}/return', static fn (array $params) => (new PostController($config))->return($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/posts/{id}/unpublish', static fn (array $params) => (new PostController($config))->unpublish($request, (int) $params['id']));

@@ -19,13 +19,19 @@
 
 ## Checkliste
 
-- [ ] `app/theme/redaktion/post.js` (Startseite: Wartet; Artikelseite: Redaktionskasten, Zurückziehen, neue Fassung)
-- [ ] `app/theme/redaktion/change.js` (Vorschlagskarten)
-- [ ] `app/theme/redaktion/reaction.js`
-- [ ] `app/theme/redaktion/stats.js` (Kennzahl-Teil)
-- [ ] `app/theme/redaktion/category.js` (Gewichte auf der Kategorien-Seite)
-- [ ] `start.js`: Seiten `start`, `artikel`, `kategorien` verdrahten (Werte von `data-seite` aus den Templates lesen)
-- [ ] `redaktion.css`: Stile nach Entwurf
-- [ ] Doku: `docs/code-map.md`
+- [x] `app/theme/redaktion/post.js` (Startseite: Wartet; Artikelseite: Redaktionskasten, Zurückziehen, neue Fassung)
+- [x] `app/theme/redaktion/change.js` (Vorschlagskarten)
+- [x] `app/theme/redaktion/reaction.js`
+- [x] `app/theme/redaktion/stats.js` (Kennzahl-Teil)
+- [x] `app/theme/redaktion/category.js` (Gewichte auf der Kategorien-Seite)
+- [x] `start.js`: Seiten `start`, `artikel`, `kategorien` verdrahten (Werte von `data-seite` aus den Templates lesen)
+- [x] `redaktion.css`: Stile nach Entwurf
+- [x] Doku: `docs/code-map.md`
 
 ## Report-Back
+
+Status: complete. Lokal gegengeprüft mit Chrome (headless, Fernsteuerung) gegen `php -S` und lokale MySQL mit Testdaten: AK 1–8 grün — Wartet-Reihe vor dem Aufmacher mit „2 Entwürfe · 14 Vorschläge“, Karten „Zur Freigabe“/„Zurückgegeben“ (Anmerkung auf 120 Zeichen gekürzt)/„Vorschlag · …“, Ablehnen entfernt Karte und senkt Zähler (17 → 16); Mehr/Weniger setzt, wechselt, entfernt (zweiter Klick) und „Rückgängig“ stellt wieder her, Stand nach Neuladen aus `posts/by-slug`; Kennzahl „1.224 Aufrufe · 58 % zu Ende gelesen“, Kasten mit Lesezeit 4:12 und sieben Funken; „Zurückziehen“-Dialog öffnet; Hinweiszeile „Neue Fassung“; Kategorien: sechs Gruppen mit richtigem Wert, Klick → Toast „Interesse für <Name>: <n>“; 390 px: alle geprüften Knöpfe ≥ 44 px, Seiten-Breite 390, Reihe scrollt in sich.
+
+- `posts/by-slug` liefert `reaction` als Objekt `{reaction, note}` (Kontrakt nannte es nur „reaction“); `artikel()` liest `reaction.reaction`.
+- Die Reaktions-Knöpfe an Karten kommen auch auf Kategorie- und Schlagwortseiten; Karten der Suche (`suche.js`) haben sie nicht.
+- 🟡 Nicht geprüft: „Übernehmen“ mit echtem Neubau und das tatsächliche Zurückziehen (Aufruf der API in Phase 2 geprüft, hier nur der Dialog); Zusammenfassung in der Hinweiszeile mit echten Änderungen (Testdaten hatten keine).

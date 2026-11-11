@@ -1,10 +1,15 @@
 // Vorschau-Seite des Redaktionsmodus: Freigabe-Leiste, Freigeben, Zurückgeben, Verwerfen, Änderungsansicht.
 import { api } from './api.js';
+import { karte as changeCard } from './change.js';
+import { aktualisieren } from './konto.js';
 import { start as startKommentar } from './kommentar.js';
+import { karten, laden as loadReactions, setzen, widget } from './reaction.js';
+import { kennzahl, laden as loadStats, zahlen } from './stats.js';
 import { dialog, el, icon, toast } from './ui.js';
 
 const REDIRECT_MS = 1400;
 const NOTE_MAX = 20000;
+const NOTE_PREVIEW = 120;
 
 function plural(count, one, many) {
 	return count + ' ' + (count === 1 ? one : many);
@@ -254,4 +259,188 @@ async function giveBack(id, freeText, comments, button) {
 	comments.clear();
 	toast(count > 0 ? 'Zurück an den Agenten, mit ' + plural(count, 'Anmerkung', 'Anmerkungen') + '.' : 'Zurück an den Agenten.');
 	setTimeout(() => location.assign('/'), REDIRECT_MS);
+}
+
+function when(stamp) {
+	const date = new Date(String(stamp).replace(' ', 'T') + 'Z');
+	const time = date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+	if (date.toDateString() === new Date().toDateString()) {
+		return 'heute ' + time;
+	}
+
+	return date.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' }) + ' ' + time;
+}
+
+function shorten(text, max) {
+	return text.length > max ? text.slice(0, max - 1) + '…' : text;
+}
+
+function postCard(post) {
+	const isReview = post.status === 'review';
+	const errors = post.form.errors;
+	const meta = isReview
+		? 'Eingereicht ' + when(post.updated_at) + ' · ' + post.word_count.toLocaleString('de-DE') + ' Wörter · ' + plural(post.sources, 'Quelle', 'Quellen') + ' · Formprüfung ' + (errors === 0 ? 'ok' : errors + ' Fehler')
+		: 'Deine Anmerkung: „' + shorten(post.review_note, NOTE_PREVIEW) + '“';
+
+	return el('article', { class: 'wartekarte', 'data-art': 'post' }, [
+		el('span', { class: isReview ? 'status review' : 'status zurueck', text: isReview ? 'Zur Freigabe' : 'Zurückgegeben' }),
+		el('h3', { text: post.title }),
+		el('span', { class: 'meta', text: meta }),
+		el('div', { class: 'zeile' }, el('a', { class: 'knopf primaer klein-k', href: '/vorschau/?id=' + post.id }, [icon('auge'), isReview ? 'Ansehen und freigeben' : 'Ansehen'])),
+	]);
+}
+
+function waitSummary(section) {
+	const posts = section.querySelectorAll('[data-art="post"]').length;
+	const changes = section.querySelectorAll('[data-art="change"]').length;
+	const parts = [];
+	if (posts > 0) {
+		parts.push(plural(posts, 'Entwurf', 'Entwürfe'));
+	}
+	if (changes > 0) {
+		parts.push(plural(changes, 'Vorschlag', 'Vorschläge'));
+	}
+
+	return parts.join(' · ');
+}
+
+/** „Wartet auf dich“ vor dem Aufmacher: Entwürfe zur Freigabe, zurückgegebene Entwürfe, Vorschläge. */
+async function wartet() {
+	const wrap = document.querySelector('#inhalt .wrap');
+	if (wrap === null) {
+		return;
+	}
+	const [{ posts }, { changes }] = await Promise.all([api('GET', 'posts?status=review,draft'), api('GET', 'changes')]);
+	const waiting = posts.filter((post) => post.status === 'review' || (post.status === 'draft' && post.review_note));
+	if (waiting.length === 0 && changes.length === 0) {
+		return;
+	}
+
+	const summary = el('span');
+	const row = el('div', { class: 'wartet-reihe' });
+	const section = el('section', { class: 'wartet red-fade', 'aria-labelledby': 'wartet-titel', 'data-red': true }, [
+		el('div', { class: 'wartet-kopf' }, [el('h2', { id: 'wartet-titel', text: 'Wartet auf dich' }), summary]),
+		row,
+	]);
+	const done = () => {
+		if (row.children.length === 0) {
+			section.remove();
+		} else {
+			summary.textContent = waitSummary(section);
+		}
+		aktualisieren().catch(() => null);
+	};
+	row.append(...waiting.map(postCard), ...changes.map((change) => changeCard(change, done)));
+	summary.textContent = waitSummary(section);
+
+	const lead = wrap.querySelector('.aufmacher');
+	if (lead !== null) {
+		lead.before(section);
+	} else if (wrap.querySelector('.seitenkopf h1') === null) {
+		wrap.prepend(section);
+	}
+}
+
+/** Mehr/Weniger und Kennzahl am Aufmacher. */
+async function aufmacher() {
+	const lead = document.querySelector('.aufmacher[data-post-id]');
+	if (lead === null) {
+		return;
+	}
+	const id = Number(lead.dataset.postId);
+	const row = el('div', { class: 'red-zeile', 'data-red': true }, widget(id));
+	lead.querySelector(':scope > div').append(row);
+	try {
+		row.append(kennzahl(await loadStats(id)));
+	} catch {}
+}
+
+/** Startseite: Wartet auf dich, Reaktionen am Aufmacher, kleine Knöpfe an den Karten. */
+export async function startseite() {
+	await loadReactions().catch(() => null);
+	await Promise.all([wartet(), aufmacher(), karten()].map((job) => job.catch(() => null)));
+}
+
+function changeSummary(summary) {
+	const parts = [];
+	if (summary.blocks_changed > 0) {
+		parts.push(plural(summary.blocks_changed, 'Absatz', 'Absätze'));
+	}
+	if (summary.sources_added > 0) {
+		parts.push(plural(summary.sources_added, 'neue Quelle', 'neue Quellen'));
+	}
+	if (summary.sources_removed > 0) {
+		parts.push(plural(summary.sources_removed, 'Quelle entfernt', 'Quellen entfernt'));
+	}
+	if (summary.media_changed > 0) {
+		parts.push(plural(summary.media_changed, 'Bild geändert', 'Bilder geändert'));
+	}
+
+	return parts.length > 0 ? ' (' + parts.join(', ') + ')' : '';
+}
+
+function confirmUnpublish(id) {
+	const confirmButton = el('button', {
+		type: 'button',
+		class: 'knopf primaer',
+		text: 'Zurückziehen',
+		onclick: async () => {
+			confirmButton.disabled = true;
+			try {
+				const result = await api('POST', 'posts/' + id + '/unpublish');
+				if (!result.rebuilt) {
+					toast('Zurückgezogen, aber die Website wurde nicht neu gebaut: ' + result.rebuild_error + '. Der nächste Neubau holt es nach.');
+
+					return;
+				}
+				toast('Zurückgezogen. Die Website wird neu gebaut.');
+				setTimeout(() => location.assign('/'), REDIRECT_MS);
+			} catch (error) {
+				confirmButton.disabled = false;
+				toast(error.message);
+			}
+		},
+	});
+	dialog('zurueckziehen', [
+		el('div', { class: 'dlg-kopf' }, el('h2', { text: 'Artikel zurückziehen?' })),
+		el('div', { class: 'dlg-rumpf' }, el('p', { text: 'Der Artikel verschwindet von der Website, aus Suche, Feed und Sitemap. Er bleibt gespeichert und kann neu eingereicht werden.' })),
+		el('div', { class: 'dlg-fuss' }, [
+			el('button', { type: 'button', class: 'knopf', 'data-close': true, text: 'Abbrechen' }),
+			confirmButton,
+		]),
+	]);
+}
+
+async function newVersionLine(id) {
+	let detail = '';
+	try {
+		detail = changeSummary((await api('GET', 'posts/' + id + '/diff')).summary);
+	} catch {}
+
+	return el('div', { class: 'hinweiszeile' }, [
+		el('span', { class: 'status review', text: 'Neue Fassung' }),
+		'Der Agent hat eine Überarbeitung eingereicht' + detail + '.',
+		el('a', { class: 'knopf klein-k', href: '/vorschau/?id=' + id, text: 'Änderungen ansehen' }),
+	]);
+}
+
+/** Artikelseite: Redaktionskasten mit Zahlen, Reaktion, Zurückziehen und Hinweis auf eine neue Fassung. */
+export async function artikel() {
+	const article = document.querySelector('.artikel[data-post-slug]');
+	if (article === null) {
+		return;
+	}
+	await karten().catch(() => null);
+	const post = await api('GET', 'posts/by-slug/' + article.dataset.postSlug);
+	setzen(post.id, post.reaction?.reaction ?? null);
+
+	const actions = el('div', { class: 'aktionen' }, widget(post.id));
+	if (post.published_revision !== null) {
+		actions.append(el('button', { type: 'button', class: 'knopf leise gefahr klein-k', text: 'Zurückziehen', onclick: () => confirmUnpublish(post.id) }));
+	}
+	const box = el('div', { class: 'redkasten red-fade', 'aria-label': 'Redaktion zu diesem Artikel', 'data-red': true }, [zahlen(post.stats), actions]);
+	if (post.has_new_version) {
+		box.append(await newVersionLine(post.id));
+	}
+	article.querySelector('.artikelkopf').after(box);
 }

@@ -113,3 +113,72 @@ body.k-modus .v-ansicht .text { user-select: text; }
   .k-box { position: fixed; left: 0 !important; right: 0; bottom: 0; top: auto !important; width: 100%; border-radius: 16px 16px 0 0; padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom)); z-index: 95; }
   .k-liste { position: static; margin-top: 1.5rem; }
 }
+
+/* Wartet auf dich (Startseite) */
+.wartet { padding: 1.5rem 0 .5rem; }
+.wartet-kopf { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.wartet-kopf h2 { font-size: 1.35rem; margin: 0; }
+.wartet-kopf span { font: .8rem var(--sans); color: var(--ink-3); }
+.wartet-reihe { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.wartekarte { border: 1.5px dashed var(--accent-line); border-radius: 12px; padding: 1rem; background: color-mix(in oklab, var(--accent-soft) 45%, var(--paper)); display: grid; gap: .55rem; align-content: start; min-width: 0; transition: border-color var(--t-fast), transform var(--t-mid) var(--ease-out), box-shadow var(--t-mid); }
+.wartekarte:hover { border-color: var(--accent-ink); transform: translateY(-2px); box-shadow: var(--shadow-1); }
+.wartekarte h3 { font-size: 1.1rem; line-height: 1.25; margin: 0; overflow-wrap: anywhere; }
+.wartekarte .meta { font: .78rem/1.4 var(--sans); color: var(--ink-3); overflow-wrap: anywhere; }
+.wartekarte .zeile { display: flex; gap: .4rem; flex-wrap: wrap; }
+.vorher-nachher { font: .8rem/1.45 var(--sans); overflow-wrap: anywhere; }
+.status { display: inline-flex; align-items: center; gap: .3rem; font: 700 .64rem var(--sans); letter-spacing: .06em; text-transform: uppercase; border-radius: 4px; padding: .22rem .45rem; width: fit-content; }
+.status.review { background: color-mix(in oklab, var(--warn) 16%, var(--paper)); color: var(--warn); }
+.status.zurueck { background: var(--paper-3); color: var(--ink-2); }
+.status.vorschlag { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* Mehr davon / Weniger, Kennzahl */
+.reaktion { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; background: var(--paper); overflow: hidden; box-shadow: var(--shadow-1); }
+.reaktion button { display: inline-flex; align-items: center; gap: .35rem; border: 0; background: none; padding: .45rem .75rem; font: 600 .78rem var(--sans); color: var(--ink-2); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
+.reaktion button + button { border-left: 1px solid var(--rule); }
+.reaktion button:hover { background: var(--paper-2); }
+.reaktion button .ico { transition: transform var(--t-mid) var(--ease-spring); }
+.reaktion button:hover .ico { transform: scale(1.18) rotate(-8deg); }
+.reaktion button[aria-pressed="true"].mehr { background: color-mix(in oklab, var(--ok) 14%, var(--paper)); color: var(--ok); }
+.reaktion button[aria-pressed="true"].weniger { background: color-mix(in oklab, var(--bad) 12%, var(--paper)); color: var(--bad); }
+.reaktion button[aria-pressed="true"] .ico { animation: hops var(--t-slow) var(--ease-spring); }
+@keyframes hops { 40% { transform: scale(1.45) rotate(-12deg); } }
+.reaktion.mini { position: absolute; top: .6rem; right: 1.85rem; opacity: 0; transform: translateY(-4px); transition: opacity var(--t-mid), transform var(--t-mid) var(--ease-out); z-index: 2; }
+.karte:nth-child(3n) .reaktion.mini { right: .6rem; }
+.karte:hover .reaktion.mini, .reaktion.mini:focus-within, .reaktion.mini.gesetzt { opacity: 1; transform: none; }
+.reaktion.mini button { padding: .4rem .55rem; }
+@media (hover: none) { .reaktion.mini { opacity: 1; transform: none; } }
+.red-zeile { display: flex; gap: .8rem; align-items: center; margin-top: .8rem; flex-wrap: wrap; }
+.kennzahl { font: .72rem var(--sans); color: var(--ink-3); display: inline-flex; gap: .35rem; align-items: center; }
+
+/* Redaktionskasten (Artikelseite) */
+.redkasten { display: grid; max-width: 48rem; margin: 0 auto 2rem; border: 1px solid var(--accent-line); background: color-mix(in oklab, var(--accent-soft) 50%, var(--paper)); border-radius: 14px; padding: .9rem 1rem; grid-template-columns: 1fr auto; gap: .8rem 1.2rem; align-items: center; font: .85rem var(--sans); }
+.redkasten .zahlen { display: flex; gap: 1.2rem; flex-wrap: wrap; color: var(--ink-2); align-items: flex-end; }
+.redkasten .zahlen b { font: 700 1.1rem var(--serif); color: var(--ink); display: block; }
+.redkasten .aktionen { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: flex-end; }
+.redkasten .hinweiszeile { grid-column: 1 / -1; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; border-top: 1px dashed var(--accent-line); padding-top: .7rem; color: var(--ink-2); }
+.funken { display: flex; align-items: flex-end; gap: 2px; height: 1.6rem; }
+.funken i { width: 5px; background: var(--accent-ink); border-radius: 2px 2px 0 0; opacity: .75; }
+
+/* Interesse an Kategorie-Karten */
+.katkarte .gewicht-inline { position: absolute; top: 1rem; right: 1rem; z-index: 3; }
+.gewicht { display: inline-flex; border-radius: 999px; overflow: hidden; background: rgba(20,16,10,.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.25); }
+.gewicht button { border: 0; background: none; color: rgba(255,255,255,.85); padding: .32rem .58rem; cursor: pointer; font: 700 .75rem var(--sans); transition: background var(--t-fast), color var(--t-fast); }
+.gewicht button:disabled { cursor: progress; }
+.gewicht button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.hinweis { font: .82rem/1.5 var(--sans); color: var(--ink-3); background: var(--paper-2); border-radius: 8px; padding: .65rem .8rem; margin: 0 0 1rem; text-align: center; }
+
+@media (max-width: 62rem) {
+  .wartet-reihe { grid-template-columns: 1fr 1fr; }
+  .wartet-reihe .wartekarte:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@media (max-width: 46rem) {
+  .wartet-reihe { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: .75rem; padding-bottom: .4rem; margin-right: -1rem; }
+  .wartekarte { flex: 0 0 85%; scroll-snap-align: start; }
+  .redkasten { grid-template-columns: 1fr; }
+  .redkasten .aktionen { justify-content: flex-start; }
+  .katkarte .gewicht-inline { top: .7rem; right: .7rem; }
+  .wartekarte .knopf, .redkasten .knopf, .reaktion button { min-height: 2.75rem; }
+  .gewicht button { min-height: 2.75rem; min-width: 2.75rem; }
+  .reaktion.mini button { min-width: 2.75rem; justify-content: center; }
+  .karte:nth-child(n) .reaktion.mini { position: static; margin-top: .45rem; width: fit-content; box-shadow: none; }
+}

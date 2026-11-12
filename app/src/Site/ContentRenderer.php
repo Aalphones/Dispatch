@@ -248,11 +248,13 @@ final class ContentRenderer
             $anchor->removeAttribute('data-cite');
 
             $insertBefore = $anchor->nextSibling;
+            $isFirstMark = true;
             foreach ($refs as $ref) {
                 if (!isset($numberByRef[$ref])) {
                     continue;
                 }
-                $anchor->parentNode?->insertBefore($this->buildCitationMark($numberByRef[$ref]), $insertBefore);
+                $anchor->parentNode?->insertBefore($this->buildCitationMark($numberByRef[$ref], !$isFirstMark), $insertBefore);
+                $isFirstMark = false;
             }
 
             if (!$anchor->hasAttribute('href')) {
@@ -261,14 +263,18 @@ final class ContentRenderer
         }
     }
 
-    private function buildCitationMark(int $number): Element
+    /**
+     * Ab dem zweiten Beleg einer Folge steht ein Komma vor der Zahl, sonst läse sich 1, 4, 6 als Fußnote 146.
+     * Es steht im Link, damit es dessen Schrift trägt; Vorleser hören nur das aria-label.
+     */
+    private function buildCitationMark(int $number, bool $hasSeparator): Element
     {
         $mark = $this->document->createElement('sup');
         $mark->setAttribute('class', 'beleg');
         $link = $this->document->createElement('a');
         $link->setAttribute('href', '#quelle-' . $number);
         $link->setAttribute('aria-label', 'Quelle ' . $number);
-        $link->textContent = (string) $number;
+        $link->textContent = ($hasSeparator ? ',' : '') . $number;
         $mark->appendChild($link);
 
         return $mark;

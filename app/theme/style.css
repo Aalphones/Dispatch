@@ -197,14 +197,15 @@ figcaption .nachweis { color: var(--ink-3); }
 sup a { text-decoration: none; color: var(--accent-ink); font: 600 .7rem var(--sans); }
 
 /* Bilder im Text. Regel: inline/left/right bleiben in der Textspalte; wide und Galerie
-   nutzen zusätzlich die rechte Spalte, bleiben aber in der Textspalte, solange daneben ein
-   "Kurz gesagt" steht (artikel.js setzt .neben-notiz);
+   nutzen zusätzlich die rechte Spalte, aber nur in Artikeln ohne "Kurz gesagt"/Randnotiz —
+   sonst bleiben sie in der Textspalte und können keine Notiz überlagern;
    full geht über die ganze Breite, die linke Navigation blendet sich so lange aus. */
 .abb { margin: 2rem 0; }
 .abb .foto { cursor: zoom-in; }
 .abb .foto img { aspect-ratio: 3 / 2; }
 .abb:hover .foto img { transform: scale(1.02); }
-.abb[data-layout="wide"], .galerie { clear: both; margin-right: calc(-1 * (var(--side-r) + var(--gap))); }
+.abb[data-layout="wide"], .galerie { clear: both; }
+.text:not(:has(> .tldr, > .sidenote)) > .abb[data-layout="wide"], .text:not(:has(> .tldr, > .sidenote)) > .galerie { margin-right: calc(-1 * (var(--side-r) + var(--gap))); }
 .abb[data-layout="full"] { clear: both; position: relative; z-index: 2; width: 100vw; margin-left: calc(50% - 50vw); }
 .abb[data-layout="full"] .foto { border-radius: 0; }
 .abb[data-layout="full"] .foto img { aspect-ratio: 21 / 9; }
@@ -223,7 +224,6 @@ sup a { text-decoration: none; color: var(--accent-ink); font: 600 .7rem var(--s
 @media (min-width: 62.01rem) {
   .text { position: relative; }
   .text > .tldr, .text > .sidenote { position: absolute; left: calc(100% + var(--gap)); width: var(--side-r); margin: .3rem 0 0; }
-  .abb[data-layout="wide"].neben-notiz, .galerie.neben-notiz { margin-right: 0; }
 }
 
 .transparenz { border: 1px solid var(--rule); background: var(--paper-2); padding: 1rem 1.2rem; font: .9rem/1.5 var(--sans); margin-top: 2.5rem; display: flex; gap: .8rem; border-radius: 10px; clear: both; }

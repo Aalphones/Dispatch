@@ -39,9 +39,8 @@ return [
         'max_redirects' => 4,
         'allow_private' => Env::get('DISPATCH_ALLOW_PRIVATE_IPS') === '1',
     ],
-    // OAuth 2.1 für die Claude-Apps (ADR-024).
+    // OAuth 2.1 für KI-Apps (ADR-024, jede App per CIMD: ADR-025).
     'oauth' => [
-        'cimd_hosts' => ['claude.ai'],          // Allowlist für CIMD-client_id (exakter Host)
         'cimd_max_bytes' => 65536,
         'cimd_cache_seconds' => 86400,
         // Eigener HttpClient für CIMD; Claude wartet höchstens 10 s.

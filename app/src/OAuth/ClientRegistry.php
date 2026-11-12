@@ -191,17 +191,19 @@ final class ClientRegistry
         return $this->describe($saved ?? throw $this->unknownApp('Die App ist nicht bekannt.'), $host);
     }
 
-    /** Nur `https://<Host aus der Allowlist>/<Pfad>`: kein Port, keine Zugangsdaten, kein Fragment. */
+    /**
+     * Nur `https://<Host>/<Pfad>`: kein Port, keine Zugangsdaten, kein Fragment. Jeder Host ist zugelassen,
+     * die Schranke ist die Zustimmung des angemeldeten Inhabers (ADR-025); fremde Abrufe schützt der HttpClient (ADR-011).
+     */
     private function cimdHost(string $clientId): string
     {
         $parts = parse_url($clientId);
         $host = strtolower((string) ($parts['host'] ?? ''));
-        $isPlain = $parts !== false
+        $isPlain = $parts !== false && $host !== ''
             && array_intersect_key($parts, ['port' => 1, 'user' => 1, 'pass' => 1, 'fragment' => 1]) === []
             && ($parts['path'] ?? '/') !== '/' && strlen($clientId) <= self::MAX_CLIENT_ID_LENGTH;
-        $isAllowed = in_array($host, $this->config['oauth']['cimd_hosts'], true);
-        if (!$isPlain || !$isAllowed) {
-            throw $this->unknownApp('Der Host der App ist nicht freigegeben.');
+        if (!$isPlain) {
+            throw $this->unknownApp('Die client_id der App ist keine gültige Adresse.');
         }
 
         return $host;

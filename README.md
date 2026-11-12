@@ -30,7 +30,8 @@ Der Dev-Router bildet die `.htaccess`-Regeln nach; der Builder schreibt die Webs
 
 ### Connector einrichten
 
-- **Claude-App (Android, Web, Desktop):** Connector hinzufügen mit der Adresse `https://quantum-canvas.de/dispatch/mcp`, dann in der Zustimmungsseite des Blogs (Anmeldung nötig) Zugriff erlauben. Die App weist sich über `claude.ai` aus; Verbundene Apps stehen im Dialog „Zugänge“ und lassen sich dort trennen.
+- **KI-App mit Connector-Anmeldung (Claude, ChatGPT, …):** Connector hinzufügen mit der Adresse `https://quantum-canvas.de/dispatch/mcp`, dann in der Zustimmungsseite des Blogs (Anmeldung nötig) den angezeigten Absender prüfen und Zugriff erlauben. Jede App mit Client-Metadatendokument ist zugelassen (ADR-025); Verbundene Apps stehen im Dialog „Zugänge“ und lassen sich dort trennen.
+- **Lokale Modelle und Apps ohne Anmeldung:** festes Token wie bei Claude Code (unten) als `Authorization: Bearer <Token>` eintragen.
 - **Claude Code per Anmeldung:** `claude mcp add --transport http dispatch https://quantum-canvas.de/dispatch/mcp`, dann `/mcp` → `dispatch` → anmelden.
 - **Claude Code per festem Token:** `php bin/dispatch token:create <name> --scopes=blog:read,blog:write,blog:admin --remote`, dann `claude mcp add --transport http dispatch <Adresse> --header "Authorization: Bearer <Token>"`. Nur ein Eintrag je Name und Ordner; vorher `claude mcp remove dispatch`.
 - **Notfall ohne CIMD:** `php bin/dispatch oauth-client:create <name> --remote`, Client-ID und Geheimnis in der Claude-App unter „Erweiterte Einstellungen“ eintragen.

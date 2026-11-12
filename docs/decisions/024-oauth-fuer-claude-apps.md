@@ -1,6 +1,6 @@
 # 024 — OAuth 2.1 für die Claude-Apps
 
-**Status:** Akzeptiert (2026-11-12)
+**Status:** Akzeptiert (2026-11-12) · Allowlist `claude.ai` ersetzt durch [ADR-025](025-jede-app-per-cimd.md)
 
 ## Kontext
 

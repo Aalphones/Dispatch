@@ -8,7 +8,7 @@ const SECONDS_PER_MINUTE = 60;
 const SERVER_ERROR_STATUS = 500;
 
 const RIGHTS = {
-	'blog:read': ['Lesen', 'Briefing, Artikel, Statistik', 'Briefing, Artikel, Queue und Statistik lesen. Ohne Lesen kann Claude nicht arbeiten.'],
+	'blog:read': ['Lesen', 'Briefing, Artikel, Statistik', 'Briefing, Artikel, Queue und Statistik lesen. Ohne Lesen kann die App nicht arbeiten.'],
 	'blog:write': ['Schreiben und einreichen', 'Entwürfe, Bilder, Themen, Einreichen', 'Entwürfe anlegen, Bilder hochladen, Themen einreichen, zur Freigabe einreichen. Veröffentlichen kann keine App.'],
 	'blog:admin': ['Einstellungen und Kategorien ändern', 'Richtlinien, Präferenzen, Kategorien', 'Richtlinien, Präferenzen und Kategorien. Öffentlich Sichtbares wird nur vorgeschlagen und wartet auf dich.'],
 };
@@ -46,11 +46,11 @@ function showLoading(page) {
 }
 
 function showExpired(page) {
-	show(page, endState('fehler', 'uhr', 'Anfrage abgelaufen', 'Eine Verbindungsanfrage gilt 10 Minuten. Starte die Verbindung in Claude neu – die neue Anfrage öffnet diese Seite wieder.'));
+	show(page, endState('fehler', 'uhr', 'Anfrage abgelaufen', 'Eine Verbindungsanfrage gilt 10 Minuten. Starte die Verbindung in der App neu – die neue Anfrage öffnet diese Seite wieder.'));
 }
 
 function showGenericError(page) {
-	show(page, endState('fehler', 'warn', 'Anfrage nicht lesbar', 'Die Anfrage konnte nicht geladen werden. Starte die Verbindung in Claude neu.'));
+	show(page, endState('fehler', 'warn', 'Anfrage nicht lesbar', 'Die Anfrage konnte nicht geladen werden. Starte die Verbindung in der App neu.'));
 }
 
 /** Zustand nach einer Abweisung durch `/authorize` (`?fehler=…`). */
@@ -58,12 +58,12 @@ function showRejection(page, code, host) {
 	if (code === 'unbekannte_app') {
 		const reported = host ? [' (gemeldet: ', bold(host), ')'] : [];
 		show(page, endState('fehler', 'sperre', 'Unbekannte App abgewiesen',
-			['Die App hat sich nicht über ', bold('claude.ai'), ' ausgewiesen', reported, '. Mit deinem Blog verbinden sich nur Claude-Apps.'],
+			['Die App hat sich nicht gültig ausgewiesen', reported, '. Starte die Verbindung in der App neu.'],
 			'Nichts wurde gespeichert, du musst nichts tun.'));
 		return;
 	}
 	if (code === 'app_nicht_erreichbar') {
-		show(page, endState('fehler', 'uhr', 'App nicht erreichbar', 'Claude konnte nicht geprüft werden. Versuche es in ein paar Minuten noch einmal.'));
+		show(page, endState('fehler', 'uhr', 'App nicht erreichbar', 'Die App konnte nicht geprüft werden. Versuche es in ein paar Minuten noch einmal.'));
 		return;
 	}
 	if (code === 'falsche_rueckadresse') {

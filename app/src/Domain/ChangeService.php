@@ -63,7 +63,18 @@ final class ChangeService
 
         Transaction::join($this->pdo, function () use ($id, $actor): void {
             $change = $this->lockPending($id);
-            $this->dispatchToService((string) $change['entity'], (string) $change['entity_key'], $change['payload']);
+            try {
+                $this->dispatchToService((string) $change['entity'], (string) $change['entity_key'], $change['payload']);
+            } catch (DomainError $error) {
+                if ($error->errorCode !== 'slug_taken' || (string) $change['entity'] !== 'category' || (string) $change['entity_key'] !== 'new') {
+                    throw $error;
+                }
+                throw new DomainError(
+                    'slug_taken',
+                    $error->getMessage() . ' Der Vorschlag ist überholt: Die Kategorie gibt es schon. Lehne ihn ab.',
+                    $error->details
+                );
+            }
             $this->changes->decide($id, 'applied', $actor->name);
             $this->audit->record($actor, 'change.apply', 'change:' . $id, [
                 'entity' => $change['entity'],

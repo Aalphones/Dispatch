@@ -35,6 +35,7 @@ $router->add('GET', '/dispatch/api/tokens', static fn () => (new TokenController
 $router->add('DELETE', '/dispatch/api/tokens/{id}', static fn (array $params) => (new TokenController($config))->revokeById($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/categories', static fn () => (new CategoryController($config))->list($request));
 $router->add('PATCH', '/dispatch/api/categories/{id}', static fn (array $params) => (new CategoryController($config))->patch($request, (int) $params['id']));
+$router->add('DELETE', '/dispatch/api/categories/{id}', static fn (array $params) => (new CategoryController($config))->delete($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/queue', static fn () => (new QueueController($config))->add($request));
 $router->add('POST', '/dispatch/api/posts/{id}/reaction', static fn (array $params) => (new ReactionController())->set($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/reactions', static fn () => (new ReactionController())->list($request));

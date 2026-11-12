@@ -352,6 +352,9 @@ Befehle:
                   widerruft einen Rückfall-Client samt aller seiner Tokens
   category:create <slug> <name> [--description=…] [--remote]
                   legt eine aktive Kategorie als Inhaber an (--remote: auf dem Server über deploy.env)
+  category:delete <slug> [--move-to=<slug>]
+                  löscht eine Kategorie lokal; zugeordnete Artikel brauchen eine Ersatz-Kategorie (--move-to).
+                  Auf dem Server löscht der Inhaber im Redaktionsmodus.
   reaction <slug> more|less|none [Notiz]
                   setzt oder löscht „Mehr davon / Weniger“ für einen Artikel
 
@@ -513,6 +516,28 @@ switch ($command) {
             $categoryRecord = (new CategoryService(Connection::open(), $config))->create($categoryFields, Actor::owner())['category'];
         }
         echo 'Kategorie angelegt: ', $categoryRecord['slug'], ' (ID ', $categoryRecord['id'], ')', PHP_EOL;
+        break;
+
+    case 'category:delete':
+        ['options' => $options, 'positional' => $positional] = parseArguments(array_slice($argv, 2));
+        if (count($positional) !== 1) {
+            throw new RuntimeException('Aufruf: php bin/dispatch category:delete <slug> [--move-to=<slug>]');
+        }
+        if (isset($options['remote'])) {
+            throw new RuntimeException('category:delete gibt es nur lokal. Auf dem Server löscht der Inhaber im Redaktionsmodus (Dialog „Deine Interessen“).');
+        }
+        $categoryService = new CategoryService(Connection::open(), $config);
+        $deletedCategory = $categoryService->get($positional[0]);
+        $moveToCategory = null;
+        if (is_string($options['move-to'] ?? null)) {
+            $moveToCategory = $categoryService->get($options['move-to']);
+        }
+        $deleteResult = $categoryService->delete((int) $deletedCategory['id'], $moveToCategory === null ? null : (int) $moveToCategory['id'], Actor::owner());
+        echo 'Kategorie gelöscht: ', $deletedCategory['slug'];
+        if ($deleteResult['moved'] > 0) {
+            echo ' (', $deleteResult['moved'], ' Artikel umgehängt, Ersatz: ', $moveToCategory['slug'] ?? '-', ')';
+        }
+        echo PHP_EOL, 'Website neu bauen: php bin/dispatch build', PHP_EOL;
         break;
 
     case 'reaction':

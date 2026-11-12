@@ -33,6 +33,7 @@ final class CategoryService
     private const INTEREST_MAX = 5;
 
     private CategoryRepository $categories;
+    private PostRepository $posts;
     private ReactionRepository $reactions;
     private ChangeService $changes;
     private AuditRepository $audit;
@@ -41,6 +42,7 @@ final class CategoryService
     public function __construct(private readonly PDO $pdo, array $config)
     {
         $this->categories = new CategoryRepository($pdo);
+        $this->posts = new PostRepository($pdo);
         $this->reactions = new ReactionRepository($pdo);
         $this->changes = new ChangeService($pdo, $config);
         $this->audit = new AuditRepository($pdo);
@@ -176,6 +178,73 @@ final class CategoryService
 
             return ['applied' => array_keys($direct), 'change_id' => $changeId];
         });
+    }
+
+    /**
+     * Nur der Inhaber (ADR-026). Gehören Artikel zur Kategorie, braucht es eine Ersatz-Kategorie `$moveTo`;
+     * freigegebene Revisions-Stände bleiben unverändert (SiteData überspringt unbekannte Slugs).
+     *
+     * @return array{deleted: int, moved: int}
+     */
+    public function delete(int $id, ?int $moveTo, Actor $actor): array
+    {
+        if (!$actor->isOwner()) {
+            throw new DomainError('owner_only', 'Kategorien löscht nur der Inhaber.');
+        }
+
+        return Transaction::join($this->pdo, function () use ($id, $moveTo, $actor): array {
+            $category = $this->get($id);
+            if ($this->categories->hasChildren($id)) {
+                throw new DomainError(
+                    'has_children',
+                    sprintf('Die Kategorie „%s“ hat Unterkategorien. Lösche zuerst diese.', $category['name']),
+                    ['category' => $id]
+                );
+            }
+
+            $postCount = count($this->categories->postIds($id));
+            if ($postCount > 0 && $moveTo === null) {
+                throw new DomainError(
+                    'category_in_use',
+                    sprintf('Zur Kategorie „%s“ gehören %d Artikel. Wähle eine Ersatz-Kategorie, in die sie verschoben werden.', $category['name'], $postCount),
+                    ['count' => $postCount]
+                );
+            }
+            if ($moveTo !== null) {
+                $this->assertMoveTarget($moveTo, $id);
+            }
+
+            $moved = 0;
+            if ($postCount > 0) {
+                $moved = $this->posts->moveCategoryLinks($id, $moveTo);
+            }
+            $this->categories->delete($id);
+            $this->audit->record($actor, 'category.delete', 'category:' . $id, [
+                'slug' => $category['slug'],
+                'moved' => $moved,
+                'move_to' => $moveTo,
+            ]);
+
+            return ['deleted' => $id, 'moved' => $moved];
+        });
+    }
+
+    private function assertMoveTarget(int $moveTo, int $deletedId): void
+    {
+        if ($moveTo === $deletedId) {
+            throw $this->invalid('move_to', 'darf nicht die Kategorie sein, die gelöscht wird');
+        }
+
+        $target = $this->categories->find($moveTo);
+        if ($target === null) {
+            throw $this->invalid('move_to', sprintf('verweist auf die Kategorie %d, die es nicht gibt', $moveTo));
+        }
+        if (!$target['active']) {
+            throw $this->invalid('move_to', 'muss eine aktive Kategorie sein');
+        }
+        if ($target['parent_id'] === $deletedId) {
+            throw $this->invalid('move_to', 'darf keine Unterkategorie der gelöschten Kategorie sein');
+        }
     }
 
     /**

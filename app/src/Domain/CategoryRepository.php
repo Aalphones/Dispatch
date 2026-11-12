@@ -83,6 +83,20 @@ final class CategoryRepository
         return $statement->fetchColumn() !== false;
     }
 
+    public function delete(int $id): void
+    {
+        $this->pdo->prepare('DELETE FROM categories WHERE id = ?')->execute([$id]);
+    }
+
+    /** @return list<int> Artikel, denen die Kategorie zugeordnet ist (Haupt- oder Nebenkategorie) */
+    public function postIds(int $categoryId): array
+    {
+        $statement = $this->pdo->prepare('SELECT post_id FROM post_categories WHERE category_id = ? ORDER BY post_id');
+        $statement->execute([$categoryId]);
+
+        return array_map('intval', $statement->fetchAll(PDO::FETCH_COLUMN));
+    }
+
     /** @param list<string|int> $columns */
     private function assertWritable(array $columns): void
     {

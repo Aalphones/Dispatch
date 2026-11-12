@@ -192,6 +192,73 @@ final class PostRepository
         }
     }
 
+    /**
+     * Löst alle Zuordnungen zur Kategorie `$fromId` (vor deren Löschen; läuft in der Transaktion des Aufrufers).
+     * Artikel mit weiteren Kategorien verlieren nur diese Zuordnung — war sie die Hauptkategorie, wird die übrige
+     * mit dem alphabetisch ersten Namen Hauptkategorie. Artikel ohne weitere Kategorie bekommen `$toId` als Hauptkategorie.
+     *
+     * @return int Anzahl betroffener Artikel
+     */
+    public function moveCategoryLinks(int $fromId, ?int $toId): int
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT pc.post_id, pc.is_primary,
+                    (SELECT COUNT(*) FROM post_categories other
+                     WHERE other.post_id = pc.post_id AND other.category_id <> pc.category_id) AS other_count
+             FROM post_categories pc WHERE pc.category_id = ? ORDER BY pc.post_id FOR UPDATE'
+        );
+        $statement->execute([$fromId]);
+        $links = $statement->fetchAll();
+
+        foreach ($links as $link) {
+            $postId = (int) $link['post_id'];
+            if ((int) $link['other_count'] === 0) {
+                $this->retargetOnlyCategory($postId, $fromId, $toId);
+                continue;
+            }
+
+            $this->pdo->prepare('DELETE FROM post_categories WHERE post_id = ? AND category_id = ?')->execute([$postId, $fromId]);
+            if ((int) $link['is_primary'] === 1) {
+                $this->ensurePrimaryCategory($postId);
+            }
+        }
+
+        return count($links);
+    }
+
+    private function retargetOnlyCategory(int $postId, int $fromId, ?int $toId): void
+    {
+        if ($toId === null) {
+            throw new \LogicException(sprintf('Artikel %d hätte ohne Ersatz-Kategorie keine Kategorie mehr.', $postId));
+        }
+
+        $this->pdo->prepare('UPDATE post_categories SET category_id = ?, is_primary = 1 WHERE post_id = ? AND category_id = ?')
+            ->execute([$toId, $postId, $fromId]);
+    }
+
+    private function ensurePrimaryCategory(int $postId): void
+    {
+        $primary = $this->pdo->prepare('SELECT 1 FROM post_categories WHERE post_id = ? AND is_primary = 1 LIMIT 1');
+        $primary->execute([$postId]);
+        if ($primary->fetchColumn() !== false) {
+            return;
+        }
+
+        // Getrennt gelesen: MySQL erlaubt im UPDATE keine Unterabfrage auf dieselbe Tabelle (Fehler 1093).
+        $first = $this->pdo->prepare(
+            'SELECT pc.category_id FROM post_categories pc JOIN categories c ON c.id = pc.category_id
+             WHERE pc.post_id = ? ORDER BY c.name, c.id LIMIT 1'
+        );
+        $first->execute([$postId]);
+        $categoryId = $first->fetchColumn();
+        if ($categoryId === false) {
+            return;
+        }
+
+        $this->pdo->prepare('UPDATE post_categories SET is_primary = 1 WHERE post_id = ? AND category_id = ?')
+            ->execute([$postId, (int) $categoryId]);
+    }
+
     /** @return list<array{slug: string, name: string, primary: bool}> Hauptkategorie zuerst */
     public function categories(int $postId): array
     {

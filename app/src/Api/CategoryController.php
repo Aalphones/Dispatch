@@ -13,13 +13,17 @@ use Dispatch\Domain\DomainError;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
 use Dispatch\Util\Env;
+use Dispatch\Util\Text;
 
 /**
- * Kategorie anlegen für `bin/dispatch category:create --remote`, geschützt mit dem Deploy-Token
- * (wer ihn hat, handelt als Inhaber); Liste und Interessen für den Redaktionsmodus per Anmeldung.
+ * Kategorie anlegen: mit dem Deploy-Token für `bin/dispatch category:create --remote` (wer ihn hat, handelt als Inhaber)
+ * oder per Anmeldung aus dem Redaktionsmodus; Liste, Interessen, Umbenennen und Löschen nur per Anmeldung.
  */
 final class CategoryController
 {
+    /** Was der Inhaber im Redaktionsmodus direkt ändert; Slug und Beschreibung bleiben fest. */
+    private const OWNER_PATCH_FIELDS = [...CategoryService::INTERNAL_FIELDS, 'name'];
+
     /** @param array<string, mixed> $config */
     public function __construct(private readonly array $config)
     {
@@ -27,22 +31,49 @@ final class CategoryController
 
     public function handle(Request $request): never
     {
-        if (!DeployToken::matches($request, Env::get('DISPATCH_DEPLOY_TOKEN'))) {
-            Response::error('unauthorized', 'Deploy-Token fehlt oder ist falsch.', 401);
+        if (DeployToken::matches($request, Env::get('DISPATCH_DEPLOY_TOKEN'))) {
+            $this->createWithDeployToken();
         }
 
+        $actor = ApiAuth::owner($request);
+        try {
+            $fields = $this->withSlugFromName($request->json());
+            $pdo = Connection::open();
+            $result = (new CategoryService($pdo, $this->config))->create($fields, $actor);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json($result + Rebuild::run($this->config, $pdo), 201);
+    }
+
+    private function createWithDeployToken(): never
+    {
         $body = json_decode((string) file_get_contents('php://input'), true);
         if (!is_array($body)) {
             Response::error('invalid_value', 'Der Body muss ein JSON-Objekt sein, z. B. {"slug":"technik","name":"Technik"}.', 400);
         }
 
         try {
-            $result = (new CategoryService(Connection::open(), $this->config))->create($body, Actor::owner());
+            $result = (new CategoryService(Connection::open(), $this->config))->create($this->withSlugFromName($body), Actor::owner());
         } catch (DomainError $error) {
             Response::error($error->errorCode, $error->getMessage(), 400);
         }
 
         Response::json($result, 201);
+    }
+
+    /**
+     * @param array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    private function withSlugFromName(array $fields): array
+    {
+        if (!array_key_exists('slug', $fields) && is_string($fields['name'] ?? null) && trim($fields['name']) !== '') {
+            $fields['slug'] = Text::slugify($fields['name']);
+        }
+
+        return $fields;
     }
 
     public function list(Request $request): never
@@ -52,7 +83,7 @@ final class CategoryController
         Response::json(['categories' => (new CategoryService(Connection::open(), $this->config))->overview()]);
     }
 
-    /** Interessen des Inhabers: nur die internen Felder, sofort wirksam. */
+    /** Interessen und Anzeigename des Inhabers, sofort wirksam. */
     public function patch(Request $request, int $id): never
     {
         $actor = ApiAuth::owner($request);
@@ -60,25 +91,61 @@ final class CategoryController
         try {
             $fields = $request->json();
             foreach (array_keys($fields) as $field) {
-                if (!in_array($field, CategoryService::INTERNAL_FIELDS, true)) {
+                if (!in_array($field, self::OWNER_PATCH_FIELDS, true)) {
                     throw new DomainError(
                         'invalid_field',
-                        sprintf('Das Feld „%s“ lässt sich hier nicht ändern. Erlaubt: %s.', (string) $field, implode(', ', CategoryService::INTERNAL_FIELDS)),
+                        sprintf('Das Feld „%s“ lässt sich hier nicht ändern. Erlaubt: %s.', (string) $field, implode(', ', self::OWNER_PATCH_FIELDS)),
                         ['field' => (string) $field]
                     );
                 }
             }
             if ($fields === []) {
-                throw new DomainError('invalid_value', 'Der Body braucht mindestens eines von: ' . implode(', ', CategoryService::INTERNAL_FIELDS) . '.');
+                throw new DomainError('invalid_value', 'Der Body braucht mindestens eines von: ' . implode(', ', self::OWNER_PATCH_FIELDS) . '.');
             }
 
-            $service = new CategoryService(Connection::open(), $this->config);
+            $pdo = Connection::open();
+            $service = new CategoryService($pdo, $this->config);
             $service->update($id, $fields, $actor);
             $category = $service->describe($id);
         } catch (DomainError $error) {
             ApiErrors::respond($error);
         }
 
-        Response::json(['category' => $category]);
+        $response = ['category' => $category];
+        if (array_key_exists('name', $fields)) {
+            $response += Rebuild::run($this->config, $pdo);
+        }
+
+        Response::json($response);
+    }
+
+    /** Body optional: `{"move_to": <id>}` nennt die Ersatz-Kategorie für zugeordnete Artikel. */
+    public function delete(Request $request, int $id): never
+    {
+        $actor = ApiAuth::owner($request);
+
+        try {
+            $moveTo = $this->moveToFrom($request);
+            $pdo = Connection::open();
+            $result = (new CategoryService($pdo, $this->config))->delete($id, $moveTo, $actor);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json($result + Rebuild::run($this->config, $pdo));
+    }
+
+    private function moveToFrom(Request $request): ?int
+    {
+        if (trim($request->body()) === '') {
+            return null;
+        }
+
+        $moveTo = $request->json()['move_to'] ?? null;
+        if ($moveTo !== null && !is_int($moveTo)) {
+            throw new DomainError('invalid_value', 'Das Feld „move_to“ muss die ID einer Kategorie oder null sein.', ['field' => 'move_to']);
+        }
+
+        return $moveTo;
     }
 }

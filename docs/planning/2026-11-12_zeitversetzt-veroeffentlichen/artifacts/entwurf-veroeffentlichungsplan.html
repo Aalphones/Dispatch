@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entwurf: Zeitversetztes Veröffentlichen (DISPATCH)</title>
+<link rel="stylesheet" href="../../../../app/theme/style.css">
+<link rel="stylesheet" href="../../../../app/theme/redaktion/redaktion.css">
+<link rel="stylesheet" href="_entwurf-veroeffentlichungsplan/dummy.css">
+<script src="_entwurf-veroeffentlichungsplan/dummy.js" defer></script>
+</head>
+<body class="angemeldet">
+
+<div class="dummy" role="region" aria-label="Steuerung des Entwurfs">
+  <b>Entwurf</b>
+  <label>Ansicht
+    <select id="d-ansicht">
+      <option value="start">Startseite</option>
+      <option value="menue">Startseite mit Menü</option>
+      <option value="vorschau">Vorschau: zur Freigabe</option>
+      <option value="freigeben">Vorschau: Freigeben-Dialog</option>
+      <option value="geplant">Vorschau: geplanter Artikel</option>
+      <option value="plan">Dialog Veröffentlichungsplan</option>
+    </select>
+  </label>
+  <label>Daten
+    <select id="d-daten">
+      <option value="beispiel">Beispiel</option>
+      <option value="leer">Leer (nichts geplant)</option>
+      <option value="viele">Viele (30 in der Warteschlange)</option>
+      <option value="laedt">Plan lädt</option>
+      <option value="fehler">Plan: Ladefehler</option>
+    </select>
+  </label>
+  <label>Artikel
+    <select id="d-fassung">
+      <option value="neu">neu, nie veröffentlicht</option>
+      <option value="fassung">neue Fassung eines Live-Artikels</option>
+    </select>
+  </label>
+  <label>Thema
+    <select id="d-thema">
+      <option value="">System</option>
+      <option value="hell">Hell</option>
+      <option value="dunkel">Dunkel</option>
+    </select>
+  </label>
+  <span class="stufe" id="d-stufe"></span>
+</div>
+<p class="dummy-wofuer"><b>Wofür:</b> <span id="d-wofuer"></span> <span>· Beispielzeit Do, 12.11.2026, 10:30 · Titel aus den Demo-Artikeln, Termine erfunden</span></p>
+
+<header>
+  <div class="leiste">
+    <div class="wrap">
+      <span class="klein ausgabe-zeile"><span class="ausgabe">Ausgabe Nr. 14</span><span class="ausgabe-datum"> · 12. November 2026</span></span>
+      <div class="kopf-rechts" id="kopf-rechts"></div>
+    </div>
+  </div>
+</header>
+<nav class="nav" aria-label="Kategorien">
+  <ul>
+    <li><a href="#start">Wissenschaft</a></li>
+    <li><a href="#start">Technik</a></li>
+    <li><a href="#start">Gesellschaft</a></li>
+    <li><a href="#start">Wirtschaft</a></li>
+    <li><a href="#start">Kultur</a></li>
+    <li><a class="alle" href="#start">Alle Kategorien</a></li>
+  </ul>
+</nav>
+<main id="inhalt"></main>
+
+</body>
+</html>

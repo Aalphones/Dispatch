@@ -55,6 +55,40 @@ function hideSideColumnAtFullImages() {
 	images.forEach((image) => observer.observe(image));
 }
 
+// "Kurz gesagt" und Randnotizen stehen per CSS frei neben ihrer Stelle im Text. Hier nur die
+// Kollisionen: Eine Notiz rückt unter ihre Vorgängerin und unter randlose Bilder; ein breites
+// Bild oder eine Galerie daneben bleibt in der Textspalte, statt unter die Notiz zu laufen.
+function placeMarginNotes() {
+	const text = document.querySelector('.text');
+	const notes = text ? [...text.querySelectorAll(':scope > .tldr, :scope > .sidenote')] : [];
+	if (!notes.length) return;
+	const wide = [...text.querySelectorAll(':scope > .abb[data-layout="wide"], :scope > .galerie')];
+	const full = [...text.querySelectorAll(':scope > .abb[data-layout="full"]')];
+	const spacing = 16;
+	const overlaps = (element, top, bottom) => element.offsetTop < bottom && element.offsetTop + element.offsetHeight > top;
+
+	const layout = () => {
+		notes.forEach((note) => { note.style.marginTop = ''; });
+		wide.forEach((element) => element.classList.remove('neben-notiz'));
+		if (getComputedStyle(notes[0]).position !== 'absolute') return;
+		let floor = 0;
+		notes.forEach((note) => {
+			const anchor = note.offsetTop;
+			let top = Math.max(anchor, floor);
+			full.forEach((element) => { if (overlaps(element, top, top + note.offsetHeight)) top = element.offsetTop + element.offsetHeight + spacing; });
+			if (top > anchor) note.style.marginTop = (top - anchor + parseFloat(getComputedStyle(note).marginTop)) + 'px';
+			wide.forEach((element) => { if (overlaps(element, top, top + note.offsetHeight)) element.classList.add('neben-notiz'); });
+			floor = top + note.offsetHeight + spacing;
+		});
+	};
+	let pending = 0;
+	const schedule = () => { cancelAnimationFrame(pending); pending = requestAnimationFrame(layout); };
+	schedule();
+	window.addEventListener('resize', schedule);
+	window.addEventListener('load', schedule);
+	if (document.fonts) document.fonts.ready.then(schedule);
+}
+
 // ---- Fokusmodus: nur der Text, im Vollbild ----
 function setUpFocusMode() {
 	const start = document.getElementById('fokus-an');
@@ -153,6 +187,7 @@ function setUpEmbeds() {
 
 trackSections();
 hideSideColumnAtFullImages();
+placeMarginNotes();
 setUpFocusMode();
 setUpLightbox();
 setUpEmbeds();

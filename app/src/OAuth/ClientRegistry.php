@@ -58,6 +58,32 @@ final class ClientRegistry
         throw $this->unknownApp('Die App ist nicht bekannt.');
     }
 
+    /**
+     * Client aus der gespeicherten Zeile, ohne neuen Abruf (Zustimmung und Token-Endpunkt).
+     *
+     * @return array{client_id: string, kind: string, name: string, host: string, redirect_uris: list<string>, secret_hash: string|null}
+     * @throws OAuthError `unbekannte_app` (nicht gespeichert oder widerrufen)
+     */
+    public function stored(string $clientId): array
+    {
+        $row = $this->repository->findClient($clientId, 0);
+        if ($row === null || (int) $row['revoked'] === 1) {
+            throw $this->unknownApp('Die App ist nicht bekannt.');
+        }
+
+        return $this->describe($row, self::hostFor($clientId));
+    }
+
+    /** Anzeige-Host: bei CIMD der Host der `client_id`, beim Rückfall-Client ein fester Text. */
+    public static function hostFor(string $clientId): string
+    {
+        if (!str_starts_with($clientId, 'https://')) {
+            return self::MANUAL_HOST_LABEL;
+        }
+
+        return strtolower((string) parse_url($clientId, PHP_URL_HOST));
+    }
+
     /** @param array{redirect_uris: list<string>} $client */
     public function redirectAllowed(array $client, string $uri): bool
     {

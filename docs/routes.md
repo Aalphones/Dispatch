@@ -6,10 +6,16 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 
 | Methode | Pfad | Auth | Controller | Phase |
 |---|---|---|---|---|
-| POST | `/dispatch/mcp` | `dmcp_`-Token | `Mcp\McpController` (401 mit `WWW-Authenticate: Bearer [error="invalid_token", ]resource_metadata=…, scope="blog:read blog:write"` über `OAuth\Discovery::challengeHeader`) | M3, M5 1 |
+| POST | `/dispatch/mcp` | `dmcp_`- oder `doa_`-Token | `Mcp\McpController` (401 mit `WWW-Authenticate: Bearer [error="invalid_token", ]resource_metadata=…, scope="blog:read blog:write"` über `OAuth\Discovery::challengeHeader`) | M3, M5 1, M5 3 (`doa_` über `OAuthTokenIssuer::authenticate`, Akteur `oauth:<Client>`) |
 | GET | `/.well-known/oauth-protected-resource[/dispatch/mcp]` | — | `OAuth\DiscoveryController::protectedResource` (RFC 9728, [ADR-024](decisions/024-oauth-fuer-claude-apps.md); `Cache-Control: public, max-age=300`) | M5 1 |
 | GET | `/.well-known/oauth-authorization-server` | — | `OAuth\DiscoveryController::authorizationServer` (RFC 8414, CIMD-Hinweis, kein `registration_endpoint`) | M5 1 |
 | GET | `/dispatch/oauth/authorize` | — | `OAuth\AuthorizeController::handle` (prüft Client über `ClientRegistry` und Rückadresse, legt Anfrage in `oauth_codes` an, 302 auf `/anmelden/zustimmung/?anfrage=…`; Fehler von Client/Rückadresse → `?fehler=…`, alle übrigen an die Rückadresse mit `error`, `state`, `iss`) | M5 2 |
+| POST | `/dispatch/oauth/token` | Client | `OAuthTokenController::token` (`application/x-www-form-urlencoded`; `authorization_code` mit PKCE, `refresh_token` mit Rotation und Kulanzfenster; Fehler `{"error","error_description"}`, `Cache-Control: no-store`; Rückfall-Client mit `client_secret`) | M5 3 |
+| POST | `/dispatch/oauth/revoke` | Client | `OAuthTokenController::revoke` (RFC 7009; widerruft die ganze Familie, immer 200) | M5 3 |
+| GET | `/dispatch/api/oauth/requests/{slug}` | JWT | `ApiOAuthController::request` (Anfrage für die Zustimmungsseite; unbekannt 404, beantwortet/abgelaufen 410 `request_expired`) | M5 3 |
+| POST | `/dispatch/api/oauth/consent` | JWT | `ApiOAuthController::consent` (`{request_id, decision: allow|deny, scopes}` → `{redirect}`; Audit `oauth.consent`/`oauth.deny`) | M5 3 |
+| GET | `/dispatch/api/oauth/grants` | JWT | `ApiOAuthController::grants` (verbundene Apps je Familie) | M5 3 |
+| DELETE | `/dispatch/api/oauth/grants/{slug}` | JWT | `ApiOAuthController::disconnect` (widerruft die Familie, Audit `oauth.disconnect`; 204) | M5 3 |
 | POST | `/dispatch/api/deploy` | Deploy | `Api\DeployController` | M1 |
 | POST | `/dispatch/api/categories` | Deploy | `Api\CategoryController` | M3 |
 | POST | `/dispatch/api/tokens` | JWT/Deploy | `Api\TokenController::handle` (Deploy + `action` im Body = Kommandozeilenweg wie in M3; sonst neuer Zugang, 201 mit Klartext und `command`) | M3, 4 |

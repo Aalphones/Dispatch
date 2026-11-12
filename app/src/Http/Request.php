@@ -88,6 +88,14 @@ final class Request
         return is_string($value) ? $value : null;
     }
 
+    /** Medientyp ohne Parameter (`charset` …), klein geschrieben; PHP liefert ihn als `CONTENT_TYPE`, nicht als `HTTP_`-Eintrag. */
+    public function mediaType(): string
+    {
+        $value = $this->server['CONTENT_TYPE'] ?? '';
+
+        return is_string($value) ? strtolower(trim(explode(';', $value)[0])) : '';
+    }
+
     public function cookie(string $name): ?string
     {
         $header = $this->server['HTTP_COOKIE'] ?? null;

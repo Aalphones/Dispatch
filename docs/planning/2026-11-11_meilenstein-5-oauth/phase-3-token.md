@@ -22,11 +22,21 @@
 
 ## Checkliste
 
-- [ ] `TokenRepository`: `insertOAuth(kind, hash, name, clientId, scope, family, lifetime)`, `findOAuthByHash`, `listGrants`, `revokeFamilyNow`, `revokeByClientId` (bestehende Methoden wiederverwenden, wo sie passen)
-- [ ] `app/src/OAuth/Consent.php`, `app/src/OAuth/TokenIssuer.php`, `app/src/OAuth/TokenController.php`
-- [ ] `app/src/Api/OAuthController.php` (`request`, `consent`, `grants`, `disconnect`)
-- [ ] `McpAuth`, `Registry` (Akteur)
-- [ ] Routen in `app/index.php`
-- [ ] Doku: `docs/routes.md`, `docs/code-map.md`, `docs/glossary.md` (Begriffe „Verbundene App“, „Zustimmung“, „Rückfall-Client“, „Familie“)
+- [x] `TokenRepository`: `insertOAuth(kind, hash, name, clientId, scope, family, lifetime)`, `findOAuthByHash`, `listGrants`, `revokeFamilyNow`, `revokeByClientId` (bestehende Methoden wiederverwenden, wo sie passen)
+- [x] `app/src/OAuth/Consent.php`, `app/src/OAuth/TokenIssuer.php`, `app/src/OAuth/TokenController.php`
+- [x] `app/src/Api/OAuthController.php` (`request`, `consent`, `grants`, `disconnect`)
+- [x] `McpAuth`, `Registry` (Akteur)
+- [x] Routen in `app/index.php`
+- [x] Doku: `docs/routes.md`, `docs/code-map.md`, `docs/glossary.md` (Begriffe „Verbundene App“, „Zustimmung“, „Rückfall-Client“, „Familie“)
 
 ## Report-Back
+
+Phase 3 fertig, lokal (PHP 8.5, MySQL, Rückfall-Client) per Node-Skript gegen `localhost:8080` geprüft; keine Befunde offen.
+
+- Zustimmung: `requests/{slug}` liefert Client, Host, `redirect_host`, Scopes, `expires_in`; `consent` allow/deny → `redirect` mit `code`/`state`/`iss` bzw. `access_denied`; zweites Absenden und Beschreiben danach → 410; fremder oder fehlender Scope → 400.
+- Token-Endpunkt: falsches Geheimnis → 401 `invalid_client`; falscher Verifier oder falsche `redirect_uri` → `invalid_grant`; falsche `resource` → `invalid_target`; JSON statt Formular → `invalid_request`; Tausch → Access (68 Zeichen, `doa_`) plus Refresh, `Cache-Control: no-store`. Code-Replay → `invalid_grant` und Familie widerrufen.
+- Refresh: Rotation, Scope-Erweiterung → `invalid_scope`; altes Token im Kulanzfenster → neues Paar; nach 31 s → `invalid_grant`, Familie tot (MCP mit jüngstem Access → 401).
+- MCP: `doa_` am `/dispatch/mcp` (30 Tools bei read+write, 17 bei nur read), Akteur `oauth:<Client>`; `/dispatch/api/overview` und `/dispatch/api/tokens` mit `doa_` → 401.
+- Widerruf: fremde `client_id` → 200, nichts passiert; eigener → Familie tot; `DELETE grants/{slug}` → 204, danach 401 am MCP; unbekannt → 404; `grants` listet nur lebende Familien.
+- Entscheidung: `invalid_client` wird ohne `WWW-Authenticate` gesendet (kein Basic). Im Kulanz-Zweig wird das zuvor rotierte Refresh-Token sofort widerrufen; ein Client, der danach genau dieses Token benutzt, löst die Wiederverwendungs-Erkennung aus (Familie tot) — folgt dem Kontrakt.
+- Nicht getestet: CIMD-Client im Token-Weg (Client kommt aus der gespeicherten Zeile wie beim Rückfall-Client, Phase 2 prüfte den Abruf), Strato.

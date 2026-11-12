@@ -7,6 +7,7 @@ use Dispatch\Api\CategoryController;
 use Dispatch\Api\ChangeController;
 use Dispatch\Api\DeployController;
 use Dispatch\Api\HitController;
+use Dispatch\Api\OAuthController;
 use Dispatch\Api\OverviewController;
 use Dispatch\Api\PostController;
 use Dispatch\Api\PreviewController;
@@ -19,6 +20,7 @@ use Dispatch\Http\Router;
 use Dispatch\Mcp\McpController;
 use Dispatch\OAuth\AuthorizeController;
 use Dispatch\OAuth\DiscoveryController;
+use Dispatch\OAuth\TokenController as OAuthTokenController;
 
 $config = require __DIR__ . '/bootstrap.php';
 
@@ -60,6 +62,12 @@ $router->add('GET', '/.well-known/oauth-protected-resource', static fn () => (ne
 $router->add('GET', '/.well-known/oauth-protected-resource/dispatch/mcp', static fn () => (new DiscoveryController($config))->protectedResource());
 $router->add('GET', '/.well-known/oauth-authorization-server', static fn () => (new DiscoveryController($config))->authorizationServer());
 $router->add('GET', '/dispatch/oauth/authorize', static fn () => (new AuthorizeController($config))->handle($request));
+$router->add('POST', '/dispatch/oauth/token', static fn () => (new OAuthTokenController($config))->token($request));
+$router->add('POST', '/dispatch/oauth/revoke', static fn () => (new OAuthTokenController($config))->revoke($request));
+$router->add('GET', '/dispatch/api/oauth/requests/{slug}', static fn (array $params) => (new OAuthController($config))->request($request, (string) $params['slug']));
+$router->add('POST', '/dispatch/api/oauth/consent', static fn () => (new OAuthController($config))->consent($request));
+$router->add('GET', '/dispatch/api/oauth/grants', static fn () => (new OAuthController($config))->grants($request));
+$router->add('DELETE', '/dispatch/api/oauth/grants/{slug}', static fn (array $params) => (new OAuthController($config))->disconnect($request, (string) $params['slug']));
 // Der MCP-Endpunkt antwortet in JSON-RPC und prüft Origin und Anmeldung selbst.
 $router->add('POST', '/dispatch/mcp', static fn () => (new McpController($config))->handle($request));
 

@@ -21,6 +21,9 @@ final class ApiErrors
         if ($error->errorCode === 'not_found') {
             $status = 404;
         }
+        if ($error->errorCode === 'request_expired') {
+            $status = 410;
+        }
 
         $body = ['error' => $error->errorCode, 'message' => $error->getMessage()];
         if ($error->details !== []) {

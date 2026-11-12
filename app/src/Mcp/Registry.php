@@ -36,7 +36,7 @@ final class Registry
 
     /**
      * @param array<string, mixed> $args
-     * @param array{name: string, scopes: list<string>} $auth
+     * @param array{name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth
      */
     public function call(string $name, array $args, array $auth): ToolResult
     {
@@ -61,7 +61,9 @@ final class Registry
         }
 
         try {
-            return ($tool->handler)($args, Actor::mcp($auth['name']));
+            $actor = $auth['kind'] === 'oauth' ? Actor::oauth($auth['name']) : Actor::mcp($auth['name']);
+
+            return ($tool->handler)($args, $actor);
         } catch (DomainError $error) {
             return ToolResult::error($error->errorCode, $error->getMessage(), $error->details);
         }

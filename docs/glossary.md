@@ -28,5 +28,8 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Startinhalte | Markdown-Vorlagen in `app/defaults/` (Richtlinien, Präferenzen, Über, Impressum, Datenschutz); der Seeder legt sie an, überschreibt aber nie Vorhandenes. |
 | Merkzeichen | `localStorage['dispatch.angemeldet'] = '1'`; sagt `site.js`, dass der Redaktionsmodus zu laden ist. Ohne Merkzeichen löst ein Besucher keinen PHP-Aufruf außer dem Zähl-Beacon aus. |
 | Vorschau-Link | Signierte, sieben Tage gültige Adresse `/vorschau/?id=&exp=&sig=`, die einen Arbeitsstand ohne Anmeldung nur lesend zeigt (`submit_post` liefert ihn). |
-| Familie | Alle Refresh-Tokens eines Logins (`tokens.family`); Wiederverwendung eines alten Tokens widerruft die ganze Familie. |
+| Familie | Alle Tokens einer Anmeldung bzw. Zustimmung (`tokens.family`); Wiederverwendung eines alten Refresh-Tokens widerruft die ganze Familie. |
+| Verbundene App | Eine Familie von OAuth-Tokens (Access und Refresh) einer Claude-App oder von Claude Code, die der Inhaber erlaubt hat; lässt sich im Dialog „Zugänge“ trennen. |
+| Zustimmung | Die Entscheidung des Inhabers auf der Zustimmungsseite, einer App die gewählten `blog:*`-Scopes zu erlauben (`allow`) oder den Zugriff abzulehnen (`deny`); erzeugt den Code. |
+| Rückfall-Client | Von Hand angelegter OAuth-Client (`dcl_…` mit Geheimnis `dcs_…`) für den Notfall, wenn die App kein CIMD nutzt; nur über die Kommandozeile. |
 | Kulanzfenster | 30 Sekunden, in denen ein rotiertes Refresh-Token noch ein neues Access-JWT ergibt (parallele Tabs), ohne neues Cookie. |

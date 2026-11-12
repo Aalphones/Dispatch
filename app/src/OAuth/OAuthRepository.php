@@ -144,7 +144,8 @@ final class OAuthRepository
     public function findRequest(string $requestId): ?array
     {
         $statement = $this->pdo->prepare(
-            'SELECT *, (expires_at > UTC_TIMESTAMP()) AS not_expired FROM oauth_codes WHERE request_id = ?'
+            'SELECT *, (expires_at > UTC_TIMESTAMP()) AS not_expired, TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP(), expires_at) AS seconds_left
+             FROM oauth_codes WHERE request_id = ?'
         );
         $statement->execute([$requestId]);
         $row = $statement->fetch();
@@ -165,19 +166,20 @@ final class OAuthRepository
     }
 
     /**
-     * Setzt den Status nur, wenn die Zeile noch `$fromStatus` hat (kein Doppel-Einlösen). Ein Code erneuert die Frist.
+     * Setzt den Status nur, wenn die Zeile noch `$fromStatus` hat (kein Doppel-Einlösen). Ein Code erneuert die Frist;
+     * `$scope` ersetzt die angefragten Scopes durch die erteilten.
      *
      * @return bool true, wenn genau diese Anfrage gewechselt hat
      */
-    public function transition(int $id, string $fromStatus, string $toStatus, ?string $codeHash = null, ?string $family = null, ?int $expiresSeconds = null): bool
+    public function transition(int $id, string $fromStatus, string $toStatus, ?string $codeHash = null, ?string $family = null, ?int $expiresSeconds = null, ?string $scope = null): bool
     {
         $statement = $this->pdo->prepare(
             'UPDATE oauth_codes
-             SET status = ?, code_hash = COALESCE(?, code_hash), family = COALESCE(?, family),
+             SET status = ?, code_hash = COALESCE(?, code_hash), family = COALESCE(?, family), scope = COALESCE(?, scope),
                  expires_at = IF(? IS NULL, expires_at, UTC_TIMESTAMP() + INTERVAL ? SECOND)
              WHERE id = ? AND status = ?'
         );
-        $statement->execute([$toStatus, $codeHash, $family, $expiresSeconds, $expiresSeconds, $id, $fromStatus]);
+        $statement->execute([$toStatus, $codeHash, $family, $scope, $expiresSeconds, $expiresSeconds, $id, $fromStatus]);
 
         return $statement->rowCount() === 1;
     }

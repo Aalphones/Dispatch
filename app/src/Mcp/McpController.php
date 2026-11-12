@@ -6,6 +6,7 @@ namespace Dispatch\Mcp;
 
 use Dispatch\Auth\McpAuth;
 use Dispatch\Auth\Scopes;
+use Dispatch\OAuth\TokenIssuer;
 use Dispatch\Db\Connection;
 use Dispatch\Domain\BriefingService;
 use Dispatch\Domain\CategoryService;
@@ -88,7 +89,7 @@ final class McpController
         $services = self::services($pdo, $this->config);
         /** @var TokenService $tokens */
         $tokens = $services['tokens'];
-        $auth = McpAuth::authenticate($request, $tokens);
+        $auth = McpAuth::authenticate($request, $tokens, new TokenIssuer($pdo, $this->config));
         if ($auth === null) {
             Response::error(
                 'unauthorized',
@@ -163,7 +164,7 @@ final class McpController
     /**
      * @param array<string, mixed> $message
      * @param array{version: string, modern: bool} $era
-     * @param array{id: int, name: string, scopes: list<string>} $auth
+     * @param array{id: int, name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth
      * @param array<string, mixed> $services
      * @return array<string, mixed>|stdClass
      */
@@ -244,7 +245,7 @@ final class McpController
 
     /**
      * @param array{version: string, modern: bool} $era
-     * @param array{id: int, name: string, scopes: list<string>} $auth
+     * @param array{id: int, name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth
      * @param array<string, mixed> $services
      * @return array<string, mixed>
      */
@@ -260,7 +261,7 @@ final class McpController
 
     /**
      * @param array<string, mixed> $params
-     * @param array{id: int, name: string, scopes: list<string>} $auth
+     * @param array{id: int, name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth
      * @param array<string, mixed> $services
      * @return array<string, mixed>
      */
@@ -278,7 +279,7 @@ final class McpController
     /**
      * Resources und Prompts brauchen blog:read.
      *
-     * @param array{id: int, name: string, scopes: list<string>} $auth
+     * @param array{id: int, name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth
      * @param callable(): array<string, mixed> $list
      * @param array{version: string, modern: bool} $era
      * @return array<string, mixed>
@@ -292,7 +293,7 @@ final class McpController
 
     /**
      * @param array<string, mixed> $params
-     * @param array{id: int, name: string, scopes: list<string>} $auth
+     * @param array{id: int, name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth
      * @param array<string, mixed> $services
      * @param array{version: string, modern: bool} $era
      * @return array<string, mixed>
@@ -310,7 +311,7 @@ final class McpController
 
     /**
      * @param array<string, mixed> $params
-     * @param array{id: int, name: string, scopes: list<string>} $auth
+     * @param array{id: int, name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth
      * @return array<string, mixed>
      */
     private function getPrompt(array $params, array $auth): array
@@ -336,7 +337,7 @@ final class McpController
         return new Resources($documents, $posts);
     }
 
-    /** @param array{id: int, name: string, scopes: list<string>} $auth */
+    /** @param array{id: int, name: string, scopes: list<string>, kind: 'mcp'|'oauth'} $auth */
     private static function requireReadScope(array $auth): void
     {
         if (in_array(Scopes::READ, $auth['scopes'], true)) {

@@ -11,6 +11,24 @@ final class Log
     /** @param array<string, mixed> $context */
     public static function error(string $message, array $context = []): void
     {
+        self::write('error', $message, $context);
+    }
+
+    /** @param array<string, mixed> $context */
+    public static function warning(string $message, array $context = []): void
+    {
+        self::write('warning', $message, $context);
+    }
+
+    /** @param array<string, mixed> $context */
+    public static function info(string $message, array $context = []): void
+    {
+        self::write('info', $message, $context);
+    }
+
+    /** @param array<string, mixed> $context */
+    private static function write(string $level, string $message, array $context): void
+    {
         $directory = dirname(__DIR__, 2) . '/storage/logs';
         if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
             return;
@@ -18,7 +36,7 @@ final class Log
 
         $entry = [
             'time' => gmdate('c'),
-            'level' => 'error',
+            'level' => $level,
             'message' => $message,
             'context' => $context,
         ];

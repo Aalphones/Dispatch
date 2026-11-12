@@ -27,10 +27,12 @@
 
 ## Checkliste
 
-- [ ] `app/src/OAuth/OAuthRepository.php` (Clients: finden, anlegen/aktualisieren, Liste manual, widerrufen, `touch`; Codes: anlegen, nach `request_id`, nach `code_hash`, Status setzen, Aufräumen)
-- [ ] `app/src/OAuth/ClientRegistry.php`
-- [ ] `app/src/OAuth/AuthorizeController.php`, Route `GET /dispatch/oauth/authorize`
-- [ ] Hilfsfunktion „Rückadresse mit Parametern“ (`?` oder `&`, `http_build_query`) an einer Stelle, z. B. `OAuth\Redirect::with(string $uri, array $params): string`
-- [ ] Doku: `docs/routes.md`, `docs/code-map.md`
+- [x] `app/src/OAuth/OAuthRepository.php` (Clients: finden, anlegen/aktualisieren, Liste manual, widerrufen, `touch`; Codes: anlegen, nach `request_id`, nach `code_hash`, Status setzen, Aufräumen)
+- [x] `app/src/OAuth/ClientRegistry.php`
+- [x] `app/src/OAuth/AuthorizeController.php`, Route `GET /dispatch/oauth/authorize`
+- [x] Hilfsfunktion „Rückadresse mit Parametern“ (`?` oder `&`, `http_build_query`) an einer Stelle, z. B. `OAuth\Redirect::with(string $uri, array $params): string`
+- [x] Doku: `docs/routes.md`, `docs/code-map.md`
 
 ## Report-Back
+
+Status: complete. Lokal per curl geprüft (alle Fälle der AK 5) und `ClientRegistry` per Skript (Rückfall-Client anlegen/auflösen/widerrufen, Loopback-Matrix). Abweichungen/Ergänzungen: `Log::warning|info` ergänzt (gab nur `error`); `TokenRepository::revokeByClient`; `Discovery::base` öffentlich; CIMD-`client_id` ohne Port/Fragment und mit Pfad verlangt; `scope` nur mit `offline_access` → `invalid_scope` (mindestens ein `blog:`-Scope); `state` > 500 Zeichen → `invalid_request`. Lokal braucht PHP für den CIMD-Abruf ein CA-Bundle (`-d curl.cainfo=…`, z. B. das von Git).

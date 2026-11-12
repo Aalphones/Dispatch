@@ -17,6 +17,7 @@ use Dispatch\Api\TokenController;
 use Dispatch\Http\Request;
 use Dispatch\Http\Router;
 use Dispatch\Mcp\McpController;
+use Dispatch\OAuth\AuthorizeController;
 use Dispatch\OAuth\DiscoveryController;
 
 $config = require __DIR__ . '/bootstrap.php';
@@ -58,6 +59,7 @@ $router->add('POST', '/dispatch/api/changes/{id}/reject', static fn (array $para
 $router->add('GET', '/.well-known/oauth-protected-resource', static fn () => (new DiscoveryController($config))->protectedResource());
 $router->add('GET', '/.well-known/oauth-protected-resource/dispatch/mcp', static fn () => (new DiscoveryController($config))->protectedResource());
 $router->add('GET', '/.well-known/oauth-authorization-server', static fn () => (new DiscoveryController($config))->authorizationServer());
+$router->add('GET', '/dispatch/oauth/authorize', static fn () => (new AuthorizeController($config))->handle($request));
 // Der MCP-Endpunkt antwortet in JSON-RPC und prüft Origin und Anmeldung selbst.
 $router->add('POST', '/dispatch/mcp', static fn () => (new McpController($config))->handle($request));
 

@@ -100,6 +100,13 @@ final class TokenRepository
         $statement->execute([$family]);
     }
 
+    /** Widerruft alle OAuth-Tokens eines Clients (Access und Refresh, jede Familie). */
+    public function revokeByClient(string $clientId): void
+    {
+        $statement = $this->pdo->prepare('UPDATE tokens SET revoked = 1, expires_at = UTC_TIMESTAMP() WHERE client_id = ? AND revoked = 0');
+        $statement->execute([$clientId]);
+    }
+
     public function revokeAllOwnerRefresh(): void
     {
         $statement = $this->pdo->prepare('UPDATE tokens SET revoked = 1, expires_at = UTC_TIMESTAMP() WHERE kind = ?');

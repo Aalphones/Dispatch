@@ -71,7 +71,7 @@ final class Discovery
     }
 
     /** @param array<string, mixed> $config */
-    private static function base(array $config): string
+    public static function base(array $config): string
     {
         return rtrim((string) ($config['base_url'] ?? ''), '/');
     }

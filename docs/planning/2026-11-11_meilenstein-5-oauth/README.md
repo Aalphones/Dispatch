@@ -11,7 +11,7 @@ Nicht in diesem Meilenstein: Registrierung (DCR), `private_key_jwt`, Oberfläche
 | 1 | [Tabellen, Discovery, 401-Hinweis, ADR](phase-1-discovery.md) | standard | complete |
 | 2 | [Clients (CIMD, Rückfall-Client) und Autorisierung](phase-2-autorisierung.md) | heikel | complete |
 | 3 | [Zustimmungs-API, Token-Endpunkt, Widerruf, MCP-Anmeldung](phase-3-token.md) | heikel | complete |
-| 4 | [Kommandozeile für Rückfall-Clients](phase-4-cli.md) | mechanisch | pending |
+| 4 | [Kommandozeile für Rückfall-Clients](phase-4-cli.md) | mechanisch | complete |
 | 5 | [Zustimmungsseite und „Verbundene Apps“](phase-5-oberflaeche.md) | standard | pending |
 | 6 | [Strato, Abnahme mit Claude-App und Claude Code, Doku](phase-6-strato-abschluss.md) | standard | pending |
 

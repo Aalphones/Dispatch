@@ -14,6 +14,7 @@ use Dispatch\Domain\PostService;
 use Dispatch\Domain\ReactionService;
 use Dispatch\Domain\Seeder;
 use Dispatch\Domain\TokenService;
+use Dispatch\OAuth\ClientRegistry;
 use Dispatch\Site\Builder;
 
 if (PHP_SAPI !== 'cli') {
@@ -168,10 +169,10 @@ function callTokenEndpoint(string $deployEnvPath, array $payload): array
 }
 
 /**
- * @param array<string, mixed> $payload
+ * @param array<string, mixed> $payload nur bei POST gesendet
  * @return array{result: array<string, mixed>, baseUrl: string}
  */
-function callDeployEndpoint(string $deployEnvPath, string $path, array $payload): array
+function callDeployEndpoint(string $deployEnvPath, string $path, array $payload, string $method = 'POST'): array
 {
     $env = readDeployEnv($deployEnvPath);
     foreach (['PUBLIC_BASE_URL', 'DISPATCH_DEPLOY_TOKEN'] as $key) {
@@ -186,8 +187,7 @@ function callDeployEndpoint(string $deployEnvPath, string $path, array $payload)
     $baseUrl = rtrim($env['PUBLIC_BASE_URL'], '/');
     $curl = curl_init($baseUrl . $path);
     curl_setopt_array($curl, [
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+        CURLOPT_CUSTOMREQUEST => $method,
         CURLOPT_HTTPHEADER => [
             'Authorization: Bearer ' . $env['DISPATCH_DEPLOY_TOKEN'],
             'Content-Type: application/json',
@@ -195,12 +195,18 @@ function callDeployEndpoint(string $deployEnvPath, string $path, array $payload)
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 30,
     ]);
+    if ($method === 'POST') {
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
+    }
     $body = curl_exec($curl);
     $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
     $curlError = curl_error($curl);
 
     if ($body === false) {
         throw new RuntimeException('Der Server ist nicht erreichbar: ' . $curlError);
+    }
+    if ($status === 204) {
+        return ['result' => [], 'baseUrl' => $baseUrl];
     }
     $result = json_decode((string) $body, true);
     if (!is_array($result)) {
@@ -248,6 +254,40 @@ function printTokenTable(array $tokens): void
             $token['expires_at'] ?? '-',
             $token['revoked'] ? 'ja' : 'nein',
             $token['last_used_at'] ?? '-'
+        ), PHP_EOL;
+    }
+}
+
+/** @param array{id: int, client_id: string, client_secret: string, name: string, redirect_uris: list<string>} $client */
+function printCreatedOAuthClient(array $client, string $baseUrl): void
+{
+    echo 'ID:           ', $client['id'], PHP_EOL;
+    echo 'Name:         ', $client['name'], PHP_EOL;
+    echo 'Client-ID:    ', $client['client_id'], PHP_EOL;
+    echo 'Geheimnis (wird nur jetzt angezeigt):', PHP_EOL, $client['client_secret'], PHP_EOL;
+    echo 'Rückadresse:  ', implode(' ', $client['redirect_uris']), PHP_EOL, PHP_EOL;
+    echo 'In Claude: Connector hinzufügen → Erweiterte Einstellungen → OAuth Client ID und Client Secret eintragen.', PHP_EOL;
+    echo 'Adresse: ', rtrim($baseUrl, '/'), '/dispatch/mcp', PHP_EOL;
+}
+
+/** @param list<array<string, mixed>> $clients */
+function printOAuthClientTable(array $clients): void
+{
+    if ($clients === []) {
+        echo 'Keine Rückfall-Clients.', PHP_EOL;
+
+        return;
+    }
+
+    echo sprintf('%-4s %-20s %-36s %-20s %s', 'ID', 'Name', 'Client-ID', 'Angelegt', 'Zuletzt benutzt'), PHP_EOL;
+    foreach ($clients as $client) {
+        echo sprintf(
+            '%-4d %-20s %-36s %-20s %s',
+            $client['id'],
+            $client['name'],
+            $client['client_id'],
+            $client['created_at'],
+            $client['last_used_at'] ?? '-'
         ), PHP_EOL;
     }
 }
@@ -304,6 +344,12 @@ Befehle:
                   zeigt die MCP-Tokens ohne Hash
   token:revoke <id> [--remote]
                   widerruft ein MCP-Token
+  oauth-client:create <name> [--remote]
+                  legt einen Rückfall-Client für Claude-Apps an (ohne CIMD); Geheimnis wird einmalig gezeigt
+  oauth-client:list [--remote]
+                  zeigt die Rückfall-Clients ohne Geheimnis
+  oauth-client:revoke <id> [--remote]
+                  widerruft einen Rückfall-Client samt aller seiner Tokens
   category:create <slug> <name> [--description=…] [--remote]
                   legt eine aktive Kategorie als Inhaber an (--remote: auf dem Server über deploy.env)
   reaction <slug> more|less|none [Notiz]
@@ -410,6 +456,45 @@ switch ($command) {
             (new TokenService(Connection::open()))->revoke($tokenId, Actor::cli());
         }
         echo 'Token ', $tokenId, ' widerrufen.', PHP_EOL;
+        break;
+
+    case 'oauth-client:create':
+        ['options' => $options, 'positional' => $positional] = parseArguments(array_slice($argv, 2));
+        $clientName = $positional[0] ?? '';
+        if ($clientName === '') {
+            throw new RuntimeException('Name fehlt. Beispiel: php bin/dispatch oauth-client:create claude-app');
+        }
+        if (isset($options['remote'])) {
+            $reply = callDeployEndpoint($root . '/deploy.env', '/dispatch/api/oauth-clients', ['name' => $clientName]);
+            printCreatedOAuthClient($reply['result'], $reply['baseUrl']);
+            break;
+        }
+        $createdClient = (new ClientRegistry(Connection::open(), $config))->createManual($clientName, Actor::cli());
+        printCreatedOAuthClient($createdClient, (string) $config['base_url']);
+        break;
+
+    case 'oauth-client:list':
+        ['options' => $options] = parseArguments(array_slice($argv, 2));
+        if (isset($options['remote'])) {
+            $clients = callDeployEndpoint($root . '/deploy.env', '/dispatch/api/oauth-clients', [], 'GET')['result']['clients'];
+        } else {
+            $clients = (new ClientRegistry(Connection::open(), $config))->listManual();
+        }
+        printOAuthClientTable($clients);
+        break;
+
+    case 'oauth-client:revoke':
+        ['options' => $options, 'positional' => $positional] = parseArguments(array_slice($argv, 2));
+        if (preg_match('/^\d+$/', $positional[0] ?? '') !== 1) {
+            throw new RuntimeException('ID fehlt. Beispiel: php bin/dispatch oauth-client:revoke 2 (IDs: oauth-client:list)');
+        }
+        $clientRowId = (int) $positional[0];
+        if (isset($options['remote'])) {
+            callDeployEndpoint($root . '/deploy.env', '/dispatch/api/oauth-clients/' . $clientRowId, [], 'DELETE');
+        } else {
+            (new ClientRegistry(Connection::open(), $config))->revokeManual($clientRowId, Actor::cli());
+        }
+        echo 'Rückfall-Client ', $clientRowId, ' widerrufen.', PHP_EOL;
         break;
 
     case 'category:create':

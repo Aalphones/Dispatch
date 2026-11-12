@@ -16,8 +16,10 @@
 
 ## Checkliste
 
-- [ ] `app/src/Api/OAuthClientController.php`, Routen in `app/index.php`
-- [ ] `bin/dispatch`: drei Befehle, Hilfe-Text
-- [ ] Doku: `docs/routes.md`, `docs/code-map.md` (Zeile `bin/dispatch`), `AGENTS.md` → „Lokal starten“ (ein Satz zu `oauth-client:create --remote` als Notfall-Weg)
+- [x] `app/src/Api/OAuthClientController.php`, Routen in `app/index.php`
+- [x] `bin/dispatch`: drei Befehle, Hilfe-Text
+- [x] Doku: `docs/routes.md`, `docs/code-map.md` (Zeile `bin/dispatch`), `AGENTS.md` → „Lokal starten“ (ein Satz zu `oauth-client:create --remote` als Notfall-Weg)
 
 ## Report-Back
+
+Status: complete. Neu: `OAuthClientController`, `ApiAuth::deployOnly` (JWT reicht nicht), `callDeployEndpoint` mit Methode (GET/DELETE, 204). Lokal geprüft: create/list/revoke mit und ohne `--remote`, 401 ohne Token, Token-Tausch ohne/falsches Geheimnis → 401 `invalid_client`, richtiges → 200, nach revoke → `?fehler=unbekannte_app`. Nicht live geprüft: `--remote` gegen Strato.

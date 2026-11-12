@@ -16,6 +16,9 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | POST | `/dispatch/api/oauth/consent` | JWT | `ApiOAuthController::consent` (`{request_id, decision: allow|deny, scopes}` → `{redirect}`; Audit `oauth.consent`/`oauth.deny`) | M5 3 |
 | GET | `/dispatch/api/oauth/grants` | JWT | `ApiOAuthController::grants` (verbundene Apps je Familie) | M5 3 |
 | DELETE | `/dispatch/api/oauth/grants/{slug}` | JWT | `ApiOAuthController::disconnect` (widerruft die Familie, Audit `oauth.disconnect`; 204) | M5 3 |
+| POST | `/dispatch/api/oauth-clients` | Deploy | `OAuthClientController::create` (Body `{"name"}` → 201 mit `client_secret` einmalig; Audit `oauth_client.create`) | M5 4 |
+| GET | `/dispatch/api/oauth-clients` | Deploy | `OAuthClientController::list` (aktive Rückfall-Clients ohne Geheimnis) | M5 4 |
+| DELETE | `/dispatch/api/oauth-clients/{id}` | Deploy | `OAuthClientController::revoke` (Client und alle seine Tokens widerrufen, Audit `oauth_client.revoke`; 204) | M5 4 |
 | POST | `/dispatch/api/deploy` | Deploy | `Api\DeployController` | M1 |
 | POST | `/dispatch/api/categories` | Deploy | `Api\CategoryController` | M3 |
 | POST | `/dispatch/api/tokens` | JWT/Deploy | `Api\TokenController::handle` (Deploy + `action` im Body = Kommandozeilenweg wie in M3; sonst neuer Zugang, 201 mit Klartext und `command`) | M3, 4 |

@@ -7,6 +7,7 @@ use Dispatch\Api\CategoryController;
 use Dispatch\Api\ChangeController;
 use Dispatch\Api\DeployController;
 use Dispatch\Api\HitController;
+use Dispatch\Api\OAuthClientController;
 use Dispatch\Api\OAuthController;
 use Dispatch\Api\OverviewController;
 use Dispatch\Api\PostController;
@@ -68,6 +69,9 @@ $router->add('GET', '/dispatch/api/oauth/requests/{slug}', static fn (array $par
 $router->add('POST', '/dispatch/api/oauth/consent', static fn () => (new OAuthController($config))->consent($request));
 $router->add('GET', '/dispatch/api/oauth/grants', static fn () => (new OAuthController($config))->grants($request));
 $router->add('DELETE', '/dispatch/api/oauth/grants/{slug}', static fn (array $params) => (new OAuthController($config))->disconnect($request, (string) $params['slug']));
+$router->add('POST', '/dispatch/api/oauth-clients', static fn () => (new OAuthClientController($config))->create($request));
+$router->add('GET', '/dispatch/api/oauth-clients', static fn () => (new OAuthClientController($config))->list($request));
+$router->add('DELETE', '/dispatch/api/oauth-clients/{id}', static fn (array $params) => (new OAuthClientController($config))->revoke($request, (int) $params['id']));
 // Der MCP-Endpunkt antwortet in JSON-RPC und prüft Origin und Anmeldung selbst.
 $router->add('POST', '/dispatch/mcp', static fn () => (new McpController($config))->handle($request));
 

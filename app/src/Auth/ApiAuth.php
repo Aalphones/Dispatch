@@ -23,6 +23,16 @@ final class ApiAuth
         return Actor::owner();
     }
 
+    /** Nur das Deploy-Token; ein JWT des Inhabers reicht nicht. */
+    public static function deployOnly(Request $request): Actor
+    {
+        if (!DeployToken::matches($request, Env::get('DISPATCH_DEPLOY_TOKEN'))) {
+            self::reject();
+        }
+
+        return Actor::deploy();
+    }
+
     public static function ownerOrDeploy(Request $request): Actor
     {
         if (DeployToken::matches($request, Env::get('DISPATCH_DEPLOY_TOKEN'))) {

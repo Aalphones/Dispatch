@@ -6,7 +6,9 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 
 | Methode | Pfad | Auth | Controller | Phase |
 |---|---|---|---|---|
-| POST | `/dispatch/mcp` | `dmcp_`-Token | `Mcp\McpController` | M3 |
+| POST | `/dispatch/mcp` | `dmcp_`-Token | `Mcp\McpController` (401 mit `WWW-Authenticate: Bearer [error="invalid_token", ]resource_metadata=…, scope="blog:read blog:write"` über `OAuth\Discovery::challengeHeader`) | M3, M5 1 |
+| GET | `/.well-known/oauth-protected-resource[/dispatch/mcp]` | — | `OAuth\DiscoveryController::protectedResource` (RFC 9728, [ADR-024](decisions/024-oauth-fuer-claude-apps.md); `Cache-Control: public, max-age=300`) | M5 1 |
+| GET | `/.well-known/oauth-authorization-server` | — | `OAuth\DiscoveryController::authorizationServer` (RFC 8414, CIMD-Hinweis, kein `registration_endpoint`) | M5 1 |
 | POST | `/dispatch/api/deploy` | Deploy | `Api\DeployController` | M1 |
 | POST | `/dispatch/api/categories` | Deploy | `Api\CategoryController` | M3 |
 | POST | `/dispatch/api/tokens` | JWT/Deploy | `Api\TokenController::handle` (Deploy + `action` im Body = Kommandozeilenweg wie in M3; sonst neuer Zugang, 201 mit Klartext und `command`) | M3, 4 |

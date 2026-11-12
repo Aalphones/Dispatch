@@ -2,7 +2,7 @@
 
 Quelle sind die Migrationen in `app/migrations/`. Alle Tabellen: InnoDB, `utf8mb4_unicode_ci`. Zeitspalten sind UTC, geschrieben mit `UTC_TIMESTAMP()`. JSON-Spalten werden nur gespeichert, nie im SQL abgefragt ([ADR-008](decisions/008-zuschnitt-meilenstein-1-lokale-umgebung.md)). `schema_migrations` (`filename` PK, `applied_at`) führt der Migrator selbst.
 
-Nicht in Meilenstein 1: `login_attempts` (M4), `oauth_clients`, `oauth_codes` (M5).
+Nicht in Meilenstein 1: `login_attempts` (M4), `oauth_clients`, `oauth_codes` (M5, Migration 014).
 
 ## settings (001)
 
@@ -309,6 +309,44 @@ Je Besucher-Hash und Tag die schon gezählten Pfade, damit ein Ereignis je Pfad 
 | `day` | DATE | PK |
 | `visitor_hash` | CHAR(64) | PK |
 | `path` | VARCHAR(300) | PK |
+
+## oauth_clients (014)
+
+OAuth-Clients der Claude-Apps ([ADR-024](decisions/024-oauth-fuer-claude-apps.md)): `cimd` = per Metadatendokument ausgewiesen (Zwischenspeicher), `manual` = von Hand angelegter Rückfall-Client.
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `client_id` | VARCHAR(500) | UNIQUE; bei `cimd` die Dokument-URL, bei `manual` `dcl_` + 32 Hex |
+| `kind` | ENUM | `cimd`, `manual` |
+| `name` | VARCHAR(120) | Anzeigename |
+| `secret_hash` | CHAR(64) NULL | nur `manual`: SHA-256 von `dcs_` + 64 Hex |
+| `redirect_uris` | JSON | erlaubte Rückadressen |
+| `metadata` | JSON NULL | zwischengespeichertes CIMD |
+| `fetched_at` | DATETIME NULL | letzter CIMD-Abruf |
+| `revoked` | TINYINT(1) | Default 0 |
+| `last_used_at` | DATETIME NULL | |
+| `created_at` | DATETIME | |
+
+## oauth_codes (014)
+
+Autorisierungsanfragen und -codes; eine Zeile von der Anfrage bis zur Einlösung.
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AUTO_INCREMENT |
+| `request_id` | CHAR(32) | UNIQUE; Klartext, 600 s gültig |
+| `code_hash` | CHAR(64) NULL | UNIQUE; SHA-256 des Codes (300 s, einmal), erst nach Zustimmung |
+| `client_id` | VARCHAR(500) | |
+| `redirect_uri` | VARCHAR(500) | |
+| `challenge` | VARCHAR(128) | PKCE S256 |
+| `scope` | VARCHAR(200) | angefragte bzw. erteilte Scopes |
+| `resource` | VARCHAR(300) NULL | |
+| `state` | VARCHAR(500) NULL | |
+| `status` | ENUM | `pending`, `approved`, `denied`, `used`; Default `pending` |
+| `family` | CHAR(32) NULL | Token-Familie dieser Zustimmung |
+| `expires_at` | DATETIME | Index |
+| `created_at` | DATETIME | |
 
 ## post_reactions (011)
 

@@ -39,6 +39,21 @@ return [
         'max_redirects' => 4,
         'allow_private' => Env::get('DISPATCH_ALLOW_PRIVATE_IPS') === '1',
     ],
+    // OAuth 2.1 für die Claude-Apps (ADR-024).
+    'oauth' => [
+        'cimd_hosts' => ['claude.ai'],          // Allowlist für CIMD-client_id (exakter Host)
+        'cimd_max_bytes' => 65536,
+        'cimd_cache_seconds' => 86400,
+        // Eigener HttpClient für CIMD; Claude wartet höchstens 10 s.
+        'http' => ['connect_timeout' => 3, 'timeout' => 4, 'max_redirects' => 0],
+        'request_seconds' => 600,               // Anfrage bis zur Zustimmung
+        'code_seconds' => 300,
+        'access_seconds' => 3600,
+        'refresh_seconds' => 5184000,           // 60 Tage, bei jeder Erneuerung neu
+        'grace_seconds' => 30,
+        'default_scopes' => ['blog:read', 'blog:write'],
+        'manual_redirect_uris' => ['https://claude.ai/api/mcp/auth_callback'],
+    ],
     'publish_mode' => 'review',
     'stats_enabled' => true,
     // Anfragen, die zu diesem User-Agent-Muster passen (oder keinen haben), zählen nicht.

@@ -18,12 +18,14 @@
 
 ## Checkliste
 
-- [ ] `app/migrations/014_oauth.sql`
-- [ ] `config.php`: Block `oauth`
-- [ ] `app/src/OAuth/Discovery.php` (reine Funktionen, `BASE` aus `$config['base_url']` bzw. dem Schlüssel, den `config.php` für `DISPATCH_BASE_URL` nutzt — vorher nachsehen), `app/src/OAuth/OAuthError.php`
-- [ ] `app/src/OAuth/DiscoveryController.php`, drei GET-Routen in `app/index.php` (vor der MCP-Route)
-- [ ] `McpController`: 401 mit `Discovery::challengeHeader($config, $hatteToken ? 'invalid_token' : null)`
-- [ ] ADR-024; `docs/decisions/README.md` (Index) ergänzen
-- [ ] Doku: `docs/routes.md` (Discovery-Zeilen), `docs/models.md` (beide Tabellen), `docs/code-map.md` (Zeile `src/OAuth/` konkretisieren, `app/index.php`-Zeile: OAuth-Pfade sind da)
+- [x] `app/migrations/014_oauth.sql`
+- [x] `config.php`: Block `oauth`
+- [x] `app/src/OAuth/Discovery.php` (reine Funktionen, `BASE` aus `$config['base_url']` bzw. dem Schlüssel, den `config.php` für `DISPATCH_BASE_URL` nutzt — vorher nachsehen), `app/src/OAuth/OAuthError.php`
+- [x] `app/src/OAuth/DiscoveryController.php`, drei GET-Routen in `app/index.php` (vor der MCP-Route)
+- [x] `McpController`: 401 mit `Discovery::challengeHeader($config, $hatteToken ? 'invalid_token' : null)`
+- [x] ADR-024; `docs/decisions/README.md` (Index) ergänzen
+- [x] Doku: `docs/routes.md` (Discovery-Zeilen), `docs/models.md` (beide Tabellen), `docs/code-map.md` (Zeile `src/OAuth/` konkretisieren, `app/index.php`-Zeile: OAuth-Pfade sind da)
 
 ## Report-Back
+
+Status: complete. Migration 014 läuft (zweiter Lauf „Nichts zu tun“); Discovery-JSON, 405 bei POST und 401-Kopf (mit und ohne `invalid_token`) lokal per curl geprüft. Der bisherige `realm="dispatch"` im 401 ist durch den Kontrakt-Kopf ersetzt.

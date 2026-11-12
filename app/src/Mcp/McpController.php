@@ -30,6 +30,7 @@ use Dispatch\Mcp\Tools\QueueTools;
 use Dispatch\Mcp\Tools\SettingTools;
 use Dispatch\Mcp\Tools\SiteTools;
 use Dispatch\Mcp\Tools\StatsTools;
+use Dispatch\OAuth\Discovery;
 use Dispatch\Util\Log;
 use PDO;
 use stdClass;
@@ -93,7 +94,7 @@ final class McpController
                 'unauthorized',
                 'Gültiges MCP-Token im Header Authorization: Bearer … erforderlich.',
                 401,
-                ['WWW-Authenticate' => 'Bearer realm="dispatch"']
+                ['WWW-Authenticate' => Discovery::challengeHeader($this->config, $request->bearerToken() === null ? null : 'invalid_token')]
             );
         }
 

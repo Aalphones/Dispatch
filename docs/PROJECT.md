@@ -94,13 +94,13 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 3. **MCP-Server mit Tokens (erledigt):** Endpunkt `/dispatch/mcp` mit beiden Protokoll-Generationen, Tokens mit Scopes, 33 Tools, 6 Resources, 3 Prompts, Reaktionen im Briefing (Plan: `docs/archive/2026-11/2026-11-10_meilenstein-3-mcp-server/`). Das Briefing enthält zusätzlich die „Mehr davon / Weniger"-Reaktionen des Inhabers.
 4. **Redaktions-API und Redaktionsmodus (erledigt)** nach Entwurf, inklusive Interessen-Dialog, „Mehr davon / Weniger" und Anmerkungen an Stellen der Vorschau (Plan: `docs/archive/2026-11/2026-11-11_meilenstein-4-redaktion/`).
 5. **OAuth 2.1 für die Claude-Apps (erledigt):** Discovery, Autorisierung mit CIMD, Token-Endpunkt mit rotierendem Refresh-Token, Zustimmungsseite, „Verbundene Apps“ im Dialog „Zugänge“, Rückfall-Client per Kommandozeile (Plan: `docs/archive/2026-11/2026-11-11_meilenstein-5-oauth/`, ADR-024). Auf Strato mit der Claude-App auf Android abgenommen; offene Abnahmen stehen im Archiv unter „Follow-ups“.
-6. **Probebetrieb** mit geplanter Claude-Aufgabe.
+6. **Probebetrieb (erledigt, 2026-11-12):** vom Inhaber mit einer geplanten ChatGPT-Aufgabe statt Claude durchgeführt; die Aufgabe läuft vorerst weiter über ChatGPT.
 
 Abnahmen je Phase: Konzept → „Umsetzungsplan", ohne die dort genannten automatisierten Tests.
 
-## Offene Fragen
+## Entschieden zum Start (2026-11-12)
 
-- Kategorienbaum zum Start (Haupt- und Unterkategorien, Gewichte).
-- Rhythmus der geplanten Aufgabe (Vorschlag: dreimal pro Woche).
-- Mindestwerte bestätigen: 3 Quellen und 600 Wörter, bei Tiefenrecherche 5 Quellen und 1200 Wörter.
-- Wortlaut des Transparenzhinweises.
+- Kategorienbaum: die 12 Hauptkategorien auf dem Server, ohne Unterkategorien, alle mit Gewicht 3; nachjustiert wird im Interessen-Dialog.
+- Rhythmus der geplanten Aufgabe: täglich, vorerst ausgeführt von ChatGPT.
+- Mindestwerte bestätigt: 3 Quellen und 600 Wörter, bei Tiefenrecherche 5 Quellen und 1200 Wörter.
+- Transparenzhinweis: „KI-recherchiert, von Menschen geprüft und freigegeben.“

@@ -636,12 +636,12 @@ Das größte technische Risiko ist die Strato-Umgebung (Authorization-Header, `S
 **Offene Entscheidungen**
 
 - [ ] Subdomain und Name des Blogs
-- [ ] Kategorienbaum zum Start (Haupt- und Unterkategorien, Gewichte)
+- [x] Kategorienbaum zum Start (Haupt- und Unterkategorien, Gewichte) — siehe `docs/PROJECT.md` → „Entschieden zum Start“
 - [ ] Login-Einstieg: Link in der Fußzeile oder nur über `/#anmelden`
-- [ ] Rhythmus der geplanten Aufgabe (Vorschlag: dreimal pro Woche)
+- [x] Rhythmus der geplanten Aufgabe: täglich
 - [ ] Nur Deutsch oder auch Artikel auf Englisch
-- [ ] Mindestwerte bestätigen: 3 Quellen und 600 Wörter, bei Tiefenrecherche 5 Quellen und 1200 Wörter
-- [ ] Wortlaut des Transparenzhinweises
+- [x] Mindestwerte bestätigen: 3 Quellen und 600 Wörter, bei Tiefenrecherche 5 Quellen und 1200 Wörter
+- [x] Wortlaut des Transparenzhinweises: „KI-recherchiert, von Menschen geprüft und freigegeben.“
 - [ ] Statistik später erweitern: Länder (GeoIP), Feed-Abrufe (Server-Logs)
 
 ## Quellen

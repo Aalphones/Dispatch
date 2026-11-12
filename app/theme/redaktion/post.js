@@ -319,7 +319,7 @@ async function wartet() {
 
 	const summary = el('span');
 	const row = el('div', { class: 'wartet-reihe' });
-	const section = el('section', { class: 'wartet red-fade', 'aria-labelledby': 'wartet-titel', 'data-red': true }, [
+	const section = el('section', { id: 'wartet', class: 'wartet red-fade', 'aria-labelledby': 'wartet-titel', 'data-red': true }, [
 		el('div', { class: 'wartet-kopf' }, [el('h2', { id: 'wartet-titel', text: 'Wartet auf dich' }), summary]),
 		row,
 	]);

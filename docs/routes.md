@@ -42,6 +42,7 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | POST | `/dispatch/api/changes/{id}/apply` | JWT | `Api\ChangeController::apply` (+ Neubau) | 2 |
 | POST | `/dispatch/api/changes/{id}/reject` | JWT | `Api\ChangeController::reject` | 2 |
 
+| GET | `/dispatch/api/queue` | JWT | `Api\QueueController::list` (offene Themen, wichtigste und älteste zuerst; Antwort `items`) | 4 |
 | POST | `/dispatch/api/queue` | JWT | `Api\QueueController::add` (multipart, `files[]`; abgelehnte Dateien in `rejected`; zu große Anfrage → 413) | 4 |
 | GET | `/dispatch/api/tokens` | JWT | `Api\TokenController::list` (nicht widerrufene `mcp`-Zugänge) | 4 |
 | DELETE | `/dispatch/api/tokens/{id}` | JWT/Deploy | `Api\TokenController::revokeById` | 4 |

@@ -9,6 +9,7 @@ let fab = null;
 
 // Die Dialoge laden ihr Modul erst beim ersten Öffnen.
 const DIALOGS = {
+	themen: async () => (await import('./themen.js')).oeffnen(),
 	einreichen: async () => (await import('./queue.js')).oeffnen(),
 	interessen: async () => (await import('./category.js')).interessen(),
 	statistik: async () => (await import('./stats.js')).dialogOeffnen(),
@@ -16,11 +17,11 @@ const DIALOGS = {
 };
 
 function entries(overview) {
-	const waiting = overview.review + overview.returned;
+	const waiting = overview.review + overview.returned + overview.changes;
 
 	return [
 		{ href: '/#wartet', icon: 'check', label: 'Freigaben', count: waiting },
-		{ href: '/#wartet', icon: 'stift', label: 'Vorschläge', count: overview.changes },
+		{ action: DIALOGS.themen, icon: 'stift', label: 'Vorschläge', count: overview.queue_open },
 		{ action: DIALOGS.einreichen, icon: 'plus', label: 'Thema einreichen', separatorAfter: true },
 		{ action: DIALOGS.interessen, icon: 'herz', label: 'Interessen' },
 		{ action: DIALOGS.statistik, icon: 'chart', label: 'Statistik' },
@@ -105,7 +106,7 @@ export function start() {
 		menu = null;
 	});
 
-	const empty = { review: 0, returned: 0, changes: 0 };
+	const empty = { review: 0, returned: 0, changes: 0, queue_open: 0 };
 	renderButton(empty);
 	renderMenu(empty);
 

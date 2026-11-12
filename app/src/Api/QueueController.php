@@ -25,6 +25,20 @@ final class QueueController
     {
     }
 
+    /** Die offenen Themen für die Liste im Redaktionsmenü: wichtigste und älteste zuerst. */
+    public function list(Request $request): never
+    {
+        ApiAuth::owner($request);
+
+        try {
+            $items = (new QueueService(Connection::open(), $this->config))->list(['open']);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json(['items' => $items]);
+    }
+
     public function add(Request $request): never
     {
         $actor = ApiAuth::owner($request);

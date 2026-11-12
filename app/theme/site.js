@@ -48,11 +48,13 @@ if (searchField) {
 	});
 }
 
-// Gezählt wird nur, wer nicht widerspricht (DNT, GPC), nicht angemeldet ist und keine Vorschau sieht.
+const UNCOUNTED_PAGES = ['vorschau', 'zustimmung'];
+
+// Gezählt wird nur, wer nicht widerspricht (DNT, GPC), nicht angemeldet ist und weder Vorschau noch Zustimmungsseite sieht.
 function isCounted() {
 	try {
 		return navigator.doNotTrack !== '1' && navigator.globalPrivacyControl !== true
-			&& !localStorage.getItem('dispatch.angemeldet') && document.body.dataset.seite !== 'vorschau';
+			&& !localStorage.getItem('dispatch.angemeldet') && !UNCOUNTED_PAGES.includes(document.body.dataset.seite);
 	} catch {
 		return false;
 	}
@@ -112,11 +114,22 @@ async function login(event) {
 	loginForm.elements.password.select();
 }
 
+// Auf der Zustimmungsseite öffnet sich der Login sofort, mit dem Grund über dem Formular.
+function prepareConsentLogin() {
+	const reason = document.createElement('p');
+	reason.className = 'hinweis';
+	reason.textContent = 'Eine App möchte sich mit deinem Blog verbinden. Melde dich an, um zu entscheiden.';
+	loginDialog.querySelector('.dlg-rumpf').prepend(reason);
+	document.getElementById('zustimmung-anmelden')?.addEventListener('click', openLogin);
+	if (!isMarked()) openLogin();
+}
+
 if (loginDialog) {
 	document.getElementById('anmelden').addEventListener('click', openLogin);
 	loginForm.addEventListener('submit', login);
 	loginDialog.addEventListener('click', (event) => event.target.closest('[data-close]') && loginDialog.close());
 	if (!isMarked() && location.hash === '#anmelden') openLogin();
+	if (document.body.dataset.seite === 'zustimmung') prepareConsentLogin();
 }
 
 if (isMarked()) startEditorial();

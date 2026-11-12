@@ -273,6 +273,53 @@ fieldset.rechtewahl legend { font: 600 .82rem var(--sans); padding: 0; margin-bo
 .kopierfeld .knopf { flex: none; align-self: flex-start; }
 .kopierfeld .knopf.ok { color: var(--ok); border-color: var(--ok); }
 
+/* Zustimmungsseite /anmelden/zustimmung/ und Gruppen in „Zugänge“ (Meilenstein 5) */
+.zust-seite { padding: 2.5rem 1.25rem 4rem; display: grid; justify-items: center; }
+.zust { width: min(34rem, 100%); border: 1px solid var(--rule); border-top: 3px solid var(--accent-ink); border-radius: 14px; background: var(--paper); padding: 1.6rem 1.6rem 1.3rem; font: .95rem/1.55 var(--sans); }
+.zust h1 { font: 600 clamp(1.45rem, 1.1rem + 1.2vw, 1.85rem)/1.2 var(--serif); margin: .35rem 0 1.2rem; overflow-wrap: anywhere; }
+.zust .klein { color: var(--accent-ink); }
+.wer { display: grid; grid-template-columns: max-content 1fr; gap: .55rem 1rem; margin: 0 0 1.2rem; padding: 0 0 1.1rem; border-bottom: 1px solid var(--rule); }
+.wer dt { font: 600 .78rem/1.6 var(--sans); color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; }
+.wer dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.wer .host { font: 700 1.05rem var(--sans); }
+.wer .geprueft { display: inline-flex; align-items: center; gap: .25rem; font: 600 .76rem var(--sans); color: var(--ok); margin-left: .35rem; white-space: nowrap; }
+.wer .geprueft .ico { width: .95rem; height: .95rem; }
+.wer small { display: block; color: var(--ink-3); font-size: .8rem; }
+.zust .aktionen { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.2rem; }
+.zust .aktionen .knopf { padding: .65rem 1.1rem; font-size: .9rem; }
+.zust .rest { margin: .9rem 0 0; text-align: right; }
+.zust .rest .ico { width: .85rem; height: .85rem; vertical-align: -.1rem; }
+.zust .fehlerzeile { color: var(--bad); font: 500 .85rem var(--sans); margin: .8rem 0 0; display: flex; gap: .4rem; align-items: flex-start; }
+.zust .fehlerzeile[hidden] { display: none; }
+.zust .fehlerzeile .ico { flex: none; width: 1.05rem; height: 1.05rem; margin-top: .1rem; }
+.zust .warn-hinweis { display: flex; gap: .5rem; align-items: flex-start; text-align: left; }
+.zust .warn-hinweis .ico { flex: none; width: 1.1rem; height: 1.1rem; color: var(--warn); margin-top: .1rem; }
+.zust-ende { text-align: center; padding: .6rem 0 .2rem; }
+.zust-ende .ico.gross, .zust-ende > .ico { width: 2.4rem; height: 2.4rem; display: block; margin: 0 auto .6rem; }
+.zust-ende.gut > .ico { color: var(--ok); }
+.zust-ende.aus > .ico { color: var(--ink-3); }
+.zust-ende.fehler > .ico { color: var(--bad); }
+.zust-ende h1 { margin-bottom: .5rem; }
+.zust-ende p { color: var(--ink-2); margin: 0 auto .8rem; max-width: 26rem; }
+.lader { height: 1rem; border-radius: 6px; background: var(--paper-2); margin: .6rem 0; animation: puls 1.2s ease-in-out infinite; }
+.lader.kurz { width: 55%; }
+.lader.titel { height: 1.8rem; width: 85%; margin-bottom: 1.2rem; }
+@keyframes puls { 50% { opacity: .45; } }
+.gruppe-titel { font: 600 .72rem/1.3 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 1.4rem 0 .5rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+.gruppe-titel:first-of-type { margin-top: .2rem; }
+.zugang .t .host { font-weight: 400; color: var(--ink-3); }
+.leer.anleitung { text-align: left; padding: 1rem 1.1rem; color: var(--ink-2); }
+.leer.anleitung ol { margin: .4rem 0 .6rem; padding-left: 1.2rem; }
+@media (max-width: 46rem) {
+  .zust-seite { padding: 1.2rem .75rem 3rem; }
+  .zust { padding: 1.2rem 1.1rem 1rem; }
+  .wer { grid-template-columns: 1fr; gap: .1rem; }
+  .wer dd { margin-bottom: .55rem; }
+  .zust .aktionen { flex-direction: column-reverse; }
+  .zust .aktionen .knopf { width: 100%; }
+  .zust .rest { text-align: center; }
+}
+
 @media (max-width: 575px) { .kopierfeld { flex-direction: column; } .kopierfeld .knopf { align-self: stretch; } }
 @media (max-width: 46rem) {
   .fab .text { display: none; }
@@ -288,4 +335,4 @@ fieldset.rechtewahl legend { font: 600 .82rem var(--sans); padding: 0; margin-bo
   .gewicht.zeitraum button { flex: 1; }
   .chip-eingabe { width: 100%; }
 }
-@media (prefers-reduced-motion: reduce) { .balken i, .stand, .zugang.geht { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .balken i, .stand, .zugang.geht, .lader { animation: none; } }

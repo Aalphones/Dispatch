@@ -12,7 +12,7 @@ Nicht in diesem Meilenstein: Registrierung (DCR), `private_key_jwt`, Oberfläche
 | 2 | [Clients (CIMD, Rückfall-Client) und Autorisierung](phase-2-autorisierung.md) | heikel | complete |
 | 3 | [Zustimmungs-API, Token-Endpunkt, Widerruf, MCP-Anmeldung](phase-3-token.md) | heikel | complete |
 | 4 | [Kommandozeile für Rückfall-Clients](phase-4-cli.md) | mechanisch | complete |
-| 5 | [Zustimmungsseite und „Verbundene Apps“](phase-5-oberflaeche.md) | standard | pending |
+| 5 | [Zustimmungsseite und „Verbundene Apps“](phase-5-oberflaeche.md) | standard | complete |
 | 6 | [Strato, Abnahme mit Claude-App und Claude Code, Doku](phase-6-strato-abschluss.md) | standard | pending |
 
 Reihenfolge ist Pflicht. ADR dieses Meilensteins: **024** OAuth 2.1 für die Claude-Apps (Phase 1, aus diesem Kontrakt). Entwurf der Oberfläche: `artifacts/entwurf-zustimmung.html` (verbindlich für Phase 5, siehe `artifacts/README.md`).

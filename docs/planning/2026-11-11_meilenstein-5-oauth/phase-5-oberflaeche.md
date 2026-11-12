@@ -26,11 +26,12 @@
 
 ## Checkliste
 
-- [ ] `app/templates/consent.php`, `Builder::collectConsent()`, `config.php` (`builder_top_level`)
-- [ ] `site.js`, `zaehler.js` (Ausnahme `zustimmung`), `start.js` (`case 'zustimmung'`)
-- [ ] `app/theme/redaktion/zustimmung.js`
-- [ ] `token.js` um Gruppe „Verbundene Apps“, `redaktion.css`
-- [ ] `php bin/dispatch build`, lokal mit Claude Code durchspielen (`claude mcp add --transport http dispatch-oauth http://localhost:8080/dispatch/mcp`, dann `/mcp` → Anmelden)
-- [ ] Doku: `docs/code-map.md` (Seitentyp `consent`, `zustimmung.js`), `docs/glossary.md`, falls neue Begriffe
+- [x] `app/templates/consent.php`, `Builder::collectConsent()`, `config.php` (`builder_top_level`)
+- [x] `site.js`, `zaehler.js` (Ausnahme `zustimmung`), `start.js` (`case 'zustimmung'`)
+- [x] `app/theme/redaktion/zustimmung.js`
+- [x] `token.js` um Gruppe „Verbundene Apps“, `redaktion.css`
+- [x] `php bin/dispatch build`, lokal mit Claude Code durchspielen (`claude mcp add --transport http dispatch-oauth http://localhost:8080/dispatch/mcp`, dann `/mcp` → Anmelden)
+- [x] Doku: `docs/code-map.md` (Seitentyp `consent`, `zustimmung.js`), `docs/glossary.md`, falls neue Begriffe
 
 ## Report-Back
+Umgesetzt wie im Entwurf. Geprüft lokal mit Chrome (Gast-Hülle mit Login-Hinweis, Zustimmung bei 390 px ohne Querlauf, „kein Recht“-Fehler, Erlauben, Zugänge-Dialog mit Trennen). Abweichungen: Die Gast-Hülle lädt `redaktion.css` selbst (sonst wäre sie vor dem Login unformatiert); bei Rückfall-Clients zeigt „Verbundene Apps“ den vom Server gelieferten Host („von dir angelegt“). Nicht geprüft: Claude Code gegen die Seite (Phase 6).

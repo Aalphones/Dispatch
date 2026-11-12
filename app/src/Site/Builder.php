@@ -136,6 +136,7 @@ final class Builder
             + $this->collectTags()
             + $this->collectSearch()
             + $this->collectPreview()
+            + $this->collectConsent()
             + $this->collectDocuments()
             + $this->collectNotFound()
             + $this->collectTechnical();
@@ -414,6 +415,19 @@ final class Builder
         ]);
 
         return ['vorschau/index.html' => $html];
+    }
+
+    /** Zustimmungsseite der OAuth-Anmeldung: Gast-Hülle, `zustimmung.js` (Redaktionsmodus) füllt sie nach dem Login. @return array<string, string> */
+    private function collectConsent(): array
+    {
+        $html = $this->page('consent', [], [
+            'title' => 'Verbindung anfragen · ' . $this->site->settings['site_title'],
+            'canonical' => '/anmelden/zustimmung/',
+            'robots' => 'noindex,nofollow',
+            'bodyPage' => 'zustimmung',
+        ]);
+
+        return ['anmelden/zustimmung/index.html' => $html];
     }
 
     /** @return array<string, string> */

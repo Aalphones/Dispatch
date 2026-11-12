@@ -14,7 +14,7 @@ return [
     // ADR-014: der Builder schreibt und löscht nur unter diesen Namen der obersten Ebene.
     'builder_top_level' => [
         'index.html', '404.html', 'feed.xml', 'sitemap.xml', 'robots.txt', 'seite', 'artikel', 'kategorie',
-        'kategorien', 'tag', 'suche', 'vorschau', 'ueber', 'impressum', 'datenschutz', 'assets', 'media',
+        'kategorien', 'tag', 'suche', 'vorschau', 'anmelden', 'ueber', 'impressum', 'datenschutz', 'assets', 'media',
     ],
     // Formvorgaben und Betriebsmodi: nur hier änderbar, nie per Service (SettingService → not_changeable).
     'form_rules' => [

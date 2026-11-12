@@ -45,6 +45,8 @@ async function startPage(page) {
 			await (await import('./post.js')).artikel();
 		} else if (page === 'kategorien') {
 			await (await import('./category.js')).gewichte();
+		} else if (page === 'zustimmung') {
+			await (await import('./zustimmung.js')).seite();
 		} else if (page === 'kategorie' || page === 'tag') {
 			await (await import('./reaction.js')).karten();
 		}

@@ -11,7 +11,9 @@ const SCOPES = [
 	{ value: 'blog:admin', label: 'Einstellungen', title: 'Einstellungen und Kategorien ändern', help: 'Richtlinien, Präferenzen, Kategorien. Öffentliches wird nur vorgeschlagen.', hint: 'Richtlinien, Präferenzen, Kategorien', checked: false },
 ];
 const EXPIRY_OPTIONS = [['', 'nie'], ['30', 'in 30 Tagen'], ['90', 'in 90 Tagen'], ['365', 'in einem Jahr']];
-const INTRO = 'Mit einem Zugang dürfen Claude Code oder eine geplante Aufgabe Artikel einreichen. Veröffentlichen kann kein Zugang – das bleibt deine Freigabe.';
+const INTRO = 'Mit einem Zugang dürfen Claude Code, eine geplante Aufgabe oder die Claude-App Artikel einreichen. Veröffentlichen kann kein Zugang – das bleibt deine Freigabe.';
+const TOKEN_GROUP = 'Zugänge mit Token · Claude Code, geplante Aufgaben';
+const APP_GROUP = 'Verbundene Apps · per Zustimmung';
 const LEAVE_ANIMATION_MS = 260;
 
 function view(title, body, footer) {
@@ -81,6 +83,66 @@ function tokenRow(token, errorLine, reload) {
 	return item;
 }
 
+function grantRow(grant, errorLine, reload) {
+	const used = grant.last_used_at ? 'zuletzt ' + formatDateTime(grant.last_used_at) : 'noch nie benutzt';
+	const item = el('li', { class: 'zugang' });
+	const confirmation = confirmRow('„' + grant.client_name + '“ trennen? Die App verliert sofort den Zugriff und muss sich neu verbinden.', 'Trennen', async (button) => {
+		button.disabled = true;
+		zeigeFehler(errorLine, '');
+		try {
+			await api('DELETE', 'oauth/grants/' + grant.family);
+			item.classList.add('geht');
+			toast('„' + grant.client_name + '“ getrennt.');
+			setTimeout(reload, LEAVE_ANIMATION_MS);
+		} catch (error) {
+			button.disabled = false;
+			zeigeFehler(errorLine, error.message);
+		}
+	});
+	item.append(
+		icon('ki'),
+		el('span', { class: 't' }, [
+			el('b', {}, [grant.client_name + ' ', el('span', { class: 'host', text: '· ' + grant.client_host })]),
+			el('small', { text: 'verbunden seit ' + formatDate(grant.connected_at) + ' · ' + used }),
+			scopeLabels(grant.scopes),
+		]),
+		el('button', { type: 'button', class: 'knopf leise gefahr klein-k', 'aria-label': grant.client_name + ' trennen', text: 'Trennen', onclick: confirmation.ask }),
+		confirmation.row,
+	);
+
+	return item;
+}
+
+/** Anleitung, solange keine App verbunden ist: drei Schritte und die Adresse zum Kopieren. */
+function appGuide() {
+	const address = el('code', { id: 'mcp-url', text: location.origin + '/dispatch/mcp' });
+	const button = el('button', { type: 'button', class: 'knopf klein-k', text: 'Kopieren' });
+	button.addEventListener('click', async () => {
+		try {
+			await navigator.clipboard.writeText(address.textContent);
+		} catch {
+			getSelection().selectAllChildren(address);
+			toast('Kopieren ist hier nicht erlaubt – der Text ist markiert.');
+
+			return;
+		}
+		button.textContent = 'Kopiert';
+		button.classList.add('ok');
+		toast('Kopiert.');
+	});
+
+	return el('div', { class: 'leer anleitung' }, [
+		el('b', { text: 'Keine App verbunden.' }),
+		' So verbindest du die Claude-App (Handy, Web, Desktop):',
+		el('ol', {}, [
+			el('li', { text: 'In Claude: Einstellungen → Connectors → „Eigenen Connector hinzufügen“.' }),
+			el('li', { text: 'Diese Adresse eintragen, dann „Verbinden“.' }),
+			el('li', { text: 'Auf der Seite, die sich öffnet, „Erlauben“.' }),
+		]),
+		el('div', { class: 'kopierfeld' }, [address, button]),
+	]);
+}
+
 function emptyList() {
 	return el('div', { class: 'leer' }, [icon('schluessel'), 'Noch kein Zugang.', el('br'), 'Lege einen an, damit Claude Code Artikel für dich einreichen kann.']);
 }
@@ -98,13 +160,26 @@ async function logoutEverywhere(button, errorLine) {
 
 async function showList() {
 	const errorLine = fehlerZeile('zugaenge-fehler');
-	const list = el('div', { class: 'stand' }, el('p', { class: 'meta', text: 'Lädt …' }));
+	const tokenList = el('div', { class: 'stand' }, el('p', { class: 'meta', text: 'Lädt …' }));
+	const appList = el('div', { class: 'stand' }, el('p', { class: 'meta', text: 'Lädt …' }));
 	const everywhere = confirmRow('Überall abmelden? Du wirst auch hier abgemeldet. Die Zugänge der Agenten bleiben bestehen.', 'Überall abmelden', (button) => logoutEverywhere(button, errorLine));
-	view('Zugänge für Agenten', [el('p', { class: 'hinweis', text: INTRO }), errorLine, list, everywhere.row], [
+	view('Zugänge für Agenten', [
+		el('p', { class: 'hinweis', text: INTRO }),
+		errorLine,
+		el('h3', { class: 'gruppe-titel', text: TOKEN_GROUP }),
+		tokenList,
+		el('h3', { class: 'gruppe-titel', text: APP_GROUP }),
+		appList,
+		everywhere.row,
+	], [
 		el('button', { type: 'button', class: 'knopf', text: 'Überall abmelden', onclick: everywhere.ask }),
 		el('button', { type: 'button', class: 'knopf primaer', onclick: showForm }, [icon('plus'), 'Neuer Zugang …']),
 	]);
 
+	await Promise.all([fillTokens(tokenList, errorLine), fillApps(appList, errorLine)]);
+}
+
+async function fillTokens(list, errorLine) {
 	try {
 		const { tokens } = await api('GET', 'tokens');
 		if (tokens.length === 0) {
@@ -113,6 +188,21 @@ async function showList() {
 			return;
 		}
 		list.replaceChildren(el('ul', { class: 'liste' }, tokens.map((token) => tokenRow(token, errorLine, showList))));
+	} catch (error) {
+		list.replaceChildren();
+		zeigeFehler(errorLine, error.message);
+	}
+}
+
+async function fillApps(list, errorLine) {
+	try {
+		const { grants } = await api('GET', 'oauth/grants');
+		if (grants.length === 0) {
+			list.replaceChildren(appGuide());
+
+			return;
+		}
+		list.replaceChildren(el('ul', { class: 'liste' }, grants.map((grant) => grantRow(grant, errorLine, showList))));
 	} catch (error) {
 		list.replaceChildren();
 		zeigeFehler(errorLine, error.message);

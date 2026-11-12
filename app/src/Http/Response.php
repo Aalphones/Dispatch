@@ -33,6 +33,8 @@ final class Response
     public static function empty(int $status, array $headers = []): never
     {
         header('Cache-Control: no-store');
+        // Ohne eigenen Typ setzt PHP text/html; strenge MCP-Clients lehnen die leere 202 darauf ab.
+        header('Content-Type: application/json; charset=utf-8');
         foreach ($headers as $name => $value) {
             header($name . ': ' . $value);
         }

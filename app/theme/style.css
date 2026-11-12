@@ -20,6 +20,8 @@
 @media (prefers-color-scheme: dark) {
   :root:not(.hell) { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: color-mix(in oklab, var(--accent) 55%, white); --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
 }
+/* Die Entwürfe unter docs/planning erzwingen damit den Dunkelmodus; die Website selbst setzt .dunkel nicht. */
+:root.dunkel { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: color-mix(in oklab, var(--accent) 55%, white); --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
 
 @view-transition { navigation: auto; }
 

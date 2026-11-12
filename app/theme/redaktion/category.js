@@ -135,9 +135,133 @@ function signalLine(category, save) {
 	return el('div', { class: 'signale' }, parts);
 }
 
+const HELP_RENAME = 'Ändert den Anzeigenamen; die Adresse (Slug) bleibt, damit bestehende Links weiter gehen.';
+const HELP_DELETE = 'Löscht die Kategorie endgültig. Artikel darin werden auf eine Ersatz-Kategorie verschoben.';
+const HELP_CREATE = 'Der Slug (Adresse) entsteht aus dem Namen. Neue Kategorien starten mit Interesse 3 und sind sofort aktiv.';
+const DELETE_DIALOG = 'kategorie-loeschen';
+
+/** Nach einer Aktion mit Neubau: Erfolg melden, ein gescheiterter Neubau wird genannt. */
+function reportRebuild(done, result) {
+	if (result.rebuilt === false) {
+		toast(done + ', aber die Website wurde nicht neu gebaut: ' + result.rebuild_error + '. Der nächste Neubau holt es nach.');
+		return;
+	}
+	toast(done + '.');
+}
+
+/** Die Übersicht kennt nur aktive Kategorien; ohne die gelöschte und ihre Unterkategorien. */
+function replacements(categories, category) {
+	return categories.filter((candidate) => candidate.id !== category.id && candidate.parent_id !== category.id);
+}
+
+/** Der Dialog zum Löschen: erst Bestätigung, bei zugeordneten Artikeln danach die Auswahl der Ersatz-Kategorie. */
+function deleteDialog(category, categories, reload) {
+	const errorLine = fehlerZeile('kategorie-loeschen-fehler');
+
+	async function run(button, moveTo) {
+		button.disabled = true;
+		zeigeFehler(errorLine, '');
+		try {
+			const result = await api('DELETE', 'categories/' + category.id, moveTo === undefined ? undefined : { move_to: moveTo });
+			document.getElementById(DELETE_DIALOG).close();
+			reportRebuild('Kategorie „' + category.name + '“ gelöscht', result);
+			reload();
+		} catch (error) {
+			button.disabled = false;
+			if (error.error === 'category_in_use') {
+				askReplacement(error.details.count);
+				return;
+			}
+			zeigeFehler(errorLine, error.message);
+		}
+	}
+
+	function askReplacement(count) {
+		const select = el('select', { id: 'kategorie-ersatz', 'aria-label': 'Ersatz-Kategorie' }, replacements(categories, category).map((candidate) => (
+			el('option', { value: String(candidate.id), text: (candidate.parent_id === null ? '' : '– ') + candidate.name })
+		)));
+		const confirm = el('button', { type: 'button', class: 'knopf primaer gefahr klein-k', text: 'Löschen und verschieben', onclick: () => run(confirm, Number(select.value)) });
+		dialog(DELETE_DIALOG, rahmen('Kategorie „' + category.name + '“ löschen', [
+			el('p', { text: count + (count === 1 ? ' Artikel gehört' : ' Artikel gehören') + ' dazu. Verschieben nach:' }),
+			el('div', { class: 'zeile' }, [select, info(HELP_DELETE)]),
+			errorLine,
+		], [
+			el('button', { type: 'button', class: 'knopf klein-k', 'data-close': true, text: 'Abbrechen' }),
+			confirm,
+		]));
+	}
+
+	const confirm = el('button', { type: 'button', class: 'knopf primaer gefahr klein-k', text: 'Löschen', onclick: () => run(confirm) });
+	dialog(DELETE_DIALOG, rahmen('Kategorie löschen', [
+		el('p', { text: 'Kategorie „' + category.name + '“ wirklich löschen? Das lässt sich nicht rückgängig machen.' }),
+		errorLine,
+	], [
+		el('button', { type: 'button', class: 'knopf klein-k', 'data-close': true, text: 'Abbrechen' }),
+		confirm,
+	]));
+}
+
+/** Name als Eingabefeld: Enter speichert, Escape oder unveränderter Fokusverlust bricht ab. */
+function renameField(category, onSave, onCancel) {
+	const input = el('input', { class: 'chip-eingabe umbenennen', value: category.name, 'aria-label': 'Neuer Name für ' + category.name, autocomplete: 'off' });
+	let isDone = false;
+	input.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape') {
+			event.stopPropagation();
+			isDone = true;
+			onCancel();
+		}
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			const name = input.value.trim();
+			isDone = true;
+			if (name === '' || name === category.name) {
+				onCancel();
+				return;
+			}
+			onSave(name);
+		}
+	});
+	input.addEventListener('blur', () => {
+		if (!isDone) {
+			isDone = true;
+			onCancel();
+		}
+	});
+
+	return input;
+}
+
 /** Eine Zeile; speichert ein Feld und baut sich danach aus der Antwort der API neu. */
-function interestRow(category, errorLine) {
+function interestRow(category, categories, errorLine, reload) {
 	const row = el('div', { class: category.parent_id === null ? 'int' : 'int unter' });
+	let isRenaming = false;
+
+	async function rename(name) {
+		zeigeFehler(errorLine, '');
+		try {
+			const { category: updated, ...rebuild } = await api('PATCH', 'categories/' + category.id, { name });
+			Object.assign(category, updated);
+			isRenaming = false;
+			render();
+			reportRebuild('Umbenannt in „' + category.name + '“', rebuild);
+		} catch (error) {
+			isRenaming = false;
+			render();
+			zeigeFehler(errorLine, error.message);
+		}
+	}
+
+	function startRename() {
+		isRenaming = true;
+		render();
+		row.querySelector('.umbenennen')?.focus();
+	}
+
+	function cancelRename() {
+		isRenaming = false;
+		render();
+	}
 
 	async function save(field, value) {
 		zeigeFehler(errorLine, '');
@@ -155,12 +279,18 @@ function interestRow(category, errorLine) {
 
 	function render() {
 		row.replaceChildren(
-			el('b', { text: category.name }),
+			isRenaming ? renameField(category, rename, cancelRename) : el('b', { text: category.name }),
+			el('button', { type: 'button', class: 'knopf leise klein-k', 'aria-label': category.name + ' umbenennen', text: 'Umbenennen', onclick: startRename }),
+			info(HELP_RENAME),
 			info(HELP),
 			weightGroup(category, save),
 			el('span', { class: 'gewicht-text', text: WORDING[category.interest] }),
 			signalLine(category, save),
 			el('div', { class: 'signale' }, FIELDS.map(([field, label]) => chipEditor(category, field, label, save))),
+			el('div', { class: 'signale' }, [
+				el('button', { type: 'button', class: 'knopf leise gefahr klein-k', 'aria-label': category.name + ' löschen', text: 'Löschen', onclick: () => deleteDialog(category, categories, reload) }),
+				info(HELP_DELETE),
+			]),
 		);
 	}
 	render();
@@ -168,17 +298,62 @@ function interestRow(category, errorLine) {
 	return row;
 }
 
+/** Formular „Neue Kategorie“: Name, optional Oberkategorie (nur Hauptkategorien). */
+function newCategoryForm(categories, errorLine, reload) {
+	const name = el('input', { class: 'chip-eingabe', placeholder: 'Name der neuen Kategorie', 'aria-label': 'Name der neuen Kategorie', autocomplete: 'off' });
+	const parent = el('select', { 'aria-label': 'Oberkategorie' }, [
+		el('option', { value: '', text: 'Keine Oberkategorie' }),
+		categories.filter((category) => category.parent_id === null).map((category) => el('option', { value: String(category.id), text: category.name })),
+	]);
+	const create = el('button', { type: 'button', class: 'knopf primaer klein-k', text: 'Anlegen' });
+
+	async function submit() {
+		const value = name.value.trim();
+		if (value === '') {
+			zeigeFehler(errorLine, 'Der Name fehlt.');
+			name.focus();
+			return;
+		}
+		zeigeFehler(errorLine, '');
+		create.disabled = true;
+		const body = { name: value };
+		if (parent.value !== '') {
+			body.parent_id = Number(parent.value);
+		}
+		try {
+			const result = await api('POST', 'categories', body);
+			reportRebuild('Kategorie „' + value + '“ angelegt', result);
+			reload();
+		} catch (error) {
+			create.disabled = false;
+			zeigeFehler(errorLine, error.message);
+		}
+	}
+
+	create.addEventListener('click', submit);
+	name.addEventListener('keydown', (event) => {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			submit();
+		}
+	});
+
+	return el('div', { class: 'neue-kategorie' }, [name, parent, create, info(HELP_CREATE)]);
+}
+
 /** Der Dialog „Deine Interessen“ aus dem Menü. */
 export async function interessen() {
 	const errorLine = fehlerZeile('interessen-fehler');
 	const list = el('div', { class: 'interessen-liste' }, el('p', { class: 'meta', text: 'Lädt …' }));
-	dialog('interessen', rahmen('Deine Interessen', [el('p', { class: 'hinweis', text: INTRO }), errorLine, list], [
+	const form = el('div', {});
+	dialog('interessen', rahmen('Deine Interessen', [el('p', { class: 'hinweis', text: INTRO }), form, errorLine, list], [
 		el('button', { type: 'button', class: 'knopf', 'data-close': true, text: 'Schließen' }),
 	]), 'breit');
 
 	try {
 		const { categories } = await api('GET', 'categories');
-		list.replaceChildren(...inTreeOrder(categories).map((category) => interestRow(category, errorLine)));
+		form.replaceChildren(newCategoryForm(categories, errorLine, interessen));
+		list.replaceChildren(...inTreeOrder(categories).map((category) => interestRow(category, categories, errorLine, interessen)));
 	} catch (error) {
 		list.replaceChildren();
 		zeigeFehler(errorLine, error.message);

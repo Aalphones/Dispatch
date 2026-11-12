@@ -228,6 +228,9 @@ progress { width: 100%; height: .5rem; accent-color: var(--accent-ink); margin-b
 .int { border: 1px solid var(--rule); border-radius: 10px; padding: .75rem .9rem; display: flex; align-items: center; gap: .6rem .9rem; flex-wrap: wrap; }
 .int.unter { margin-left: 1.5rem; border-style: dashed; }
 .int b { font: 700 1rem var(--serif); flex: 1; min-width: 8rem; }
+.int .umbenennen { flex: 1; min-width: 8rem; font: 700 1rem var(--serif); }
+.neue-kategorie { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-bottom: .8rem; }
+.neue-kategorie .chip-eingabe { flex: 1; min-width: 10rem; }
 .int .gewicht-text { font: .76rem var(--sans); color: var(--ink-3); min-width: 7.5rem; }
 .signale { font: .75rem var(--sans); color: var(--ink-3); width: 100%; display: flex; gap: .4rem 1rem; flex-wrap: wrap; align-items: center; }
 .signale:empty { display: none; }

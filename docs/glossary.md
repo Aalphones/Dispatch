@@ -13,6 +13,7 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Briefing | Antwort von `get_editorial_brief`: Richtlinien, Kontext und genau ein Workflow für den Lauf. |
 | Queue / Auftrag | Eingereichtes Thema, das ein Agentenlauf reserviert und abarbeitet (`queue_items`). |
 | Rotationswert | Gewicht einer Kategorie × Tage seit dem letzten Artikel darin, gedeckelt bei 90. |
+| Ersatz-Kategorie | Die Kategorie, in die beim Löschen einer Kategorie ihre Artikel wandern (`move_to`); ohne sie lässt sich eine Kategorie mit Artikeln nicht löschen. |
 | Änderungsvorschlag | Eine per MCP gewünschte Änderung an öffentlich Sichtbarem, die erst nach Übernahme durch den Inhaber wirkt (`changes`). |
 | Redaktionsmodus | Nachgeladenes JavaScript, das nach dem Login Redaktionsfunktionen in die öffentliche Website einblendet. |
 | Builder | Erzeugt aus den Live-Ständen die statische Website in der Wurzel. |

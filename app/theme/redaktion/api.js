@@ -20,6 +20,7 @@ function fail(data, status) {
 	return {
 		error: data && data.error ? data.error : 'http_error',
 		message: data && data.message ? data.message : 'Der Aufruf ist fehlgeschlagen.',
+		details: data && data.details ? data.details : {},
 		status,
 	};
 }

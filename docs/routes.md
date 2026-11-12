@@ -46,7 +46,9 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/tokens` | JWT | `Api\TokenController::list` (nicht widerrufene `mcp`-Zugänge) | 4 |
 | DELETE | `/dispatch/api/tokens/{id}` | JWT/Deploy | `Api\TokenController::revokeById` | 4 |
 | GET | `/dispatch/api/categories` | JWT | `Api\CategoryController::list` (mit `signals`, `suggestion`) | 4 |
-| PATCH | `/dispatch/api/categories/{id}` | JWT | `Api\CategoryController::patch` (nur `interest`, `keywords`, `avoid`; sonst 400 `invalid_field`) | 4 |
+| POST | `/dispatch/api/categories` | JWT | `Api\CategoryController::handle` (Anlegen aus `name`, Slug serverseitig, optional `parent_id`; Antwort mit `rebuilt`/`rebuild_error`; mit Deploy-Token unverändert, siehe oben) | 4 |
+| PATCH | `/dispatch/api/categories/{id}` | JWT | `Api\CategoryController::patch` (`interest`, `keywords`, `avoid` und `name`; sonst 400 `invalid_field`; bei `name` zusätzlich `rebuilt`/`rebuild_error`) | 4 |
+| DELETE | `/dispatch/api/categories/{id}` | JWT | `Api\CategoryController::delete` (Body optional `{"move_to": id}`; 409 `category_in_use` mit `details.count`, 409 `has_children`, 400 `invalid_value` bei ungültigem `move_to`; Antwort `deleted`, `moved`, `rebuilt`, `rebuild_error`; ADR-026) | 4 |
 | POST | `/dispatch/api/posts/{id}/reaction` | JWT | `Api\ReactionController::set` | 4 |
 | GET | `/dispatch/api/reactions` | JWT | `Api\ReactionController::list` | 4 |
 | GET | `/dispatch/api/stats?days=14` | JWT | `Api\StatsController::overview` | 4 |

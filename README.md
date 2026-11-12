@@ -28,6 +28,13 @@ php -S localhost:8080 -t public dev-router.php
 
 Der Dev-Router bildet die `.htaccess`-Regeln nach; der Builder schreibt die Website nach `public/`.
 
+### Connector einrichten
+
+- **Claude-App (Android, Web, Desktop):** Connector hinzufügen mit der Adresse `https://quantum-canvas.de/dispatch/mcp`, dann in der Zustimmungsseite des Blogs (Anmeldung nötig) Zugriff erlauben. Die App weist sich über `claude.ai` aus; Verbundene Apps stehen im Dialog „Zugänge“ und lassen sich dort trennen.
+- **Claude Code per Anmeldung:** `claude mcp add --transport http dispatch https://quantum-canvas.de/dispatch/mcp`, dann `/mcp` → `dispatch` → anmelden.
+- **Claude Code per festem Token:** `php bin/dispatch token:create <name> --scopes=blog:read,blog:write,blog:admin --remote`, dann `claude mcp add --transport http dispatch <Adresse> --header "Authorization: Bearer <Token>"`. Nur ein Eintrag je Name und Ordner; vorher `claude mcp remove dispatch`.
+- **Notfall ohne CIMD:** `php bin/dispatch oauth-client:create <name> --remote`, Client-ID und Geheimnis in der Claude-App unter „Erweiterte Einstellungen“ eintragen.
+
 ### Deployen
 
 1. `deploy.env.example` nach `deploy.env` kopieren und ausfüllen (landet nicht im Git). Den SFTP-Fingerabdruck und den Erzeugungsbefehl für den Deploy-Token erklärt die Vorlage.

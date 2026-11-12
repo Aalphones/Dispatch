@@ -81,6 +81,9 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 | Änderungsansicht durch Diff-Bibliothek | eigene Klasse `UtilDiff`: Vergleich nach Blöcken, innerhalb geänderter Blöcke nach Wörtern; Quellen und Medien als Listen hinzugefügt/entfernt (ADR-021) |
 | Skript-Budgets der Konzeptfassung | `site.js` ≤ 5 000, `suche.js` ≤ 9 500, `zaehler.js` ≤ 2 500, `vorschau.js` ≤ 3 000, `style.css` ≤ 48 000 Byte; der Redaktionsmodus (nur für den Inhaber) hat kein Budget (ADR-023) |
 | Zugang anlegen verlangt erneut das Passwort | `POST tokens` genügt ein gültiges Access-JWT; Entscheidung des Inhabers (ADR-020) |
+| Registrierung (DCR) oder Rückfall-Client mit Oberfläche | Kein DCR; Rückfall-Client nur per Kommandozeile `oauth-client:create|list|revoke` (ADR-024) |
+| Zustimmungsseite ohne eigenen Entwurf | Zustimmungsseite nach eigenem Entwurf (`docs/planning/…/artifacts`, jetzt im Archiv), vom Builder als `anmelden/zustimmung/` geschrieben (ADR-024) |
+| Tokens als JWT | Access- (`doa_`) und Refresh-Tokens (`dor_`) sind undurchsichtig und werden nur als SHA-256 gespeichert (ADR-024) |
 | Formprüfung im Artikel-Service | reine Klasse `Util\FormCheck` ohne Datenbankzugriff (ADR-012) |
 
 ## Meilensteine
@@ -90,7 +93,7 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 2. **Builder und Theme (erledigt):** alle Seitentypen nach Entwurf, Suche mit additiven Filtern, Fokusmodus, Feed, Sitemap, Manifest-Aufräumen (Plan: `docs/planning/2026-11-10_meilenstein-2-builder-theme/`).
 3. **MCP-Server mit Tokens (erledigt):** Endpunkt `/dispatch/mcp` mit beiden Protokoll-Generationen, Tokens mit Scopes, 33 Tools, 6 Resources, 3 Prompts, Reaktionen im Briefing (Plan: `docs/archive/2026-11/2026-11-10_meilenstein-3-mcp-server/`). Das Briefing enthält zusätzlich die „Mehr davon / Weniger"-Reaktionen des Inhabers.
 4. **Redaktions-API und Redaktionsmodus (erledigt)** nach Entwurf, inklusive Interessen-Dialog, „Mehr davon / Weniger" und Anmerkungen an Stellen der Vorschau (Plan: `docs/archive/2026-11/2026-11-11_meilenstein-4-redaktion/`).
-5. **OAuth 2.1** für die Claude-Apps.
+5. **OAuth 2.1 für die Claude-Apps (erledigt):** Discovery, Autorisierung mit CIMD, Token-Endpunkt mit rotierendem Refresh-Token, Zustimmungsseite, „Verbundene Apps“ im Dialog „Zugänge“, Rückfall-Client per Kommandozeile (Plan: `docs/archive/2026-11/2026-11-11_meilenstein-5-oauth/`, ADR-024). Auf Strato mit der Claude-App auf Android abgenommen; offene Abnahmen stehen im Archiv unter „Follow-ups“.
 6. **Probebetrieb** mit geplanter Claude-Aufgabe.
 
 Abnahmen je Phase: Konzept → „Umsetzungsplan", ohne die dort genannten automatisierten Tests.

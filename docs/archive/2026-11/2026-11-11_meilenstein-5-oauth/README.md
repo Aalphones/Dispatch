@@ -13,7 +13,7 @@ Nicht in diesem Meilenstein: Registrierung (DCR), `private_key_jwt`, Oberfläche
 | 3 | [Zustimmungs-API, Token-Endpunkt, Widerruf, MCP-Anmeldung](phase-3-token.md) | heikel | complete |
 | 4 | [Kommandozeile für Rückfall-Clients](phase-4-cli.md) | mechanisch | complete |
 | 5 | [Zustimmungsseite und „Verbundene Apps“](phase-5-oberflaeche.md) | standard | complete |
-| 6 | [Strato, Abnahme mit Claude-App und Claude Code, Doku](phase-6-strato-abschluss.md) | standard | pending |
+| 6 | [Strato, Abnahme mit Claude-App und Claude Code, Doku](phase-6-strato-abschluss.md) | standard | complete |
 
 Reihenfolge ist Pflicht. ADR dieses Meilensteins: **024** OAuth 2.1 für die Claude-Apps (Phase 1, aus diesem Kontrakt). Entwurf der Oberfläche: `artifacts/entwurf-zustimmung.html` (verbindlich für Phase 5, siehe `artifacts/README.md`).
 
@@ -174,10 +174,22 @@ MCP-Aufrufe mit OAuth-Token laufen als `Actor::oauth(<Client-Name>)` (vorhanden)
 
 ## Summary
 
+OAuth 2.1 mit CIMD, Zustimmungsseite, rotierendem Refresh-Token, Verbundene Apps und Rückfall-Client per Kommandozeile; deployt auf Strato (Migration 014, Rauchtest grün), mit der Claude-App auf Android abgenommen.
+
 ## Files touched
+
+`app/src/OAuth/*`, `app/src/Api/OAuth*Controller.php`, `app/src/Auth/McpAuth.php`, `app/src/Mcp/McpController.php`, `app/migrations/014_oauth.sql`, `app/templates/consent.php`, `app/theme/redaktion/{zustimmung,token}.js`, `bin/dispatch`, ADR-024, Doku.
 
 ## Commits
 
+11f2ee4 (Phase 1), Phase 2, 25ef5d0 (Phase 3), 5e4279f (Phase 4), 9e8ce36 (Phase 5), Phase 6 Doku.
+
 ## Deviations from plan
 
+Abnahme verkürzt auf Android (Entscheidung des Inhabers 2026-11-12): Claude Code wurde per festem Token statt per OAuth verbunden.
+
 ## Follow-ups
+
+- Offen, nicht abgenommen: Finale AK 2 (Claude Code per `/mcp`-Anmeldung), AK 3 (Connector nach über einer Stunde), AK 4 (Wiederverwendung eines Refresh-Tokens widerruft die Familie, gegen Strato), AK 6 (Trennen in „Verbundene Apps“ auf Strato, danach 401), Browser-Abnahme der Claude-App, voller Token-Tausch des Rückfall-Clients gegen Strato.
+- Belegt gegen Strato: AK 5 (fremder Host), AK 7 (feste Tokens), AK 8 teilweise (Client anlegen, falsches Geheimnis, falscher Code, Widerruf).
+- `client_id` der Claude-App nicht notiert.

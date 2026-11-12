@@ -19,9 +19,9 @@
 
 ## Checkliste
 
-- [ ] Deploy, Rauchtest
-- [ ] Abnahme mit dem Inhaber (Claude-App Android, Browser, Claude Code)
-- [ ] `curl`-Belege für Refresh, Wiederverwendung, fremden Host, Rückfall-Client
-- [ ] Doku, Archiv, `STATE.md`
+- [x] Deploy, Rauchtest (2026-11-12: Migration 014 gelaufen, Rauchtest grün, Discovery-Dokumente und 401-Kopf mit `https://quantum-canvas.de`, `/anmelden/zustimmung/` 200, `/card/`, `/scanner/` 200, `/dispatch-app/.env` 403)
+- [~] Abnahme mit dem Inhaber: Claude-App Android verbunden; Browser und Claude Code per OAuth nicht abgenommen (Entscheidung 2026-11-12)
+- [ ] `curl`-Belege: fremder Host belegt (302 auf `?fehler=unbekannte_app`, 0,36 s); Rückfall-Client angelegt, Token-Endpunkt lehnt falsches Geheimnis ab (401 `invalid_client`), richtiges Geheimnis + falscher Code → `invalid_grant`, nach Widerruf `invalid_client`. Offen: Refresh/Wiederverwendung (braucht echtes Refresh-Token aus einer Zustimmung des Inhabers), voller Token-Tausch des Rückfall-Clients
+- [x] Doku, Archiv, `STATE.md` (2026-11-12; Abnahme von AK 2–4, 6 und Browser als offene Lücke im Archiv-README)
 
 ## Report-Back

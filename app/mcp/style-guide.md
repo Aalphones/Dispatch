@@ -16,6 +16,8 @@ Erlaubt sind genau diese Klassen; jede andere wird entfernt.
 
 `lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote`, `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`.
 
+Pflicht in jedem Artikel: ein `tldr` direkt nach dem Einstieg (Gesamt-Kasten) und eines am Ende jedes `<h2>`-Abschnitts, jeweils direkt im Text, nicht in `section` oder `div` verschachtelt. Fehlt eines, warnt die Formprüfung (`tldr_missing`).
+
 Beispiele:
 
 ```html
@@ -81,6 +83,7 @@ Warnungen:
 - `title_long`: Titel über 90 Zeichen.
 - `excerpt_length`: Teaser außerhalb von 70 bis 180 Zeichen.
 - `no_subheadings`: über 700 Wörter ohne `<h2>`.
+- `tldr_missing`: ein Kasten „Kurz gesagt“ fehlt — vor der ersten `<h2>` (Gesamt-Kasten) oder in einem `<h2>`-Abschnitt; die Meldung nennt die Abschnitte.
 - `longform_short`: Layout `longform` unter 1500 Wörtern.
 - `source_publisher_missing`: Quelle ohne `publisher`.
 - `uncited_source`: Quelle wird im Text nirgends zitiert.

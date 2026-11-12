@@ -18,6 +18,9 @@ final class FormCheck
     private const WORDS_PER_MINUTE = 200;
     private const KINDS_WITHOUT_URL = ['book', 'interview', 'other'];
     private const REFERENCE_PATTERN = '/data-(media|cite)="([^"]*)"/';
+    private const SECTION_START_PATTERN = '/(?=<h2\b)/i';
+    private const SUMMARY_BOX_PATTERN = '/<(?:aside|div)\b[^>]*\bclass="[^"]*\btldr\b/i';
+    private const HEADING_PATTERN = '/<h2\b[^>]*>(.*?)<\/h2>/is';
 
     /** @var list<array{code: string, field: string, message: string}> */
     private array $errors = [];
@@ -60,6 +63,7 @@ final class FormCheck
         $this->checkTitle((string) $snapshot['title']);
         $this->checkExcerpt((string) ($snapshot['excerpt'] ?? ''));
         $this->checkLength($snapshot, $html, $words, $minimums['min_words']);
+        $this->checkSummaryBoxes($html);
         $this->checkSourceCount($sources, $minimums['min_sources']);
         $this->checkSourceDetails($sources);
         $this->checkCitations($sources, $citations);
@@ -130,6 +134,38 @@ final class FormCheck
         if ($snapshot['layout'] === 'longform' && $words < self::LONGFORM_MIN_WORDS) {
             $this->warning('longform_short', 'layout', sprintf('Das Layout „longform“ ist für mindestens %d Wörter gedacht, der Text hat %d. Nimm „standard“ oder „feature“.', self::LONGFORM_MIN_WORDS, $words));
         }
+    }
+
+    /**
+     * Pflicht aus den Redaktionsrichtlinien: ein Kasten „Kurz gesagt“ vor der ersten Zwischenüberschrift
+     * (Gesamt-Kasten) und einer in jedem h2-Abschnitt. Nur Warnung, damit kurze Meldungen einreichbar bleiben.
+     */
+    private function checkSummaryBoxes(string $html): void
+    {
+        if (trim($html) === '') {
+            return;
+        }
+
+        $missing = [];
+        foreach (preg_split(self::SECTION_START_PATTERN, $html) ?: [] as $index => $section) {
+            if (preg_match(self::SUMMARY_BOX_PATTERN, $section) === 1) {
+                continue;
+            }
+            $missing[] = $index === 0 ? 'Gesamt-Kasten vor der ersten Zwischenüberschrift' : '„' . self::headingText($section) . '“';
+        }
+
+        if ($missing !== []) {
+            $this->warning('tldr_missing', 'content_html', sprintf('Es fehlen Kästen „Kurz gesagt“: %s. Setze direkt nach dem Einstieg und am Ende jedes h2-Abschnitts ein <aside class="tldr">.', implode(', ', $missing)));
+        }
+    }
+
+    private static function headingText(string $section): string
+    {
+        if (preg_match(self::HEADING_PATTERN, $section, $match) !== 1) {
+            return '';
+        }
+
+        return trim(html_entity_decode(strip_tags($match[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 
     /** @param list<array<string, mixed>> $sources */

@@ -113,17 +113,30 @@ function confirmDiscard(id) {
 	]);
 }
 
+/** Meldung nach einer Freigabe, die sofort online geht; `false`, wenn der Neubau scheiterte (dann bleibt die Seite stehen). */
+export function meldeFreigabe(result) {
+	if (!result.rebuilt) {
+		toast('Freigegeben, aber die Website wurde nicht neu gebaut: ' + result.rebuild_error + '. Der nächste Neubau holt es nach.');
+
+		return false;
+	}
+	toast('Freigegeben. Die Website wird neu gebaut.');
+
+	return true;
+}
+
 async function approve(data, button) {
+	if (data.post.published_revision === null) {
+		await (await import('./schedule.js')).freigeben(data.post);
+
+		return;
+	}
 	button.disabled = true;
 	try {
 		const result = await api('POST', 'posts/' + data.post.id + '/approve');
-		if (!result.rebuilt) {
-			toast('Freigegeben, aber die Website wurde nicht neu gebaut: ' + result.rebuild_error + '. Der nächste Neubau holt es nach.');
-
-			return;
+		if (meldeFreigabe(result)) {
+			setTimeout(() => location.assign('/artikel/' + data.post.slug + '/'), REDIRECT_MS);
 		}
-		toast('Freigegeben. Die Website wird neu gebaut.');
-		setTimeout(() => location.assign('/artikel/' + data.post.slug + '/'), REDIRECT_MS);
 	} catch (error) {
 		button.disabled = false;
 		toast(error.message);
@@ -138,7 +151,7 @@ function buildBar(data) {
 		diff: data.has_live ? el('button', { type: 'button', class: 'knopf leise klein-k', text: 'Änderungen zeigen' }) : false,
 		back: el('button', { type: 'button', class: 'knopf klein-k', text: 'Zurück an Agent' }),
 		discard: data.post.published_revision === null ? el('button', { type: 'button', class: 'knopf leise gefahr klein-k', text: 'Verwerfen' }) : false,
-		approve: el('button', { type: 'button', class: 'knopf primaer', disabled: hasErrors, title: hasErrors ? data.form.errors[0].message : false }, [icon('check'), 'Freigeben']),
+		approve: el('button', { type: 'button', class: 'knopf primaer', disabled: hasErrors, title: hasErrors ? data.form.errors[0].message : false }, [icon('check'), data.post.published_revision === null ? 'Freigeben …' : 'Neue Fassung freigeben']),
 	};
 	const freeText = el('textarea', { placeholder: 'Was soll der Agent ändern? (wird ihm beim nächsten Lauf gezeigt)' });
 	const send = el('button', { type: 'button', class: 'knopf primaer klein-k', text: 'Zurückgeben', disabled: true });
@@ -184,6 +197,17 @@ export async function vorschau() {
 	view.innerHTML = data.html;
 	content.replaceChildren(view);
 	import(document.documentElement.dataset.artikel).catch(() => {}); // Fokus, Inhaltsverzeichnis, Lightbox
+
+	if (data.post.status === 'scheduled') {
+		const scheduledBar = (await import('./schedule.js')).leiste(data);
+		document.querySelector('.freigabe')?.remove();
+		const band = document.querySelector('.vorschau-band');
+		band.before(scheduledBar);
+		band.textContent = 'Vorschau · geplant, noch nicht veröffentlicht';
+		keepBarHeight(scheduledBar);
+
+		return;
+	}
 
 	const { bar, hint, buttons, freeText, send, noteBox } = buildBar(data);
 	document.querySelector('.freigabe')?.remove();
@@ -361,7 +385,8 @@ async function aufmacher() {
 /** Startseite: Wartet auf dich, Reaktionen am Aufmacher, kleine Knöpfe an den Karten. */
 export async function startseite() {
 	await loadReactions().catch(() => null);
-	await Promise.all([wartet(), aufmacher(), karten()].map((job) => job.catch(() => null)));
+	const waiting = wartet().then(() => import('./schedule.js')).then((module) => module.geplant());
+	await Promise.all([waiting, aufmacher(), karten()].map((job) => job.catch(() => null)));
 }
 
 function changeSummary(summary) {

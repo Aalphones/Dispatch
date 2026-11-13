@@ -11,7 +11,12 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Live-Stand | Die freigegebene Revision, aus der der Builder baut (`published_revision`). |
 | Formprüfung | Prüft Pflichtangaben auf Vollständigkeit und Stimmigkeit, nicht auf Wahrheit (`validate_post`). |
 | Briefing | Antwort von `get_editorial_brief`: Richtlinien, Kontext und genau ein Workflow für den Lauf. |
-| Queue / Auftrag | Eingereichtes Thema, das ein Agentenlauf reserviert und abarbeitet (`queue_items`). |
+| Queue / Auftrag | Eingereichtes Thema, das ein Agentenlauf reserviert und abarbeitet (`queue_items`); nicht zu verwechseln mit der Warteschlange des Veröffentlichungsplans. |
+| Geplant | Status `scheduled`: freigegebener, nie veröffentlichter Artikel, der auf seinen Termin wartet. |
+| Veröffentlichungsplan | Dialog im Redaktionsmenü und `GET /dispatch/api/schedule`: was wann erscheint, samt Einstellung „Artikel pro Tag“. |
+| Warteschlange | Freigegebene Artikel ohne festen Termin, die der Reihe nach auf die Erscheinungstermine verteilt werden (`schedule_mode = slot`); nicht dasselbe wie Queue/Auftrag. |
+| Erscheinungstermin | Uhrzeit, zu der die Warteschlange einen Artikel veröffentlicht: bei `release_per_day` = n gleichmäßig ab 08:00 über zwölf Stunden (ADR-028). |
+| Fälligkeitsprüfung | Prüfung bei jeder Anfrage an die Brücke, ob ein geplanter Artikel fällig ist (`ScheduleTrigger`, Merkdatei `storage/schedule/next.json`). |
 | Rotationswert | Gewicht einer Kategorie × Tage seit dem letzten Artikel darin, gedeckelt bei 90. |
 | Ersatz-Kategorie | Die Kategorie, in die beim Löschen einer Kategorie ihre Artikel wandern (`move_to`); ohne sie lässt sich eine Kategorie mit Artikeln nicht löschen. |
 | Änderungsvorschlag | Eine per MCP gewünschte Änderung an öffentlich Sichtbarem, die erst nach Übernahme durch den Inhaber wirkt (`changes`). |
@@ -25,7 +30,7 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Scope | Rechtebereich eines Tokens: `blog:read`, `blog:write`, `blog:admin`; `offline_access` wird angenommen, wirkt aber nicht — Refresh-Tokens bekommt jede App (ADR-027). |
 | CIMD | Client ID Metadata Document: Claude weist sich per URL auf ein Metadaten-Dokument aus, statt sich zu registrieren. |
 | Deploy-Token | `DISPATCH_DEPLOY_TOKEN`; erlaubt nur Migration und Rebuild nach dem Deploy. |
-| Akteur | Wer eine Änderung auslöst (`Actor`): `owner`, `cli`, `deploy`, `mcp:<name>`, `oauth:<name>`. Nur `owner` ist der Inhaber; der Name steht im Protokoll. |
+| Akteur | Wer eine Änderung auslöst (`Actor`): `owner`, `cli`, `deploy`, `schedule`, `mcp:<name>`, `oauth:<name>`. Nur `owner` ist der Inhaber; der Name steht im Protokoll. |
 | Startinhalte | Markdown-Vorlagen in `app/defaults/` (Richtlinien, Präferenzen, Über, Impressum, Datenschutz); der Seeder legt sie an, überschreibt aber nie Vorhandenes. |
 | Merkzeichen | `localStorage['dispatch.angemeldet'] = '1'`; sagt `site.js`, dass der Redaktionsmodus zu laden ist. Ohne Merkzeichen löst ein Besucher keinen PHP-Aufruf außer dem Zähl-Beacon aus. |
 | Vorschau-Link | Signierte, sieben Tage gültige Adresse `/vorschau/?id=&exp=&sig=`, die einen Arbeitsstand ohne Anmeldung nur lesend zeigt (`submit_post` liefert ihn). |

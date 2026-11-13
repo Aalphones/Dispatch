@@ -84,6 +84,7 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 | Registrierung (DCR) oder Rückfall-Client mit Oberfläche | Kein DCR; Rückfall-Client nur per Kommandozeile `oauth-client:create|list|revoke` (ADR-024) |
 | Zustimmungsseite ohne eigenen Entwurf | Zustimmungsseite nach eigenem Entwurf (`docs/planning/…/artifacts`, jetzt im Archiv), vom Builder als `anmelden/zustimmung/` geschrieben (ADR-024) |
 | Tokens als JWT | Access- (`doa_`) und Refresh-Tokens (`dor_`) sind undurchsichtig und werden nur als SHA-256 gespeichert (ADR-024) |
+| Zeitversetztes Veröffentlichen später mit einem Strato-Cron | Zeitversetztes Veröffentlichen ohne Cron: Besucher lösen die Fälligkeitsprüfung aus (ADR-028), Feed und Sitemap laufen dafür über die Brücke (ADR-029) |
 | Formprüfung im Artikel-Service | reine Klasse `Util\FormCheck` ohne Datenbankzugriff (ADR-012) |
 
 ## Meilensteine

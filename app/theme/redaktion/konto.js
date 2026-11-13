@@ -13,6 +13,7 @@ const DIALOGS = {
 	einreichen: async () => (await import('./queue.js')).oeffnen(),
 	interessen: async () => (await import('./category.js')).interessen(),
 	statistik: async () => (await import('./stats.js')).dialogOeffnen(),
+	plan: async () => (await import('./schedule.js')).planOeffnen(),
 	zugaenge: async () => (await import('./token.js')).oeffnen(),
 };
 
@@ -22,6 +23,7 @@ function entries(overview) {
 	return [
 		{ href: '/#wartet', icon: 'check', label: 'Freigaben', count: waiting },
 		{ action: DIALOGS.themen, icon: 'stift', label: 'Vorschläge', count: overview.queue_open },
+		{ action: DIALOGS.plan, icon: 'uhr', label: 'Veröffentlichungsplan' },
 		{ action: DIALOGS.einreichen, icon: 'plus', label: 'Thema einreichen', separatorAfter: true },
 		{ action: DIALOGS.interessen, icon: 'herz', label: 'Interessen' },
 		{ action: DIALOGS.statistik, icon: 'chart', label: 'Statistik' },

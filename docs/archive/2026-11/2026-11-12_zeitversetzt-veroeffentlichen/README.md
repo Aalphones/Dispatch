@@ -51,7 +51,7 @@ Verworfen: externer Wecker (cron-job.org) — zusätzlicher Dienst, Inhaber wäh
 | 1 | [Datenmodell und Fachlogik](phase-1-datenmodell-fachlogik.md): Migration 016, Status `scheduled`, `ScheduleService`/`ScheduleRepository`/`ScheduleClock`, Übergänge in `PostService`, Sperre für Agenten, Rotation und Dubletten, Einstellung `release_per_day`, ADR-028 | heikel | complete |
 | 2 | [Auslöser und API](phase-2-ausloeser-api.md): `ScheduleTrigger` in `app/index.php`, Routen (Freigeben mit Zeitpunkt, Termin ändern, aus dem Plan nehmen, Plan lesen und einstellen), Übersicht, MCP-Status, Doku | standard | complete |
 | 3 | [Feed und Sitemap über die Brücke](phase-3-feed-sitemap.md): `.htaccess`, `FeedController` mit `304`, `Response::file`, Dev-Router, ADR-029, Frontend-Regel | heikel | complete |
-| 4 | [Oberfläche nach Entwurf](phase-4-oberflaeche.md): `redaktion/schedule.js`, Freigeben-Dialog, „Geplant“ auf der Startseite, Dialog „Veröffentlichungsplan“, Leiste des geplanten Artikels, Menüeintrag, CSS, Glossar und Code-Map | standard | pending |
+| 4 | [Oberfläche nach Entwurf](phase-4-oberflaeche.md): `redaktion/schedule.js`, Freigeben-Dialog, „Geplant“ auf der Startseite, Dialog „Veröffentlichungsplan“, Leiste des geplanten Artikels, Menüeintrag, CSS, Glossar und Code-Map | standard | complete |
 
 Reihenfolge zwingend 1 → 2 → 3 → 4 (Phase 3 braucht den Auslöser aus Phase 2, Phase 4 die Routen aus Phase 2).
 
@@ -134,10 +134,22 @@ Nebenbefund: Zeile 1 von `app/theme/redaktion/redaktion.css` ist doppelt kodiert
 
 ## Summary
 
+Freigegebene Artikel können zeitversetzt erscheinen: auf einen festen Termin oder über eine Warteschlange mit einstellbarem Tageslimit (1–6, Standard 2). Ohne Cron: jede Anfrage an die Brücke prüft die Fälligkeit; Feed und Sitemap laufen dafür über die Brücke. Der Redaktionsmodus hat Freigeben-Dialog, „Geplant“, Dialog „Veröffentlichungsplan“ und Leiste am geplanten Artikel.
+
 ## Files touched
+
+Domain (`PostService`, `ScheduleService`, `ScheduleRepository`, `ScheduleClock`), Migration 016, `Api\ScheduleTrigger`, `ScheduleController`, `FeedController`, `.htaccess`, `theme/redaktion/` (`schedule.js`, `post.js`, `konto.js`, `redaktion.css`), ADR-028, ADR-029, `docs/`.
 
 ## Commits
 
+8e2c61c (Phase 1), 2131b39 (Phase 2), 9fdae46 (Phase 3), Phase 4 siehe `git log`.
+
 ## Deviations from plan
 
+Phase 1: Migrationsnummer 016, ADR-Nummern 028/029. Phase 4: siehe dort (`meldeFreigabe`, `leiste` ohne `onReady`).
+
 ## Follow-ups
+
+- Nach dem Deploy: P3-AK5 prüfen (`curl -sI https://quantum-canvas.de/feed.xml`: ETag der Brücke, `304` auf `If-None-Match`).
+- Konfidenz-Checks aus dem Plan (zwei parallele Auslöser-Aufrufe, Sommer-/Winterzeit) auf dem Server beobachten.
+- Offen im Browser: Zustand „viele“ und Server-Fehler im Plan-Dialog.

@@ -53,9 +53,16 @@ final class ContentRenderer
 
     private int $accordionCount = 0;
 
+    /** Wird gesetzt, sobald ein Diagramm gezeichnet wurde; der Builder lädt dann diagramme.css. */
+    private bool $hasCharts = false;
+
+    private int $chartCount = 0;
+
+    private ChartRenderer $charts;
+
     /**
      * @param array<string, mixed> $post PostView
-     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool}
+     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool}
      */
     public function render(array $post, SiteData $data): array
     {
@@ -63,14 +70,18 @@ final class ContentRenderer
         $this->postSlug = (string) $post['slug'];
         $this->hasComponents = false;
         $this->accordionCount = 0;
+        $this->hasCharts = false;
+        $this->chartCount = 0;
         $html = (string) $post['content_html'];
 
         $this->document = HTMLDocument::createFromString('<!doctype html><body>' . $html, LIBXML_NOERROR, 'UTF-8');
+        $this->charts = new ChartRenderer($this->document);
         $body = $this->document->body;
         if ($body === null) {
-            return ['html' => '', 'toc' => [], 'headings' => [], 'text' => '', 'bausteine' => false];
+            return ['html' => '', 'toc' => [], 'headings' => [], 'text' => '', 'bausteine' => false, 'diagramme' => false];
         }
 
+        $this->renderCharts();
         $this->renderGalleries();
         // Vorher/Nachher und Erklärpunkte tragen ebenfalls data-media und müssen vor renderFigures() ersetzt sein.
         $this->renderComparisons();
@@ -90,7 +101,48 @@ final class ContentRenderer
             'headings' => $this->headingTexts(),
             'text' => Text::plain($html),
             'bausteine' => $this->hasComponents,
+            'diagramme' => $this->hasCharts,
         ];
+    }
+
+    private function renderCharts(): void
+    {
+        foreach ($this->select('figure.chart') as $figure) {
+            $parsed = ChartData::fromFigure($figure);
+            if ($parsed['errors'] !== []) {
+                Log::error('Diagramm hat Formfehler und entfällt', ['post' => $this->postSlug, 'errors' => $parsed['errors']]);
+                $figure->remove();
+
+                continue;
+            }
+            // Typen ohne Zeichnung (folgen in einer späteren Phase) bleiben als Figur mit Tabelle stehen.
+            if (!ChartRenderer::supports($parsed['type'])) {
+                continue;
+            }
+
+            $chart = $this->charts->render(
+                $parsed['data'],
+                $parsed['type'],
+                trim((string) $figure->getAttribute('data-unit')),
+                $this->chartCount + 1,
+                $this->firstChildNamed($figure, 'table'),
+                $this->firstChildNamed($figure, 'figcaption'),
+            );
+            if ($chart === null) {
+                Log::error('Diagramm lässt sich nicht zeichnen und entfällt', ['post' => $this->postSlug, 'type' => $parsed['type']]);
+                $figure->remove();
+
+                continue;
+            }
+
+            $this->chartCount++;
+            $this->hasCharts = true;
+            // Die Druckmuster stehen einmal je Artikel vor dem ersten Diagramm.
+            if ($this->chartCount === 1) {
+                $chart->insertBefore($this->charts->patterns(), $chart->firstChild);
+            }
+            $figure->replaceWith($chart);
+        }
     }
 
     private function renderFigures(): void

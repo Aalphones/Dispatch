@@ -1,0 +1,123 @@
+/* ==========================================================================
+   Teil 1 — Vorlage für app/theme/diagramme.css (nur Theme-Variablen aus style.css).
+   Palette: 8 kategoriale Farben (feste Reihenfolge), Einfarbskala s1–s5, Paar plus/minus.
+   Validiert mit scripts/validate_palette.js gegen die Seitenflächen (hell #f6f1e7, dunkel #17150f).
+   ========================================================================== */
+.diagramm {
+  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100; --c5:#e87ba4; --c6:#008300; --c7:#6250d6; --c8:#e34948;
+  --t1:#000; --t2:#000; --t3:#000; --t4:#000; --t5:#000; --t6:#fff; --t7:#fff; --t8:#000;
+  --s1:#cde2fb; --s2:#9ec5f4; --s3:#5598e7; --s4:#256abf; --s5:#104281;
+  --ts1:#000; --ts2:#000; --ts3:#000; --ts4:#fff; --ts5:#fff;
+  --plus:#256abf; --minus:#d03b3b; --summe:var(--ink-2);
+  --flaeche: var(--paper);
+  margin: 2rem 0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.hell) .diagramm {
+    --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300; --c7:#9085e9; --c8:#e66767;
+    --t7:#000;
+    --s1:#1d3a63; --s2:#235a9f; --s3:#3987e5; --s4:#6da7ec; --s5:#b7d3f6;
+    --ts1:#fff; --ts2:#fff; --ts3:#000; --ts4:#000; --ts5:#000;
+    --plus:#3987e5; --minus:#e66767;
+  }
+}
+:root.dunkel .diagramm {
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300; --c7:#9085e9; --c8:#e66767;
+  --t7:#000;
+  --s1:#1d3a63; --s2:#235a9f; --s3:#3987e5; --s4:#6da7ec; --s5:#b7d3f6;
+  --ts1:#fff; --ts2:#fff; --ts3:#000; --ts4:#000; --ts5:#000;
+  --plus:#3987e5; --minus:#e66767;
+}
+
+/* ---- Fläche und Schrift ---- */
+/* Zeichenfläche: 440 Einheiten breit; Schrift 12,5 Einheiten = ca. 10 px auf dem Handy, 15 px am Rechner. */
+.diagramm-flaeche { overflow-x: auto; }
+.diagramm-flaeche svg { display: block; width: 100%; max-width: 34rem; height: auto; margin-inline: auto; }
+.diagramm[data-breit] .diagramm-flaeche svg { min-width: 36rem; max-width: none; }
+.diagramm svg text { font: 12.5px/1 var(--sans); fill: var(--ink-2); }
+.diagramm svg .achse text, .diagramm svg .skala-text { fill: var(--ink-3); }
+.diagramm svg .achsentitel { fill: var(--ink-3); font-size: 11.5px; }
+.diagramm svg .wert { fill: var(--ink); font-weight: 600; }
+.diagramm svg .halo { paint-order: stroke; stroke: var(--flaeche); stroke-width: 3px; stroke-linejoin: round; }
+.diagramm svg .in { font-weight: 600; }
+.diagramm svg .gitter { stroke: var(--rule); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; }
+.diagramm svg .basis { stroke: var(--ink-3); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.diagramm svg .verbinder { stroke: var(--ink-3); stroke-width: 1px; vector-effect: non-scaling-stroke; stroke-dasharray: none; opacity: .6; }
+
+/* ---- Reihenfarben ---- */
+.diagramm .r1 { --f: var(--c1); --tx: var(--t1); } .diagramm .r2 { --f: var(--c2); --tx: var(--t2); }
+.diagramm .r3 { --f: var(--c3); --tx: var(--t3); } .diagramm .r4 { --f: var(--c4); --tx: var(--t4); }
+.diagramm .r5 { --f: var(--c5); --tx: var(--t5); } .diagramm .r6 { --f: var(--c6); --tx: var(--t6); }
+.diagramm .r7 { --f: var(--c7); --tx: var(--t7); } .diagramm .r8 { --f: var(--c8); --tx: var(--t8); }
+.diagramm .plus { --f: var(--plus); --tx: #fff; } .diagramm .minus { --f: var(--minus); --tx: #000; } .diagramm .summe { --f: var(--summe); --tx: var(--paper); }
+.diagramm .s1 { --f: var(--s1); --tx: var(--ts1); } .diagramm .s2 { --f: var(--s2); --tx: var(--ts2); } .diagramm .s3 { --f: var(--s3); --tx: var(--ts3); }
+.diagramm .s4 { --f: var(--s4); --tx: var(--ts4); } .diagramm .s5 { --f: var(--s5); --tx: var(--ts5); }
+.diagramm .s0 { --f: var(--paper-3); --tx: var(--ink-3); }
+.diagramm .neutral { --f: var(--ink-3); --tx: #fff; }
+.diagramm svg .m { fill: var(--f); }
+.diagramm svg .l { stroke: var(--f); fill: none; stroke-width: 2px; stroke-linejoin: round; stroke-linecap: round; }
+.diagramm svg .flaeche-fuell { fill: var(--f); fill-opacity: .12; }
+.diagramm svg .punkt { fill: var(--f); stroke: var(--flaeche); stroke-width: 2px; }
+.diagramm svg .in { fill: var(--tx); }
+.diagramm svg .ring { stroke: var(--flaeche); stroke-width: 2px; }
+.diagramm svg .leer { fill: var(--paper-2); }
+.diagramm svg .band { fill: none; stroke: var(--f); stroke-opacity: .34; }
+.diagramm svg .region-leer { fill: var(--paper-2); stroke: var(--rule); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+
+/* ---- Legende, Tabelle, Unterschrift ---- */
+.diagramm-legende { display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; list-style: none; margin: .7rem 0 0; padding: 0; font: .85rem/1.3 var(--sans); color: var(--ink-2); }
+.diagramm-legende li { display: inline-flex; align-items: center; gap: .4rem; margin: 0; }
+.diagramm-legende .marke { width: .85rem; height: .85rem; flex: none; }
+.diagramm-legende .marke .m { fill: var(--f); }
+.diagramm-legende.skala .marke { width: 1.6rem; }
+.diagramm-tabelle { margin: .7rem 0 0; font: .85rem/1.4 var(--sans); }
+.diagramm-tabelle summary { cursor: pointer; color: var(--ink-2); min-height: 1.6rem; }
+.diagramm-tabelle table { width: 100%; border-collapse: collapse; margin-top: .4rem; font-variant-numeric: tabular-nums; }
+.diagramm-tabelle :is(th, td) { padding: .25rem .5rem; border-bottom: 1px solid var(--rule); text-align: right; }
+.diagramm-tabelle :is(th:first-child, td:first-child) { text-align: left; }
+.diagramm figcaption { margin-top: .6rem; font: .85rem/1.45 var(--sans); color: var(--ink-3); }
+.diagramm figcaption b { color: var(--ink-2); }
+
+/* ---- Baumkarte: Ebene wechseln (Skript in Phase 8) ---- */
+.diagramm svg g[hidden] { display: none; }
+.diagramm[data-typ="baumkarte"] svg .gruppe { cursor: zoom-in; }
+
+/* ---- Druck und erzwungene Farben: Muster tragen die Identität ---- */
+@media print {
+  .diagramm { break-inside: avoid; }
+  .diagramm-tabelle { display: none; }
+  .diagramm .r1 .m, .diagramm .r1.m { fill: url(#mu1); } .diagramm .r2 .m, .diagramm .r2.m { fill: url(#mu2); }
+  .diagramm .r3 .m, .diagramm .r3.m { fill: url(#mu3); } .diagramm .r4 .m, .diagramm .r4.m { fill: url(#mu4); }
+  .diagramm .r5 .m, .diagramm .r5.m { fill: url(#mu5); } .diagramm .r6 .m, .diagramm .r6.m { fill: url(#mu6); }
+  .diagramm .r7 .m, .diagramm .r7.m { fill: url(#mu7); } .diagramm .r8 .m, .diagramm .r8.m { fill: url(#mu8); }
+  .diagramm svg .in { fill: #000; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+  .diagramm svg .l { stroke: #000; }
+}
+
+/* ==========================================================================
+   Teil 2 — NUR ENTWURF (Leiste, Wofür-Zeilen, Muster-Vorschau). Nicht übernehmen.
+   ========================================================================== */
+.dummy { background: #1d1a16; color: #f6f1e7; font: .8rem/1.4 system-ui, sans-serif; padding: .5rem 1rem; display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; position: relative; z-index: 50; }
+.dummy > b { letter-spacing: .1em; text-transform: uppercase; font-size: .7rem; }
+.dummy label { display: inline-flex; gap: .35rem; align-items: center; }
+.dummy select { font: inherit; background: #2b271f; color: #f6f1e7; border: 1px solid #a39a8a; border-radius: 6px; padding: .25rem .4rem; }
+.dummy select:focus-visible, .dummy input:focus-visible { outline: 2px solid #f6f1e7; outline-offset: 1px; }
+.dummy .stufe { margin-left: auto; color: #ece5d8; }
+.dummy-wofuer { background: #2b271f; color: #ece5d8; font: .8rem/1.45 system-ui, sans-serif; padding: .45rem 1rem; margin: 0; }
+.dummy-wofuer b { color: #f6f1e7; } .dummy-wofuer span { color: #c9c0b0; }
+.text .d-wofuer { font: .82rem/1.45 var(--sans); color: var(--ink-2); border: 1px dashed var(--rule); border-radius: 6px; padding: .5rem .7rem; }
+.text .d-syntax { display: none; font: .78rem/1.45 ui-monospace, Consolas, monospace; background: var(--paper-2); border-radius: 6px; padding: .6rem .8rem; overflow-x: auto; white-space: pre; }
+body.d-syntax-an .text .d-syntax { display: block; }
+.text h3 { font: 600 1.05rem/1.3 var(--sans); margin-top: 2.2rem; }
+.text .d-hinweis { font: .8rem/1.45 var(--sans); color: var(--ink-3); }
+.d-fehler { border: 1px solid var(--rule); border-left: 3px solid var(--bad); border-radius: 4px; padding: .6rem .8rem; font: .88rem/1.45 var(--sans); background: var(--paper-2); }
+.d-fehler b { color: var(--bad); }
+.d-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.6rem, 1fr)); gap: .4rem; margin: .8rem 0; font: .75rem/1.3 var(--sans); }
+.d-palette div { border-radius: 4px; padding: .4rem .5rem; min-height: 2.6rem; background: var(--f); color: var(--tx); font-weight: 600; }
+@media (max-width: 46rem) { .dummy .stufe { margin-left: 0; } }
+/* Muster-Vorschau am Bildschirm (entspricht dem Druck) */
+body.d-muster .diagramm .r1 .m, body.d-muster .diagramm .r1.m { fill: url(#mu1); } body.d-muster .diagramm .r2 .m, body.d-muster .diagramm .r2.m { fill: url(#mu2); }
+body.d-muster .diagramm .r3 .m, body.d-muster .diagramm .r3.m { fill: url(#mu3); } body.d-muster .diagramm .r4 .m, body.d-muster .diagramm .r4.m { fill: url(#mu4); }
+body.d-muster .diagramm .r5 .m, body.d-muster .diagramm .r5.m { fill: url(#mu5); } body.d-muster .diagramm .r6 .m, body.d-muster .diagramm .r6.m { fill: url(#mu6); }
+body.d-muster .diagramm .r7 .m, body.d-muster .diagramm .r7.m { fill: url(#mu7); } body.d-muster .diagramm .r8 .m, body.d-muster .diagramm .r8.m { fill: url(#mu8); }
+body.d-muster .diagramm svg .in { fill: #000; paint-order: stroke; stroke: #fff; stroke-width: 3px; }

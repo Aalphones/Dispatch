@@ -42,11 +42,13 @@ Balken (`bar`), Säulen (`column`), Linie (`line`, statisch; Interaktion Phase 8
 
 ## Checkliste
 
-- [ ] **Entwurf zuerst** (`mode-design`): ein HTML-Entwurf als Artefakt unter `artifacts/entwurf-diagramme.html` (Ordner `_entwurf-diagramme/` für Skripte/Stile) mit allen Typen aus dieser und der nächsten Phase, Beispielzahlen erfunden; **Freigabe durch Sascha einholen, dann erst Renderer bauen** (wie bei den Bausteinen: Teil 1 wird Vorlage für `diagramme.css`).
-- [ ] Neue Klasse `app/src/Site/ChartRenderer.php` (`final`, `render(array $data, string $type, string $unit, int $id): \Dom\Element` je Typ eine private Methode; gemeinsame Helfer `niceScale()`, `formatNumber()`, `legend()`, `table()`); `ContentRenderer::renderCharts()` ruft sie, Reihenfolge in `render()` vor `renderFigures()`.
-- [ ] Zahlenformat und Einheit: `formatNumber(float $v, int $decimals)` mit Komma; `data-unit` als Suffix, nie in der Achse mehrfach wiederholt (Achsentitel).
-- [ ] `app/theme/diagramme.css` nach Entwurf; Palette validieren und Ergebnis in `FINDINGS.md` festhalten.
-- [ ] Prüfen: Scratchpad-Skript rendert je Typ ein Beispiel (auch einen fehlerhaften), schreibt HTML in eine Datei, die mit `diagramme.css` im Browser geöffnet wird; Screenshots hell/dunkel.
-- [ ] Größe messen: `(Get-Item app/theme/diagramme.css).Length` ≤ 9 000; `php -l`.
+- [x] **Entwurf zuerst** (`mode-design`): ein HTML-Entwurf als Artefakt unter `artifacts/entwurf-diagramme.html` (Ordner `_entwurf-diagramme/` für Skripte/Stile) mit allen Typen aus dieser und der nächsten Phase, Beispielzahlen erfunden; **Freigabe durch Sascha einholen, dann erst Renderer bauen** (wie bei den Bausteinen: Teil 1 wird Vorlage für `diagramme.css`).
+- [x] Neue Klasse `app/src/Site/ChartRenderer.php` (`final`, `render(array $data, string $type, string $unit, int $id): \Dom\Element` je Typ eine private Methode; gemeinsame Helfer `niceScale()`, `formatNumber()`, `legend()`, `table()`); `ContentRenderer::renderCharts()` ruft sie, Reihenfolge in `render()` vor `renderFigures()`.
+- [x] Zahlenformat und Einheit: `formatNumber(float $v, int $decimals)` mit Komma; `data-unit` als Suffix, nie in der Achse mehrfach wiederholt (Achsentitel).
+- [x] `app/theme/diagramme.css` nach Entwurf; Palette validieren und Ergebnis in `FINDINGS.md` festhalten.
+- [x] Prüfen: Scratchpad-Skript rendert je Typ ein Beispiel (auch einen fehlerhaften), schreibt HTML in eine Datei, die mit `diagramme.css` im Browser geöffnet wird; Screenshots hell/dunkel.
+- [x] Größe messen: `(Get-Item app/theme/diagramme.css).Length` ≤ 9 000; `php -l`.
 
 ## Report-Back
+
+Phase 6 fertig: `ChartRenderer` + `ChartFormat` (statt Helfer im Renderer, eigene Klasse), `ContentRenderer::renderCharts()` vor `renderGalleries()`, `render()` liefert `diagramme`; `app/theme/diagramme.css` 6 554 Byte (≤ 9 000). Abweichungen: `render()` bekommt zusätzlich Tabelle und Beschriftung der Figur; gestapelte Typen und Netz mit negativen Werten (Netz < 3 Achsen) werden mit `Log::error` nicht gezeichnet; die Druckmuster liegen als `svg.muster` im ersten Diagramm eines Artikels. Sichtprüfung per Skript-Rendering (Chrome headless): 13 Typen hell/dunkel, 860 und 390 px, Druck mit Mustern; Prüfskript im Scratchpad. diagramme.js entfällt in dieser Phase (keine Interaktion).

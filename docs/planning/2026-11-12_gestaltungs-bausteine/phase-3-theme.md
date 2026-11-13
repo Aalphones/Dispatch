@@ -21,11 +21,13 @@ Verstanden, bevor geändert: `setUpLightbox()` ist die einzige Bildansicht für 
 
 ## Checkliste
 
-- [ ] `app/theme/bausteine.css` aus Teil 1 anlegen (Abschnitt „Bildansicht“ und dessen Handy-Regeln auslassen).
-- [ ] `app/theme/bausteine.js` aus Teil 1 anlegen: `schmal`, `neu`, `knopf`, `karussell`, `streifen`, `vergleich`, `erklaerbild`; `start(root)` statt `bausteineStarten()`; Doppelstart-Schutz je Element.
-- [ ] `artikel.js`: `setUpLightbox()` ersetzen, Aufruf am Ende beibehalten; vorhandenes `create()` statt `neu()` nutzen.
-- [ ] `style.css`: Lightbox-Abschnitt ersetzen, `.timeline`-Regeln entfernen (`.steps`, `.checklist` bleiben).
-- [ ] Größen messen: `(Get-Item app/theme/<datei>).Length` für alle vier Dateien.
+- [x] `app/theme/bausteine.css` aus Teil 1 anlegen (Abschnitt „Bildansicht“ und dessen Handy-Regeln auslassen).
+- [x] `app/theme/bausteine.js` aus Teil 1 anlegen: `schmal`, `neu`, `knopf`, `karussell`, `streifen`, `vergleich`, `erklaerbild`; `start(root)` statt `bausteineStarten()`; Doppelstart-Schutz je Element.
+- [x] `artikel.js`: `setUpLightbox()` ersetzen, Aufruf am Ende beibehalten; vorhandenes `create()` statt `neu()` nutzen.
+- [x] `style.css`: Lightbox-Abschnitt ersetzen, `.timeline`-Regeln entfernen (`.steps`, `.checklist` bleiben).
+- [x] Größen messen: `(Get-Item app/theme/<datei>).Length` für alle vier Dateien.
 - [ ] Sichtprüfung laut AK 5 (Seite aus Phase 4 oder `artifacts/entwurf-bausteine.html` mit den neuen Theme-Dateien).
 
 ## Report-Back
+
+Status: complete (AK 1–4). Größen: bausteine.css 15 510, bausteine.js 6 856, artikel.js 12 334, style.css 49 967 Byte. Offen: AK 5 (Sichtprüfung im Browser) — private-Profil ohne Live-Lauf, geht in die Abnahme/Phase 4 (Seite mit Demo-Artikel). Abweichung: style.css musste knapp unter 50 000 Byte gekürzt werden (Basisregeln des alten Lightbox-Abschnitts zusammengezogen, `::backdrop`-Regel entfallen, da der Dialog den Bildschirm deckt). `artikel.js` markiert Bilder zusätzlich per MutationObserver (Vorschau-Inhalt).

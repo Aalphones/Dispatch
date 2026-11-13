@@ -5,5 +5,5 @@
 **Nächster Schritt:** Phase 3 umsetzen (Ansicht „Anweisungen für Agenten“ im Redaktionsmodus gegen die sechs Routen). Offen aus Phase 2: Browser-Lauf gegen die lokale Instanz (GET, PATCH mit alter/aktueller `base_revision`, restore) steht noch aus. Nebenher offen: nach dem Deploy P3-AK5 prüfen (ETag/304 auf https://quantum-canvas.de/feed.xml); Kategorie „Testlauf“ auf dem Server per Dialog löschen.
 
 **Zweiter Plan (parallel):** `docs/planning/2026-11-12_gestaltungs-bausteine/`
-**Phase:** 3/8 — Theme: bausteine.css, bausteine.js, Bildansicht (pending; Phase 2 complete)
-**Nächster Schritt:** `phase-3-theme.md` umsetzen.
+**Phase:** 4/8 — Laden, Demo-Artikel, Doku, ADR-029 (pending; Phase 3 complete, AK 5 Sichtprüfung offen)
+**Nächster Schritt:** `phase-4-laden-demo-doku.md` umsetzen.

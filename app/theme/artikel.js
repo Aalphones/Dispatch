@@ -126,7 +126,7 @@ function setUpFocusMode() {
 	});
 }
 
-// ---- Lightbox: größte Variante, ein Dialog für alle Bilder ----
+// ---- Bildansicht: größte Variante, ein Dialog für alle Bilder ----
 function largestSource(picture) {
 	const source = picture.querySelector('source[type="image/webp"]');
 	const image = picture.querySelector('img');
@@ -139,29 +139,116 @@ function largestSource(picture) {
 	return best.url;
 }
 
+function button(className, text, label) {
+	const node = create('button', className, text);
+	node.type = 'button';
+	node.setAttribute('aria-label', label);
+	return node;
+}
+
+// Kopf mit Zähler und Schließen, Bild mit Pfeilen, Unterschrift, Vorschaubilder ab zwei Bildern.
+// Tasten: ←/→ blättern, Pos1/Ende springen, Esc schließt (nativ). Ein Dialog für alle Bilder, per Delegation.
 function setUpLightbox() {
+	const SELECTOR = '.abb .foto, .galerie .foto';
+	const parts = {};
 	let dialog = null;
-	document.addEventListener('click', (event) => {
-		const photo = event.target.closest('.abb .foto, .galerie .foto');
-		const picture = photo && photo.querySelector('picture');
-		if (!picture) return;
-		if (!dialog) {
-			dialog = create('dialog', 'lightbox', '');
-			dialog.setAttribute('aria-label', 'Bildansicht');
-			dialog.addEventListener('click', (click) => { if (click.target === dialog) dialog.close(); });
-			body.append(dialog);
-		}
+	let list = [];
+	let index = 0;
+	let trigger = null;
+	const show = () => {
+		const photo = list[index];
+		const picture = photo.querySelector('picture');
 		const image = document.createElement('img');
-		image.src = largestSource(picture);
-		image.alt = picture.querySelector('img').alt;
-		const close = create('button', 'zu', '×');
-		close.type = 'button';
-		close.setAttribute('aria-label', 'Schließen');
+		image.src = picture ? largestSource(picture) : photo.querySelector('img').src;
+		image.alt = photo.querySelector('img').alt;
+		parts.image.replaceWith(image);
+		parts.image = image;
+		const figcaption = photo.closest('figure').querySelector('figcaption');
+		parts.text.textContent = (photo.dataset.unterschrift || (figcaption ? figcaption.textContent : '')).trim();
+		parts.count.textContent = list.length > 1 ? (index + 1) + ' / ' + list.length : '';
+		parts.prev.disabled = index === 0;
+		parts.next.disabled = index === list.length - 1;
+		[...parts.strip.children].forEach((thumb, i) => thumb.setAttribute('aria-current', String(i === index)));
+		if (parts.strip.children[index]) parts.strip.children[index].scrollIntoView({ block: 'nearest', inline: 'center' });
+	};
+	const go = (target) => {
+		if (target < 0 || target >= list.length || target === index) return;
+		index = target;
+		show();
+	};
+	const build = () => {
+		dialog = create('dialog', 'lightbox', '');
+		dialog.setAttribute('aria-label', 'Bildansicht');
+		const head = create('div', 'lightbox-kopf', '');
+		parts.count = create('span', 'lightbox-zahl', '');
+		const close = button('zu', '×', 'Schließen');
+		head.append(parts.count, close);
+		const stage = create('div', 'lightbox-buehne', '');
+		parts.image = document.createElement('img');
+		parts.prev = button('blatt zurueck', '‹', 'Vorheriges Bild');
+		parts.next = button('blatt vor', '›', 'Nächstes Bild');
+		stage.append(parts.image, parts.prev, parts.next);
+		parts.text = create('p', 'lightbox-text', '');
+		parts.strip = create('div', 'lightbox-leiste', '');
 		close.addEventListener('click', () => dialog.close());
-		const caption = photo.closest('figure').querySelector('figcaption');
-		dialog.replaceChildren(image, close);
-		if (caption) dialog.append(create('p', 'lightbox-text', caption.textContent.trim()));
+		parts.prev.addEventListener('click', () => go(index - 1));
+		parts.next.addEventListener('click', () => go(index + 1));
+		dialog.addEventListener('click', (event) => { if (event.target === dialog || event.target === stage) dialog.close(); });
+		dialog.addEventListener('keydown', (event) => {
+			const target = { ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: list.length - 1 }[event.key];
+			if (target === undefined) return;
+			event.preventDefault();
+			go(target);
+		});
+		let startX = null;
+		stage.addEventListener('pointerdown', (event) => { startX = event.clientX; });
+		stage.addEventListener('pointerup', (event) => {
+			if (startX === null) return;
+			const distance = event.clientX - startX;
+			startX = null;
+			if (Math.abs(distance) > 50) go(index + (distance < 0 ? 1 : -1));
+		});
+		dialog.addEventListener('close', () => { if (trigger) trigger.focus(); });
+		dialog.append(head, stage, parts.text, parts.strip);
+		body.append(dialog);
+	};
+	const open = (photo) => {
+		const gallery = photo.closest('.galerie');
+		list = gallery ? [...gallery.querySelectorAll('.foto')] : [photo];
+		index = list.indexOf(photo);
+		trigger = photo;
+		if (!dialog) build();
+		dialog.classList.toggle('einzeln', list.length < 2);
+		parts.strip.replaceChildren(...(list.length < 2 ? [] : list.map((entry, i) => {
+			const thumb = button('', '', 'Bild ' + (i + 1) + ' von ' + list.length);
+			const small = document.createElement('img');
+			small.src = entry.querySelector('img').currentSrc || entry.querySelector('img').src;
+			small.alt = '';
+			thumb.append(small);
+			thumb.addEventListener('click', () => go(i));
+			return thumb;
+		})));
 		dialog.showModal();
+		show();
+	};
+	// Tastatur-Zugang: jedes vergrößerbare Bild ist ein Knopf; auch für später eingefügten Inhalt (Vorschau).
+	const prepare = () => document.querySelectorAll(SELECTOR).forEach((photo) => {
+		if (photo.tabIndex === 0 || !photo.querySelector('img')) return;
+		const gallery = photo.closest('.galerie');
+		const photos = gallery ? [...gallery.querySelectorAll('.foto')] : [photo];
+		photo.tabIndex = 0;
+		photo.setAttribute('role', 'button');
+		photo.setAttribute('aria-label', photos.length > 1 ? 'Bild ' + (photos.indexOf(photo) + 1) + ' von ' + photos.length + ' vergrößern' : 'Bild vergrößern');
+	});
+	prepare();
+	new MutationObserver(prepare).observe(document.querySelector('.text') || body, { childList: true, subtree: true });
+	document.addEventListener('click', (event) => {
+		const photo = event.target.closest(SELECTOR);
+		if (photo && photo.querySelector('img')) open(photo);
+	});
+	document.addEventListener('keydown', (event) => {
+		const photo = event.target.closest && event.target.closest(SELECTOR);
+		if (photo && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); open(photo); }
 	});
 }
 

@@ -423,10 +423,7 @@ body.fokus .abb[data-layout="left"], body.fokus .abb[data-layout="right"] { floa
 .text .callout.warning { border-left-color: var(--warn); }
 .text .callout.key { border-left-color: var(--accent-ink); }
 
-.timeline, .steps, .checklist { list-style: none; padding: 0; }
-.timeline { position: relative; border-radius: 10px; margin-block: 1.5rem; padding-left: 1.6rem; border-left: 2px solid var(--rule); }
-.timeline > li { position: relative; padding-bottom: 1rem; }
-.timeline > li::before { content: ""; position: absolute; left: calc(-1.6rem - 6px); top: .55em; width: 10px; height: 10px; border-radius: 50%; background: var(--accent-ink); box-shadow: 0 0 0 3px var(--paper); }
+.steps, .checklist { list-style: none; padding: 0; }
 .steps { counter-reset: schritt; }
 .steps > li { counter-increment: schritt; position: relative; padding: 0 0 1rem 2.6rem; }
 .steps > li::before { content: counter(schritt); position: absolute; left: 0; top: .1em; width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent-ink); color: var(--paper); font: 700 .72rem var(--sans); }
@@ -469,13 +466,33 @@ body.fokus .abb[data-layout="left"], body.fokus .abb[data-layout="right"] { floa
 p.dokument::before { content: ""; display: inline-block; width: .9em; height: 1.1em; margin-right: .5em; vertical-align: -.2em; border: 2px solid var(--accent-ink); border-radius: 2px 6px 2px 2px; background: linear-gradient(var(--accent-ink), var(--accent-ink)) 50% 60% / 55% 2px no-repeat; }
 
 /* ================= Lightbox ================= */
-dialog.lightbox { border: 0; padding: 0; margin: 0; max-width: none; max-height: none; width: 100vw; height: 100dvh; background: rgba(10,8,5,.92); color: #fff; display: none; place-items: center; align-content: center; gap: .6rem; opacity: 1; transform: none; border-radius: 0; box-shadow: none; }
-dialog.lightbox[open] { display: grid; }
-dialog.lightbox::backdrop { background: rgba(10,8,5,.92); backdrop-filter: none; }
-dialog.lightbox img { max-width: 96vw; max-height: 90vh; object-fit: contain; }
-dialog.lightbox figcaption, dialog.lightbox .lightbox-text { font: .8rem/1.4 var(--sans); color: rgba(255,255,255,.85); margin: 0; text-align: center; max-width: 96vw; }
-dialog.lightbox .zu { position: absolute; top: 1rem; right: 1rem; color: #fff; font-size: 1.6rem; }
-dialog.lightbox .zu:hover { background: rgba(255,255,255,.15); }
+dialog.lightbox { border: 0; padding: 0; margin: 0; max-width: none; max-height: none; width: 100vw; height: 100dvh; color: #fff; display: none; opacity: 1; transform: none; border-radius: 0; box-shadow: none; }
+dialog.lightbox .lightbox-text { font: .8rem/1.4 var(--sans); color: rgba(255,255,255,.85); margin: 0; padding: .7rem 1rem .2rem; text-align: center; }
+dialog.lightbox[open] { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; place-items: stretch; align-content: stretch; gap: 0; background: rgba(10,8,5,.97); }
+dialog.lightbox .lightbox-kopf { display: flex; justify-content: space-between; align-items: center; padding: .6rem .8rem .6rem 1.2rem; }
+dialog.lightbox .lightbox-zahl { font: 600 .85rem/1 var(--sans); color: #fffc; font-variant-numeric: tabular-nums; }
+dialog.lightbox .zu { position: static; width: 2.6rem; height: 2.6rem; border: 0; border-radius: 50%; background: none; color: #fff; font: 300 2rem/1 var(--sans); cursor: pointer; }
+dialog.lightbox .lightbox-buehne { position: relative; min-height: 0; }
+dialog.lightbox .lightbox-buehne img { position: absolute; inset: 0 4.5rem; width: calc(100% - 9rem); height: 100%; max-width: none; max-height: none; object-fit: contain; touch-action: pan-y; user-select: none; animation: bild-ein var(--t-mid) var(--ease-out); }
+@keyframes bild-ein { from { opacity: 0; transform: scale(.985); } }
+dialog.lightbox .blatt { position: absolute; top: 50%; transform: translateY(-50%); width: 3.2rem; height: 3.2rem; border-radius: 50%; border: 0; background: #ffffff1a; color: #fff; font: 300 2.2rem/1 var(--sans); padding-bottom: .25rem; cursor: pointer; transition: background var(--t-fast), opacity var(--t-fast); }
+dialog.lightbox .blatt:hover, dialog.lightbox .zu:hover { background: #fff3; }
+dialog.lightbox .blatt.zurueck { left: 1rem; } dialog.lightbox .blatt.vor { right: 1rem; }
+dialog.lightbox .blatt:disabled { opacity: 0; pointer-events: none; }
+dialog.lightbox.einzeln .blatt { display: none; }
+dialog.lightbox .lightbox-leiste { display: flex; justify-content: safe center; gap: .45rem; overflow-x: auto; scrollbar-width: none; padding: .7rem 1rem 1rem; }
+dialog.lightbox .lightbox-leiste:empty { display: none; }
+dialog.lightbox .lightbox-leiste button { flex: none; width: 5.2rem; height: 3.5rem; padding: 0; border: 2px solid transparent; border-radius: 4px; overflow: hidden; background: none; opacity: .5; cursor: pointer; transition: opacity var(--t-fast), border-color var(--t-fast); }
+dialog.lightbox .lightbox-leiste button:hover { opacity: .85; }
+dialog.lightbox .lightbox-leiste button[aria-current="true"] { opacity: 1; border-color: #fff; }
+dialog.lightbox .lightbox-leiste img { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; display: block; }
+@media (max-width: 46rem) {
+dialog.lightbox .lightbox-buehne img { inset: 0; width: 100%; }
+dialog.lightbox .blatt { width: 2.6rem; height: 2.6rem; background: #0007; }
+dialog.lightbox .blatt.zurueck { left: .4rem; } dialog.lightbox .blatt.vor { right: .4rem; }
+dialog.lightbox .lightbox-leiste { justify-content: flex-start; }
+dialog.lightbox .lightbox-leiste button { width: 3.8rem; height: 2.6rem; }
+}
 
 /* ================= Einbettung ================= */
 .einbettung { position: relative; display: grid; align-content: start; margin: 2rem 0; clear: both; }

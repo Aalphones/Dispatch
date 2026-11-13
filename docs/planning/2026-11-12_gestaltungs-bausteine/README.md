@@ -10,7 +10,7 @@ Entwurf (freigegeben am 2026-11-13): [`artifacts/`](artifacts/README.md). Teil 1
 |---|---|---|---|
 | 1 | [Agenten-Syntax: Sanitizer, Formprüfung, Style-Guide](phase-1-syntax-sanitizer.md) | standard | complete |
 | 2 | [Renderer: Ausgabe-Markup der Bausteine](phase-2-renderer.md) | standard | complete |
-| 3 | [Theme: bausteine.css, bausteine.js, Bildansicht](phase-3-theme.md) | standard | pending |
+| 3 | [Theme: bausteine.css, bausteine.js, Bildansicht](phase-3-theme.md) | standard | complete |
 | 4 | [Laden, Demo-Artikel, Doku, ADR-029](phase-4-laden-demo-doku.md) | standard | pending |
 | 5 | [Diagramme: Syntax, Datenlesen, Formprüfung](phase-5-diagramme-syntax.md) | standard | pending |
 | 6 | [Diagramme: statische Typen als Server-SVG, Entwurf, Palette](phase-6-diagramme-statisch.md) | standard | pending |

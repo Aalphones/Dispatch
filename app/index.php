@@ -14,6 +14,8 @@ use Dispatch\Api\PostController;
 use Dispatch\Api\PreviewController;
 use Dispatch\Api\QueueController;
 use Dispatch\Api\ReactionController;
+use Dispatch\Api\ScheduleController;
+use Dispatch\Api\ScheduleTrigger;
 use Dispatch\Api\StatsController;
 use Dispatch\Api\TokenController;
 use Dispatch\Http\Request;
@@ -55,6 +57,10 @@ $router->add('GET', '/dispatch/api/posts/{id}/diff', static fn (array $params) =
 $router->add('GET', '/dispatch/api/preview',static fn () => (new PreviewController($config))->bySignature($request));
 $router->add('GET', '/dispatch/api/preview-media', static fn () => (new PreviewController($config))->media($request));
 $router->add('POST', '/dispatch/api/posts/{id}/approve', static fn (array $params) => (new PostController($config))->approve($request, (int) $params['id']));
+$router->add('POST', '/dispatch/api/posts/{id}/schedule', static fn (array $params) => (new PostController($config))->schedule($request, (int) $params['id']));
+$router->add('POST', '/dispatch/api/posts/{id}/unschedule', static fn (array $params) => (new PostController($config))->unschedule($request, (int) $params['id']));
+$router->add('GET', '/dispatch/api/schedule', static fn () => (new ScheduleController($config))->show($request));
+$router->add('PATCH', '/dispatch/api/schedule', static fn () => (new ScheduleController($config))->patch($request));
 $router->add('POST', '/dispatch/api/posts/{id}/return', static fn (array $params) => (new PostController($config))->return($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/posts/{id}/unpublish', static fn (array $params) => (new PostController($config))->unpublish($request, (int) $params['id']));
 $router->add('DELETE', '/dispatch/api/posts/{id}', static fn (array $params) => (new PostController($config))->discard($request, (int) $params['id']));
@@ -76,5 +82,8 @@ $router->add('GET', '/dispatch/api/oauth-clients', static fn () => (new OAuthCli
 $router->add('DELETE', '/dispatch/api/oauth-clients/{id}', static fn (array $params) => (new OAuthClientController($config))->revoke($request, (int) $params['id']));
 // Der MCP-Endpunkt antwortet in JSON-RPC und prüft Origin und Anmeldung selbst.
 $router->add('POST', '/dispatch/mcp', static fn () => (new McpController($config))->handle($request));
+
+// Eingeplante Artikel erscheinen beim ersten Aufruf ab ihrem Termin (ADR-028).
+ScheduleTrigger::run($config);
 
 $router->dispatch($request);

@@ -16,7 +16,7 @@ use Dispatch\Mcp\ToolResult;
 
 final class PostTools
 {
-    private const STATUSES = ['draft', 'review', 'published', 'archived'];
+    private const STATUSES = ['draft', 'review', 'published', 'archived', 'scheduled'];
     private const DEFAULT_LIMIT = 50;
     private const MAX_LIMIT = 100;
     private const SEARCH_DEFAULT_LIMIT = 20;
@@ -43,7 +43,7 @@ final class PostTools
         $registry->add(new Tool(
             'list_posts',
             'Artikel auflisten',
-            'Listet Artikel, neueste zuerst, filterbar nach Status, Kategorie, Schlagwort und Jahr. Nützlich für den Überblick (zum Beispiel alle zurückgegebenen Entwürfe) und gegen Dubletten. Beispiel: {"status": "draft", "category": "technik", "limit": 10}. Den ganzen Artikel liefert get_post.',
+            'Listet Artikel, neueste zuerst, filterbar nach Status, Kategorie, Schlagwort und Jahr. Nützlich für den Überblick (zum Beispiel alle zurückgegebenen Entwürfe) und gegen Dubletten. „scheduled“ = vom Inhaber freigegeben und eingeplant; erscheint zu einem Termin (scheduled_at bei festem Termin, sonst in der Warteschlange). Beispiel: {"status": "draft", "category": "technik", "limit": 10}. Den ganzen Artikel liefert get_post.',
             Schema::object([
                 'status' => Schema::choice(self::STATUSES, 'Nur Artikel in diesem Status'),
                 'category' => Schema::text('Kategorie-Slug'),
@@ -86,7 +86,7 @@ final class PostTools
         $registry->add(new Tool(
             'get_post',
             'Artikel lesen',
-            'Liefert einen Artikel mit Quellen, Kategorien, Status und review_note (der Anmerkung des Inhabers bei zurückgegebenen Entwürfen). Das HTML kommt nur mit include_html: true, sonst fehlt content_html, damit die Antwort klein bleibt. Beispiel: {"id": 12, "include_html": true}. Geändert wird mit update_post.',
+            'Liefert einen Artikel mit Quellen, Kategorien, Status und review_note (der Anmerkung des Inhabers bei zurückgegebenen Entwürfen). Das HTML kommt nur mit include_html: true, sonst fehlt content_html, damit die Antwort klein bleibt. Status „scheduled“ = vom Inhaber freigegeben und eingeplant; erscheint zu einem Termin (scheduled_at bei festem Termin, sonst in der Warteschlange), schedule_mode nennt die Art. Beispiel: {"id": 12, "include_html": true}. Geändert wird mit update_post.',
             Schema::object([
                 'id' => Schema::integer('Artikel-ID'),
                 'slug' => Schema::text('Alternativ der Slug'),
@@ -131,7 +131,7 @@ final class PostTools
         $registry->add(new Tool(
             'update_post',
             'Artikel ändern',
-            'Ändert einzelne Felder eines Artikels und legt eine neue Revision an; categories und sources ersetzen die Liste vollständig. Ein eingereichter Artikel wird dadurch wieder Entwurf; bei einem veröffentlichten bleibt die Live-Fassung bis zur Freigabe unverändert. Beispiel: {"id": 12, "excerpt": "Neuer Teaser …"}. Danach validate_post und submit_post.',
+            'Ändert einzelne Felder eines Artikels und legt eine neue Revision an; categories und sources ersetzen die Liste vollständig. Ein eingereichter Artikel wird dadurch wieder Entwurf; bei einem veröffentlichten bleibt die Live-Fassung bis zur Freigabe unverändert. Eingeplante Artikel (scheduled) lassen sich nicht ändern. Beispiel: {"id": 12, "excerpt": "Neuer Teaser …"}. Danach validate_post und submit_post.',
             Schema::object(['id' => Schema::integer('Artikel-ID')] + self::postProperties(false), ['id']),
             Tool::annotations('Artikel ändern', 'W'),
             Scopes::WRITE,

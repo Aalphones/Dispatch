@@ -27,14 +27,18 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | POST | `/dispatch/api/auth/logout` | Cookie | `Api\AuthController::logout` | 1 |
 | POST | `/dispatch/api/auth/logout-all` | JWT | `Api\AuthController::logoutAll` | 1 |
 
-| GET | `/dispatch/api/overview` | JWT | `Api\OverviewController::show` | 2 |
+| GET | `/dispatch/api/overview` | JWT | `Api\OverviewController::show` (Zähler `review`, `scheduled`, `returned`, `changes`, `queue_open`) | 2 |
 | GET | `/dispatch/api/posts?status=review,draft` | JWT | `Api\PostController::list` | 2 |
 | GET | `/dispatch/api/posts/by-slug/{slug}` | JWT | `Api\PostController::bySlug` | 2 |
 | GET | `/dispatch/api/posts/{id}/preview` | JWT | `Api\PreviewController::byLogin` | 2 |
 | GET | `/dispatch/api/posts/{id}/diff` | JWT | `Api\PostController::diff` (`Util\Diff`) | 3 |
 | GET | `/dispatch/api/preview?id&exp&sig` | Signatur | `Api\PreviewController::bySignature` | 2 |
 | GET | `/dispatch/api/preview-media?id&exp&sig&f=<uid>/<datei>` | Signatur (eine Stunde, von `PreviewLink::protectMedia` in das Vorschau-HTML geschrieben, nur für Bilder des Arbeitsstands; Karten fremder Live-Artikel behalten ihre öffentliche `/media/`-Adresse) | `Api\PreviewController::media` (Bilder unveröffentlichter Arbeitsstände; nur Varianten, die der Artikel nutzt) | 10 |
-| POST | `/dispatch/api/posts/{id}/approve` | JWT | `Api\PostController::approve` (+ Neubau) | 2 |
+| POST | `/dispatch/api/posts/{id}/approve` | JWT | `Api\PostController::approve` (+ Neubau); optionaler Body `{"when": "now"\|"slot"\|"fixed", "at": "YYYY-MM-DDTHH:MM"}` (Berliner Wandzeit), ohne Body sofort; Antwort `{post, rebuilt, rebuild_error}`, bei Einplanung `rebuilt` und `rebuild_error` `null` (kein Neubau) | 2, Plan 2026-11-12 |
+| POST | `/dispatch/api/posts/{id}/schedule` | JWT | `Api\PostController::schedule` (Termin ändern, Body wie `approve`; `now` veröffentlicht sofort samt Neubau) | Plan 2026-11-12 |
+| POST | `/dispatch/api/posts/{id}/unschedule` | JWT | `Api\PostController::unschedule` (zurück auf `review`; Antwort `{post}`) | Plan 2026-11-12 |
+| GET | `/dispatch/api/schedule` | JWT | `Api\ScheduleController::show` (Plan: `per_day`, `times`, `next_free`, `items`, `released_today`; Zeiten UTC) | Plan 2026-11-12 |
+| PATCH | `/dispatch/api/schedule` | JWT | `Api\ScheduleController::patch` (Body `{"per_day": 1–6}`, Antwort wie GET) | Plan 2026-11-12 |
 | POST | `/dispatch/api/posts/{id}/return` | JWT | `Api\PostController::return` | 2 |
 | POST | `/dispatch/api/posts/{id}/unpublish` | JWT | `Api\PostController::unpublish` (+ Neubau) | 2 |
 | DELETE | `/dispatch/api/posts/{id}` | JWT | `Api\PostController::discard` | 2 |

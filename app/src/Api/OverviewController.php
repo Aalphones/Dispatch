@@ -20,9 +20,11 @@ final class OverviewController
         ApiAuth::owner($request);
         $pdo = Connection::open();
         $posts = new PostRepository($pdo);
+        $counts = $posts->countByStatus();
 
         Response::json([
-            'review' => $posts->countByStatus()['review'] ?? 0,
+            'review' => $counts['review'] ?? 0,
+            'scheduled' => $counts['scheduled'] ?? 0,
             'returned' => $posts->countReturned(),
             'changes' => count((new ChangeRepository($pdo))->list('pending')),
             'queue_open' => (new QueueRepository($pdo))->countByEffectiveStatus()['open'] ?? 0,

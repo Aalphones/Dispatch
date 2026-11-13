@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Dispatch\Api;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Dispatch\Auth\ApiAuth;
 use Dispatch\Auth\PreviewLink;
 use Dispatch\Db\Connection;
@@ -12,6 +14,7 @@ use Dispatch\Domain\DomainError;
 use Dispatch\Domain\MediaRepository;
 use Dispatch\Domain\PostService;
 use Dispatch\Domain\ReactionService;
+use Dispatch\Domain\ScheduleService;
 use Dispatch\Domain\StatsService;
 use Dispatch\Http\Request;
 use Dispatch\Http\Response;
@@ -23,7 +26,7 @@ use PDO;
 /** Artikel-Übersicht und Freigabe-Aktionen des Inhabers (ADR-021). */
 final class PostController
 {
-    private const STATUSES = ['draft', 'review', 'published', 'archived'];
+    private const STATUSES = ['draft', 'review', 'published', 'archived', 'scheduled'];
     private const LIST_LIMIT = 200;
     private const STATS_DAYS = 30;
 
@@ -94,12 +97,40 @@ final class PostController
         ApiAuth::owner($request);
 
         try {
-            $post = $this->posts()->approve($id, Actor::owner());
+            [$when, $at] = $this->readWhen($request);
+            $post = $this->posts()->approve($id, Actor::owner(), $when, $at);
         } catch (DomainError $error) {
             ApiErrors::respond($error);
         }
 
-        Response::json(['post' => $this->summary($post)] + Rebuild::run($this->config, Connection::open()));
+        $this->respondScheduledOrRebuilt($post);
+    }
+
+    public function schedule(Request $request, int $id): never
+    {
+        ApiAuth::owner($request);
+
+        try {
+            [$when, $at] = $this->readWhen($request);
+            $post = $this->posts()->reschedule($id, $when, $at, Actor::owner());
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        $this->respondScheduledOrRebuilt($post);
+    }
+
+    public function unschedule(Request $request, int $id): never
+    {
+        ApiAuth::owner($request);
+
+        try {
+            $post = $this->posts()->unschedule($id, Actor::owner());
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json(['post' => $this->summary($post)]);
     }
 
     public function return(Request $request, int $id): never
@@ -240,6 +271,42 @@ final class PostController
         ];
     }
 
+    /**
+     * Kein Body heißt „sofort“ — so verhält sich jeder ältere Aufrufer wie bisher.
+     *
+     * @return array{0: string, 1: DateTimeImmutable|null} Zeitpunkt-Art und, bei festem Termin, der Termin in UTC
+     * @throws DomainError bei ungültigem JSON oder ungültigem `at`
+     */
+    private function readWhen(Request $request): array
+    {
+        if (trim($request->body()) === '') {
+            return ['now', null];
+        }
+
+        $input = $request->json();
+        $when = (string) ($input['when'] ?? 'now');
+        $at = null;
+        if (isset($input['at'])) {
+            $at = ScheduleService::parseAt((string) $input['at'], new DateTimeImmutable('now', new DateTimeZone('UTC')));
+        }
+
+        return [$when, $at];
+    }
+
+    /**
+     * Ein eingeplanter Artikel ändert die Website nicht, also gibt es keinen Neubau.
+     *
+     * @param array<string, mixed> $post
+     */
+    private function respondScheduledOrRebuilt(array $post): never
+    {
+        if ($post['status'] === 'scheduled') {
+            Response::json(['post' => $this->summary($post), 'rebuilt' => null, 'rebuild_error' => null]);
+        }
+
+        Response::json(['post' => $this->summary($post)] + Rebuild::run($this->config, Connection::open()));
+    }
+
     private function posts(): PostService
     {
         return new PostService(Connection::open(), $this->config);
@@ -285,6 +352,8 @@ final class PostController
             'revision' => $post['revision'],
             'published_revision' => $post['published_revision'],
             'published_at' => $post['published_at'],
+            'schedule_mode' => $post['schedule_mode'] ?? null,
+            'scheduled_at' => $post['scheduled_at'] ?? null,
             'review_note' => $post['review_note'],
         ];
     }

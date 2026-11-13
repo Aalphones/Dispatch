@@ -1,4 +1,4 @@
-# Phase 2 — Auslöser und API (standard)
+# Phase 2 — Auslöser und API (standard, complete)
 
 Ziel: Jede Anfrage an die Brücke prüft, ob etwas fällig ist, und der Inhaber kann per API einplanen, umplanen, zurücknehmen und das Tageslimit setzen. Agenten sehen den neuen Status.
 
@@ -27,7 +27,7 @@ Ziel: Jede Anfrage an die Brücke prüft, ob etwas fällig ist, und der Inhaber 
 
 ### Auslöser
 
-- [ ] Neue Datei `app/src/Api/ScheduleTrigger.php` (`final class`), `public static function run(array $config): void`, Docblock „Fälligkeitsprüfung bei jeder Anfrage an die Brücke (ADR-028). Wirft nie: Ein Fehler hier darf die eigentliche Anfrage nicht stören.“ Ablauf, alles in `try { … } catch (Throwable $error) { Log::error('Fälligkeitsprüfung fehlgeschlagen', ['type' => $error::class, 'message' => $error->getMessage()]); }`:
+- [x] Neue Datei `app/src/Api/ScheduleTrigger.php` (`final class`), `public static function run(array $config): void`, Docblock „Fälligkeitsprüfung bei jeder Anfrage an die Brücke (ADR-028). Wirft nie: Ein Fehler hier darf die eigentliche Anfrage nicht stören.“ Ablauf, alles in `try { … } catch (Throwable $error) { Log::error('Fälligkeitsprüfung fehlgeschlagen', ['type' => $error::class, 'message' => $error->getMessage()]); }`:
   1. `$clock = new ScheduleClock((string) $config['storage_dir']); $state = $clock->read(); $now = time();`
   2. `if ($state !== null && $state['next_check'] > $now && !$state['rebuild']) { return; }`
   3. `$pdo = Connection::open(); $service = new ScheduleService($pdo, $config); $nowUtc = new DateTimeImmutable('@' . $now);` (Zeitzone UTC).
@@ -35,36 +35,38 @@ Ziel: Jede Anfrage an die Brücke prüft, ob etwas fällig ist, und der Inhaber 
   5. `$rebuildOk = true; if ($released > 0 || ($state['rebuild'] ?? false)) { $rebuildOk = Rebuild::run($config, $pdo)['rebuilt']; }`
   6. `$next = $service->nextCheck($nowUtc); if ($released === 0 && $next <= $now) { $next = $now + ScheduleService::RETRY_SECONDS; } if (!$rebuildOk) { $next = min($next, $now + 300); }` (300 als Konstante `REBUILD_RETRY_SECONDS` in der Klasse).
   7. `$clock->write($next, !$rebuildOk);`
-- [ ] `app/index.php`: direkt vor `$router->dispatch($request);` die Zeile `ScheduleTrigger::run($config);` mit Kommentar „Eingeplante Artikel erscheinen beim ersten Aufruf ab ihrem Termin (ADR-028).“ und `use Dispatch\Api\ScheduleTrigger;`.
+- [x] `app/index.php`: direkt vor `$router->dispatch($request);` die Zeile `ScheduleTrigger::run($config);` mit Kommentar „Eingeplante Artikel erscheinen beim ersten Aufruf ab ihrem Termin (ADR-028).“ und `use Dispatch\Api\ScheduleTrigger;`.
 
 ### API
 
-- [ ] `Api/PostController.php`:
+- [x] `Api/PostController.php`:
   - `STATUSES` um `'scheduled'` ergänzen.
   - Private Hilfe `private function readWhen(Request $request): array` → `[string $when, ?DateTimeImmutable $at]`: Body leer (`trim($request->body()) === ''`) → `['now', null]`; sonst `$input = $request->json()`, `$when = (string) ($input['when'] ?? 'now')`, `$at = isset($input['at']) ? ScheduleService::parseAt((string) $input['at'], new DateTimeImmutable('now', new DateTimeZone('UTC'))) : null`. Fehler fliegen als `DomainError` und laufen über `ApiErrors::respond` (Aufruf innerhalb des bestehenden `try`).
   - `approve`: `[$when, $at] = $this->readWhen($request);` dann `$this->posts()->approve($id, Actor::owner(), $when, $at)`. Antwort: Ist `$post['status'] === 'scheduled'` → `Response::json(['post' => $this->summary($post), 'rebuilt' => null, 'rebuild_error' => null])`, sonst wie bisher mit `Rebuild::run`.
   - Neue Methode `schedule(Request $request, int $id): never` — `ApiAuth::owner`, `readWhen`, `reschedule($id, $when, $at, Actor::owner())`, Antwort wie `approve`.
   - Neue Methode `unschedule(Request $request, int $id): never` — `ApiAuth::owner`, `unschedule($id, Actor::owner())`, `Response::json(['post' => $this->summary($post)])`.
   - `summary`: `'schedule_mode' => $post['schedule_mode'] ?? null, 'scheduled_at' => $post['scheduled_at'] ?? null` ergänzen.
-- [ ] Neue Datei `Api/ScheduleController.php` (`final class`, Konstruktor `private readonly array $config`):
+- [x] Neue Datei `Api/ScheduleController.php` (`final class`, Konstruktor `private readonly array $config`):
   - `show(Request $request): never` — `ApiAuth::owner`, `Response::json((new ScheduleService(Connection::open(), $this->config))->plan(new DateTimeImmutable('now', new DateTimeZone('UTC'))))`.
   - `patch(Request $request): never` — `ApiAuth::owner`; `$input = $request->json()`; `per_day` fehlt → `invalid_value` (Feld `per_day`); `(new SettingService($pdo, $this->config))->set(['release_per_day' => $input['per_day']], Actor::owner())`; danach wie `show` (eine Verbindung für beides). Fehler über `ApiErrors::respond`.
-- [ ] `app/index.php` Routen ergänzen (bei den übrigen `posts/{id}/…`-Routen):
+- [x] `app/index.php` Routen ergänzen (bei den übrigen `posts/{id}/…`-Routen):
   - `POST /dispatch/api/posts/{id}/schedule` → `PostController::schedule`
   - `POST /dispatch/api/posts/{id}/unschedule` → `PostController::unschedule`
   - `GET /dispatch/api/schedule` → `ScheduleController::show`
   - `PATCH /dispatch/api/schedule` → `ScheduleController::patch`
-- [ ] `Api/OverviewController.php`: `'scheduled' => $posts->countByStatus()['scheduled'] ?? 0` (das Ergebnis von `countByStatus()` einmal in eine Variable holen).
+- [x] `Api/OverviewController.php`: `'scheduled' => $posts->countByStatus()['scheduled'] ?? 0` (das Ergebnis von `countByStatus()` einmal in eine Variable holen).
 
 ### MCP und Texte für Agenten
 
-- [ ] `Mcp/Tools/PostTools.php`: `STATUSES` um `'scheduled'`. In der Beschreibung von `list_posts`/`get_post` einen Satz: „`scheduled` = vom Inhaber freigegeben und eingeplant; erscheint zu einem Termin (`scheduled_at` bei festem Termin, sonst in der Warteschlange).“ In `update_post`: „Eingeplante Artikel (`scheduled`) lassen sich nicht ändern.“
-- [ ] `app/mcp/workflow-scheduled.md` und `workflow-queue.md`: an den Satz zur Freigabe anhängen: „Nach der Freigabe kann der Artikel eingeplant sein (`scheduled`); er erscheint dann zu seinem Termin und ist bis dahin gesperrt.“ (Diese Dateien hat die parallele Arbeit geändert — auf deren Stand aufsetzen.)
+- [x] `Mcp/Tools/PostTools.php`: `STATUSES` um `'scheduled'`. In der Beschreibung von `list_posts`/`get_post` einen Satz: „`scheduled` = vom Inhaber freigegeben und eingeplant; erscheint zu einem Termin (`scheduled_at` bei festem Termin, sonst in der Warteschlange).“ In `update_post`: „Eingeplante Artikel (`scheduled`) lassen sich nicht ändern.“
+- [x] `app/mcp/workflow-scheduled.md` und `workflow-queue.md`: an den Satz zur Freigabe anhängen: „Nach der Freigabe kann der Artikel eingeplant sein (`scheduled`); er erscheint dann zu seinem Termin und ist bis dahin gesperrt.“ (Diese Dateien hat die parallele Arbeit geändert — auf deren Stand aufsetzen.)
 
 ### Doku
 
-- [ ] `docs/routes.md`: fünf Zeilen (vier neue Routen, `approve` mit Body und `rebuilt: null` bei Einplanung), Phase-Spalte `Plan 2026-11-12`.
-- [ ] `docs/code-map.md`: Namensschema-Liste um `schedule` ergänzen; Zeile `src/Domain/` um `ScheduleService`, `ScheduleRepository`, `ScheduleClock` (Termine, Freigeben fälliger Artikel, `storage/schedule/next.json`); `src/Api/` um `ScheduleController`, `ScheduleTrigger` (Fälligkeitsprüfung je Anfrage); `storage/` um `schedule/next.json`; `index.php`-Zeile: „ruft vor dem Router `ScheduleTrigger::run`“.
-- [ ] `php -l` auf alle geänderten PHP-Dateien.
+- [x] `docs/routes.md`: fünf Zeilen (vier neue Routen, `approve` mit Body und `rebuilt: null` bei Einplanung), Phase-Spalte `Plan 2026-11-12`.
+- [x] `docs/code-map.md`: Namensschema-Liste um `schedule` ergänzen; Zeile `src/Domain/` um `ScheduleService`, `ScheduleRepository`, `ScheduleClock` (Termine, Freigeben fälliger Artikel, `storage/schedule/next.json`); `src/Api/` um `ScheduleController`, `ScheduleTrigger` (Fälligkeitsprüfung je Anfrage); `storage/` um `schedule/next.json`; `index.php`-Zeile: „ruft vor dem Router `ScheduleTrigger::run`“.
+- [x] `php -l` auf alle geänderten PHP-Dateien.
 
 ## Report-Back
+
+Umgesetzt wie geplant. `RETRY_SECONDS` (60 s) steht als Konstante in `ScheduleTrigger`, nicht in `ScheduleService` (dort gab es sie nicht). `php -l` auf alle geänderten PHP-Dateien fehlerfrei.

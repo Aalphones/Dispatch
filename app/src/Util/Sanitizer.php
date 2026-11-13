@@ -38,8 +38,15 @@ final class Sanitizer
         'lead', 'tldr', 'callout', 'note', 'warning', 'key', 'factbox', 'pullquote', 'stats', 'stat',
         'timeline', 'steps', 'checklist', 'two-col', 'pros', 'cons', 'compare', 'qa', 'definition',
         'details', 'opinion', 'update', 'sidenote', 'dropcap', 'gallery',
-        'before-after', 'hotspots', 'rating', 'accordion', 'highlight',
+        'before-after', 'hotspots', 'rating', 'accordion', 'highlight', 'chart',
     ];
+
+    public const CHART_TYPES = [
+        'bar', 'column', 'line', 'area', 'stacked-bar', 'stacked-column', 'pie', 'donut', 'radar', 'waffle',
+        'waterfall', 'heatmap', 'calendar', 'sankey', 'treemap', 'bubble', 'map',
+    ];
+    public const CHART_MAPS = ['de', 'welt'];
+    private const UNIT_PATTERN = '/^[^<>"|]{1,12}\z/u';
 
     private const GALLERY_VARIANTS = ['mosaic', 'carousel', 'strips'];
     private const RATING_MAXIMA = ['5', '10', '100'];
@@ -256,6 +263,19 @@ final class Sanitizer
             'div data-variant' => in_array('gallery', $classes, true)
                 ? $this->oneOf(self::GALLERY_VARIANTS, $value)
                 : null,
+            'figure data-type' => in_array('chart', $classes, true)
+                ? $this->oneOf(self::CHART_TYPES, $value)
+                : null,
+            'figure data-unit' => in_array('chart', $classes, true)
+                ? $this->matching(self::UNIT_PATTERN, $value)
+                : null,
+            'figure data-map' => in_array('chart', $classes, true)
+                ? $this->oneOf(self::CHART_MAPS, $value)
+                : null,
+            'figure data-interactive' => in_array('chart', $classes, true)
+                ? $this->oneOf(['true'], $value)
+                : null,
+            'tr data-sum' => $this->oneOf(['true'], $value),
             'li data-x', 'li data-y' => $this->matching(self::COORDINATE_PATTERN, $value),
             'ul data-max' => in_array('rating', $classes, true)
                 ? $this->oneOf(self::RATING_MAXIMA, $value)

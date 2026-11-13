@@ -23,12 +23,14 @@ Verstanden, bevor geändert: Der Sanitizer wirft `svg` heraus (`DROPPED_ELEMENTS
 
 ## Checkliste
 
-- [ ] `Sanitizer::ALLOWED_CLASSES` um `chart` ergänzen. Konstanten `CHART_TYPES` (Liste aus AK 1), `CHART_MAPS = ['de', 'welt']`, `UNIT_PATTERN = '/^[^<>"|]{1,12}\z/u'`.
-- [ ] `keptAttributeValue()`: `'figure data-type'` (nur mit Klasse `chart`, `oneOf(CHART_TYPES)`), `'figure data-unit'` (nur `chart`, `UNIT_PATTERN`), `'figure data-map'` (nur `chart`, `oneOf(CHART_MAPS)`), `'figure data-interactive'` (nur `chart`, `oneOf(['true'])`), `'tr data-sum'` (`oneOf(['true'])`).
-- [ ] `app/src/Site/ChartData.php`: `final class ChartData`, statische Methode `fromFigure(\Dom\Element $figure): array{type: string, data: array, errors: list<string>}`; je Typ eine private Methode (`categorySeries()` für bar/column/line/area/stacked/radar/pie/donut/waffle, `waterfall()`, `matrix()` für heatmap, `calendar()`, `links()` für sankey, `hierarchy()` für treemap, `points()` für bubble, `regions()` für map); Zahlenlesen in `number(string $cell): ?float`. Keine Ausgabe, keine Zeichnung.
-- [ ] `FormCheck::checkComponents()` aus Phase 1 um Diagramme erweitern (nutzt `ChartData`, je Fehlertext eine Warnung; Interaktions-Typen als Konstante `INTERACTIVE_TYPES = ['line', 'heatmap', 'calendar', 'sankey', 'treemap', 'bubble', 'map']`).
-- [ ] `app/mcp/style-guide.md`: Klassenliste, Abschnitt „Diagramme“ (Auswahlhilfe in einer Tabelle „Aussage → Typ“, Beispiel je Typ, Interaktionsregel, Zahlenformat, Quelle in `figcaption`), Warnung in die Liste.
-- [ ] Prüfen: Scratchpad-Skript ruft `Sanitizer::sanitize()` und `ChartData::fromFigure()` mit je einem gültigen und einem fehlerhaften Beispiel pro Typ; Ausgabe gegen AK 1–4 abgleichen.
-- [ ] `php -l` für `Sanitizer.php`, `FormCheck.php`, `ChartData.php`.
+- [x] `Sanitizer::ALLOWED_CLASSES` um `chart` ergänzen. Konstanten `CHART_TYPES` (Liste aus AK 1), `CHART_MAPS = ['de', 'welt']`, `UNIT_PATTERN = '/^[^<>"|]{1,12}\z/u'`.
+- [x] `keptAttributeValue()`: `'figure data-type'` (nur mit Klasse `chart`, `oneOf(CHART_TYPES)`), `'figure data-unit'` (nur `chart`, `UNIT_PATTERN`), `'figure data-map'` (nur `chart`, `oneOf(CHART_MAPS)`), `'figure data-interactive'` (nur `chart`, `oneOf(['true'])`), `'tr data-sum'` (`oneOf(['true'])`).
+- [x] `app/src/Site/ChartData.php`: `final class ChartData`, statische Methode `fromFigure(\Dom\Element $figure): array{type: string, data: array, errors: list<string>}`; je Typ eine private Methode (`categorySeries()` für bar/column/line/area/stacked/radar/pie/donut/waffle, `waterfall()`, `matrix()` für heatmap, `calendar()`, `links()` für sankey, `hierarchy()` für treemap, `points()` für bubble, `regions()` für map); Zahlenlesen in `number(string $cell): ?float`. Keine Ausgabe, keine Zeichnung.
+- [x] `FormCheck::checkComponents()` aus Phase 1 um Diagramme erweitern (nutzt `ChartData`, je Fehlertext eine Warnung; Interaktions-Typen als Konstante `INTERACTIVE_TYPES = ['line', 'heatmap', 'calendar', 'sankey', 'treemap', 'bubble', 'map']`).
+- [x] `app/mcp/style-guide.md`: Klassenliste, Abschnitt „Diagramme“ (Auswahlhilfe in einer Tabelle „Aussage → Typ“, Beispiel je Typ, Interaktionsregel, Zahlenformat, Quelle in `figcaption`), Warnung in die Liste.
+- [x] Prüfen: Scratchpad-Skript ruft `Sanitizer::sanitize()` und `ChartData::fromFigure()` mit je einem gültigen und einem fehlerhaften Beispiel pro Typ; Ausgabe gegen AK 1–4 abgleichen.
+- [x] `php -l` für `Sanitizer.php`, `FormCheck.php`, `ChartData.php`.
 
 ## Report-Back
+
+Phase 5 fertig: Sanitizer (`chart`, `data-type|unit|map|interactive`, `tr data-sum`), `ChartData`, `FormCheck::checkChart`, Style-Guide „Diagramme“. Skriptprüfung aller 17 Typen gültig/fehlerhaft ok; `php -l` grün. Zahlenlesen: `1.000` zählt als Dezimalzahl (nicht unterscheidbar), Mehrfachtrenner und Einheiten sind Fehler.

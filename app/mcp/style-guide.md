@@ -14,7 +14,7 @@
 
 Erlaubt sind genau diese Klassen; jede andere wird entfernt.
 
-`lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote`, `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`, sowie die Bausteine `before-after`, `hotspots`, `rating`, `accordion` und `highlight` (siehe „Bausteine“).
+`lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote`, `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`, sowie die Bausteine `before-after`, `hotspots`, `rating`, `accordion` und `highlight` (siehe „Bausteine“) sowie `chart` (Diagramm, siehe „Diagramme“).
 
 Pflicht in jedem Artikel: ein `tldr` direkt nach dem Einstieg (Gesamt-Kasten) und eines am Ende jedes `<h2>`-Abschnitts, jeweils direkt im Text, nicht in `section` oder `div` verschachtelt. Fehlt eines, warnt die Formprüfung (`tldr_missing`).
 
@@ -82,6 +82,32 @@ Der Server erzeugt aus dieser Syntax das fertige Markup samt Bedienung; eigenes 
   <div class="accordion"><details><summary>Frage</summary><p>Antwort …</p></details><details><summary>Weitere Frage</summary><p>Antwort …</p></details></div>
   ```
 
+## Diagramme
+
+Du schreibst nur eine Datentabelle in eine `figure`; den Server zeichnet das Diagramm. SVG und Skript gibt es weiterhin nicht. Die Tabelle bleibt als „Zahlen als Tabelle“ erhalten und ist zugleich der Beleg für Lesende.
+
+```html
+<figure class="chart" data-type="bar" data-unit="%"><table><tr><th></th><th>Anteil</th></tr><tr><td>Solar</td><td>12,5</td></tr><tr><td>Wind</td><td>31</td></tr></table><figcaption>Anteil an der Stromerzeugung. Quelle: Behörde X, Stand 03/2026</figcaption></figure>
+```
+
+- **Regeln:** Die erste Zeile ist die Kopfzeile. Zahlen als `7.8` oder `7,8`, ohne Tausendertrenner und ohne Einheit in der Zelle; die Einheit steht in `data-unit` (bis 12 Zeichen, ohne `<`, `>`, `"`, `|`). **Quelle und Stand gehören in die `figcaption`.**
+- **Ein sauberer Balken genügt.** Setze `data-interactive="true"` nur, wo Bedienung etwas erschließt (viele Reihen, dichte Daten, Verbindungen); nur Linie, Heatmap, Kalender, Sankey, Baumkarte, Blasen und Karte können interaktiv sein, alle anderen Typen bleiben statisch.
+
+| Aussage | `data-type` | Tabelle (Kopfzeile → Zeilen) | Wofür |
+|---|---|---|---|
+| Größen vergleichen | `bar` (waagerecht), `column` (senkrecht) | leer, Reihe 1 … Reihe n → Beschriftung, Wert je Reihe (höchstens 8 Reihen, 40 Zeilen) | Rangfolge und Abstände; `bar` bei langen Beschriftungen |
+| Verlauf über die Zeit | `line` (interaktiv möglich), `area` | wie oben (`line` bis 120 Zeilen) | Entwicklung und Trend; `area` betont das Volumen |
+| Zusammensetzung nach Reihen | `stacked-bar`, `stacked-column` | wie oben | Gesamtgröße und Anteile zugleich |
+| Anteile am Ganzen | `pie`, `donut`, `waffle` | Beschriftung, Wert → höchstens 6 Teile, nicht negativ | wenige Teile eines Ganzen; mehr als 6 → Rest zu „Sonstige“ |
+| Profil über Dimensionen | `radar` | wie `bar`, höchstens 3 Reihen, 12 Achsen | Stärken und Schwächen im Vergleich |
+| Wie sich ein Wert zusammensetzt | `waterfall` | Beschriftung, Wert (mit Vorzeichen); Summenzeilen mit `<tr data-sum="true">` | Schritte von Start zu Ergebnis |
+| Muster in zwei Dimensionen | `heatmap` (interaktiv möglich) | leer, Spalte 1 … n → Zeilenname, Werte (höchstens 24 × 24) | Häufung und Ausreißer |
+| Verlauf eines Jahres | `calendar` (interaktiv möglich) | Datum `JJJJ-MM-TT`, Wert (ein Kalenderjahr) | Saisonmuster, tägliche Werte |
+| Flüsse zwischen Stationen | `sankey` (interaktiv möglich) | Von, Nach, Wert (höchstens 40 Verbindungen, keine Kreisläufe, nicht negativ) | Herkunft und Verbleib |
+| Gewichte in Gruppen | `treemap` (interaktiv möglich) | Gruppe, Untergruppe, Wert (höchstens 60 Blätter, nicht negativ) | Anteile in einer Hierarchie |
+| Zusammenhang dreier Größen | `bubble` (interaktiv möglich) | Name, x, y, Größe, Kategorie (höchstens 60 Zeilen, 8 Kategorien; Größe nicht negativ) | Streuung mit Gewicht |
+| Werte nach Region | `map` (interaktiv möglich) | Region, Wert, Name; `data-map="de"` (Codes `DE-BY` …) oder `data-map="welt"` (ISO-Alpha-2, z. B. `FR`) | räumliche Verteilung |
+
 ## Belege
 
 Jede Quelle ist ein Eintrag in `sources` mit `ref` (Schlüssel, z. B. `s1`), `kind` (`web`, `news`, `study`, `official`, `dataset`, `book`, `interview`, `video`, `podcast`, `social`, `other`), `title`, `url`, `publisher`, `author`, `published` (JJJJ, JJJJ-MM oder JJJJ-MM-TT), `accessed` (JJJJ-MM-TT) und `note`. Pflicht sind `ref`, `kind` und `title`.
@@ -124,7 +150,7 @@ Warnungen:
 - `excerpt_length`: Teaser außerhalb von 70 bis 180 Zeichen.
 - `no_subheadings`: über 700 Wörter ohne `<h2>`.
 - `tldr_missing`: ein Kasten „Kurz gesagt“ fehlt — vor der ersten `<h2>` (Gesamt-Kasten) oder in einem `<h2>`-Abschnitt; die Meldung nennt die Abschnitte.
-- `component_invalid`: ein Baustein ist falsch befüllt — Vorher/Nachher ohne genau zwei bekannte Bilder, Erklärpunkte ohne Punkt mit `data-x`/`data-y` oder mit mehr als 12, Wertung ohne `data-score` oder über `data-max`, Galerie-Form „carousel“/„strips“ mit weniger als 2 Bildern, „strips“ mit mehr als 8; die Meldung nennt Baustein und Fehler.
+- `component_invalid`: ein Baustein ist falsch befüllt — Vorher/Nachher ohne genau zwei bekannte Bilder, Erklärpunkte ohne Punkt mit `data-x`/`data-y` oder mit mehr als 12, Wertung ohne `data-score` oder über `data-max`, Galerie-Form „carousel“/„strips“ mit weniger als 2 Bildern, „strips“ mit mehr als 8; bei Diagrammen: Typ unbekannt, Tabelle fehlt oder passt nicht zum Typ, Zelle keine Zahl, negativer Wert bei Kreis, Waffel, Baumkarte, Sankey und Blasengröße, mehr als 6 Teile bei Kreis/Ring, Größengrenzen überschritten, `data-interactive` an einem Typ ohne Interaktion, Karte ohne `data-map` oder mit unbekanntem Regionscode; die Meldung nennt Baustein und Fehler.
 - `longform_short`: Layout `longform` unter 1500 Wörtern.
 - `source_publisher_missing`: Quelle ohne `publisher`.
 - `uncited_source`: Quelle wird im Text nirgends zitiert.

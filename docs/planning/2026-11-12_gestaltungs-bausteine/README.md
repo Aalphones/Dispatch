@@ -12,7 +12,7 @@ Entwurf (freigegeben am 2026-11-13): [`artifacts/`](artifacts/README.md). Teil 1
 | 2 | [Renderer: Ausgabe-Markup der Bausteine](phase-2-renderer.md) | standard | complete |
 | 3 | [Theme: bausteine.css, bausteine.js, Bildansicht](phase-3-theme.md) | standard | complete |
 | 4 | [Laden, Demo-Artikel, Doku, ADR-029](phase-4-laden-demo-doku.md) | standard | complete |
-| 5 | [Diagramme: Syntax, Datenlesen, Formprüfung](phase-5-diagramme-syntax.md) | standard | pending |
+| 5 | [Diagramme: Syntax, Datenlesen, Formprüfung](phase-5-diagramme-syntax.md) | standard | complete |
 | 6 | [Diagramme: statische Typen als Server-SVG, Entwurf, Palette](phase-6-diagramme-statisch.md) | standard | pending |
 | 7 | [Diagramme: Sankey, Baumkarte, Blasen, Karte](phase-7-diagramme-komplex.md) | standard | pending |
 | 8 | [Diagramme: Interaktion, Laden, Demo, Doku, ADR-030](phase-8-diagramme-interaktion-laden-doku.md) | standard | pending |

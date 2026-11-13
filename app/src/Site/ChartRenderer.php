@@ -17,7 +17,6 @@ use Dom\HTMLDocument;
  */
 final class ChartRenderer
 {
-    private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
     private const WIDTH = 440.0;
     private const RIGHT_EDGE = 432.0;
     private const AXIS_TOP = 28.0;
@@ -45,6 +44,10 @@ final class ChartRenderer
         'waterfall' => 'wasserfall',
         'heatmap' => 'heatmap',
         'calendar' => 'kalender',
+        'sankey' => 'sankey',
+        'treemap' => 'baumkarte',
+        'bubble' => 'blasen',
+        'map' => 'karte',
     ];
     /** Druckmuster r1…r8: Breite der Kachel, Drehung, Streifen (Breite, Höhe) oder Vollfläche; die Identität trägt im Druck das Muster. */
     private const PATTERNS = [
@@ -58,8 +61,13 @@ final class ChartRenderer
         ['size' => 6, 'rotate' => 0, 'background' => '#bbb', 'bars' => []],
     ];
 
+    private readonly ChartShapes $shapes;
+    private readonly ChartComplexPlots $complexPlots;
+
     public function __construct(private readonly HTMLDocument $document)
     {
+        $this->shapes = new ChartShapes($document);
+        $this->complexPlots = new ChartComplexPlots($this->shapes);
     }
 
     public static function supports(string $type): bool
@@ -87,9 +95,20 @@ final class ChartRenderer
             }
             $definitions->appendChild($tile);
         }
+        $definitions->appendChild($this->missingDataPattern());
         $svg->appendChild($definitions);
 
         return $svg;
+    }
+
+    /** Schraffur für Regionen ohne Daten (Karte); Farben kommen aus diagramme.css, damit sie dem Thema folgen. */
+    private function missingDataPattern(): Element
+    {
+        $tile = $this->svg('pattern', ['id' => 'mu-leer', 'width' => '6', 'height' => '6', 'patternUnits' => 'userSpaceOnUse', 'patternTransform' => 'rotate(45)']);
+        $tile->appendChild($this->svg('rect', ['class' => 'leer-grund', 'width' => '6', 'height' => '6']));
+        $tile->appendChild($this->svg('rect', ['class' => 'leer-strich', 'width' => '1.4', 'height' => '6']));
+
+        return $tile;
     }
 
     /**
@@ -113,6 +132,10 @@ final class ChartRenderer
             'waterfall' => $this->waterfall($data, $unit),
             'heatmap' => $this->heatmap($data, $unit),
             'calendar' => $this->calendar($data, $unit),
+            'sankey' => $this->complexPlots->sankey($data, $unit),
+            'treemap' => $this->complexPlots->treemap($data, $unit),
+            'bubble' => $this->complexPlots->bubbles($data),
+            'map' => $this->complexPlots->map($data, $unit),
             default => null,
         };
         if ($plot === null) {
@@ -210,7 +233,7 @@ final class ChartRenderer
      */
     private function plot(float $width, float $height, array $shapes, string $summary, array $legend = [], bool $isScale = false, bool $isWide = false): array
     {
-        return ['width' => $width, 'height' => $height, 'shapes' => $shapes, 'summary' => $summary, 'legend' => $legend, 'isScale' => $isScale, 'isWide' => $isWide];
+        return $this->shapes->plot($width, $height, $shapes, $summary, $legend, $isScale, $isWide);
     }
 
     /**
@@ -219,15 +242,7 @@ final class ChartRenderer
      */
     private function seriesLegend(array $names): array
     {
-        if (count($names) < 2) {
-            return [];
-        }
-        $items = [];
-        foreach ($names as $index => $name) {
-            $items[] = ['class' => 'r' . ($index + 1), 'name' => $name];
-        }
-
-        return $items;
+        return $this->shapes->seriesLegend($names);
     }
 
     /* ------------------------------------------------------- SVG-Bausteine */
@@ -235,69 +250,33 @@ final class ChartRenderer
     /** @param array<string, string> $attributes */
     private function svg(string $name, array $attributes = [], ?string $content = null): Element
     {
-        $element = $this->document->createElementNS(self::SVG_NAMESPACE, $name);
-        foreach ($attributes as $attribute => $value) {
-            $element->setAttribute($attribute, $value);
-        }
-        if ($content !== null) {
-            $element->textContent = $content;
-        }
-
-        return $element;
+        return $this->shapes->svg($name, $attributes, $content);
     }
 
     private function coordinate(float $value): string
     {
-        return ChartFormat::coordinate($value);
+        return $this->shapes->coordinate($value);
     }
 
     /** @param list<Element> $children */
     private function group(string $class, array $children = []): Element
     {
-        $group = $this->svg('g', $class === '' ? [] : ['class' => $class]);
-        foreach ($children as $child) {
-            $group->appendChild($child);
-        }
-
-        return $group;
+        return $this->shapes->group($class, $children);
     }
 
     private function label(float $x, float $y, string $content, string $class = '', string $anchor = ''): Element
     {
-        $attributes = ['x' => $this->coordinate($x), 'y' => $this->coordinate($y)];
-        if ($class !== '') {
-            $attributes['class'] = $class;
-        }
-        if ($anchor !== '') {
-            $attributes['text-anchor'] = $anchor;
-        }
-
-        return $this->svg('text', $attributes, $content);
+        return $this->shapes->label($x, $y, $content, $class, $anchor);
     }
 
     private function withTooltip(Element $shape, string $tooltip): Element
     {
-        if ($tooltip !== '') {
-            $shape->appendChild($this->svg('title', [], $tooltip));
-        }
-
-        return $shape;
+        return $this->shapes->withTooltip($shape, $tooltip);
     }
 
     private function box(float $x, float $y, float $width, float $height, string $tooltip, string $class = '', float $radius = 0): Element
     {
-        $attributes = [
-            'class' => trim('m ' . $class),
-            'x' => $this->coordinate($x),
-            'y' => $this->coordinate($y),
-            'width' => $this->coordinate($width),
-            'height' => $this->coordinate($height),
-        ];
-        if ($radius > 0) {
-            $attributes['rx'] = $this->coordinate($radius);
-        }
-
-        return $this->withTooltip($this->svg('rect', $attributes), $tooltip);
+        return $this->shapes->box($x, $y, $width, $height, $tooltip, $class, $radius);
     }
 
     /**

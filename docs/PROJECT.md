@@ -87,6 +87,10 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 | Zeitversetztes Veröffentlichen später mit einem Strato-Cron | Zeitversetztes Veröffentlichen ohne Cron: Besucher lösen die Fälligkeitsprüfung aus (ADR-028), Feed und Sitemap laufen dafür über die Brücke (ADR-029) |
 | Formprüfung im Artikel-Service | reine Klasse `Util\FormCheck` ohne Datenbankzugriff (ADR-012) |
 
+## Kartendaten
+
+Die Karten der Diagramme (`app/data/karten/de.php` Bundesländer, `welt.php` Länder) stammen aus Natural Earth (ne_10m_admin_1_states_provinces, ne_110m_admin_0_countries; https://www.naturalearthdata.com), gemeinfrei: „All versions of Natural Earth raster + vector map data … are in the public domain“ (Nutzungsbedingungen, abgerufen 2026-11-13); Namen aus Wikidata (CC0). Erzeugt einmalig mit `bin/karten-bauen.php`; die Rohdaten liegen nicht im Repository.
+
 ## Meilensteine
 
 0. **Strato-Probe und Deploy-Skript:** Brücke, gesperrter Code-Ordner, Wurzel-`.htaccess`, Diagnose-Route (PHP-Version, Erweiterungen, Authorization-Header, MySQL, ausgehendes HTTPS, GD mit WebP), `deploy.cmd` mit Rauchtest der Nachbarn. Bis der Builder läuft (Meilenstein 2), zeigt `/` eine statische Platzhalter-Seite mit Name und Unterzeile; die Weiterleitung nach `/card/` entfällt schon jetzt.

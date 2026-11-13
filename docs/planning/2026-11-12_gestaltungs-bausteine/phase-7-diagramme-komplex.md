@@ -23,10 +23,12 @@ Verstanden, bevor geändert: Diese vier Typen brauchen eigene Rechenarbeit auf d
 
 ## Checkliste
 
-- [ ] `ChartRenderer` um `sankey()`, `treemap()`, `bubbles()`, `map()` und private Layout-Helfer (`SankeyLayout`, `squarify()`) erweitern; eigene Klassen nur, wenn `ChartRenderer.php` über ~600 Zeilen wüchse.
-- [ ] `bin/karten-bauen.php` (einmalig ausgeführt, Ergebnis eingecheckt): Natural-Earth-Daten laden (Pfad als Argument, nicht im Repo), Pfade vereinfachen und auf ein 1000-Einheiten-Raster runden, PHP-Array schreiben. **Quelle und Lizenz vor Einsatz am Datensatz selbst nachsehen** (nicht aus dem Gedächtnis eintragen).
-- [ ] `ChartData`: Zyklus-Erkennung für Sankey, Regionscode-Prüfung gegen die Karte.
-- [ ] `diagramme.css` um die vier Typen ergänzen.
-- [ ] Prüfen: Scratchpad-Skript mit je einem Beispiel pro Typ (Sankey: Energiefluss, Baumkarte: Haushalt mit Unterposten, Blasen: Länderdaten, Karte `de` und `welt`), Screenshots.
+- [x] `ChartRenderer` um `sankey()`, `treemap()`, `bubbles()`, `map()` und private Layout-Helfer (`SankeyLayout`, `squarify()`) erweitern; eigene Klassen nur, wenn `ChartRenderer.php` über ~600 Zeilen wüchse.
+- [x] `bin/karten-bauen.php` (einmalig ausgeführt, Ergebnis eingecheckt): Natural-Earth-Daten laden (Pfad als Argument, nicht im Repo), Pfade vereinfachen und auf ein 1000-Einheiten-Raster runden, PHP-Array schreiben. **Quelle und Lizenz vor Einsatz am Datensatz selbst nachsehen** (nicht aus dem Gedächtnis eintragen).
+- [x] `ChartData`: Zyklus-Erkennung für Sankey, Regionscode-Prüfung gegen die Karte.
+- [x] `diagramme.css` um die vier Typen ergänzen.
+- [x] Prüfen: Scratchpad-Skript mit je einem Beispiel pro Typ (Sankey: Energiefluss, Baumkarte: Haushalt mit Unterposten, Blasen: Länderdaten, Karte `de` und `welt`), Screenshots.
 
 ## Report-Back
+
+Phase 7 fertig: Sankey, Baumkarte, Blasen und Karte als Server-SVG (`ChartComplexPlots` mit `SankeyLayout`, `TreemapLayout`, `ChartMaps`, `ChartShapes`; Helfer aus `ChartRenderer` nach `ChartShapes` verlagert, da über 600 Zeilen). Kartendateien `de.php` 24 919 B, `welt.php` 40 084 B (110m-Auflösung: Kleinstaaten wie MT, SG fehlen und werden von der Formprüfung abgelehnt); `diagramme.css` 7 021 B. `ChartData`: Spaltengrenze 5 (Sankey), 8 Gruppen (Baumkarte), Regionscodes aus den Kartendateien, Kopfzellen der Blasen als Achsentitel. Geprüft: Skript mit allen vier Typen (de und welt), Fehlerfälle, Chrome-Screenshots dunkel bei 1366 px; hell und 390 px nicht eigens geprüft (Headless-Fenster mindestens ca. 500 px).

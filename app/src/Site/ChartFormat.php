@@ -90,6 +90,34 @@ final class ChartFormat
     }
 
     /**
+     * Schöne Achsenschritte für einen Wertebereich, der die Null nicht einschließen muss (Streuung, Blasen).
+     *
+     * @return array{min: float, max: float, step: float, decimals: int}
+     */
+    public static function niceRange(float $lowest, float $highest): array
+    {
+        if ($highest - $lowest <= 0.0) {
+            $lowest -= 1.0;
+            $highest += 1.0;
+        }
+        $range = $highest - $lowest;
+
+        for ($power = 10 ** floor(log10($range / self::MAX_INTERVALS)); ; $power *= 10) {
+            foreach (self::STEP_FACTORS as $factor) {
+                $step = $factor * $power;
+                if ($range / $step <= self::MAX_INTERVALS + 1e-9) {
+                    return [
+                        'min' => floor($lowest / $step + 1e-9) * $step,
+                        'max' => ceil($highest / $step - 1e-9) * $step,
+                        'step' => $step,
+                        'decimals' => $step >= 1 ? 0 : (int) -floor(log10($step)),
+                    ];
+                }
+            }
+        }
+    }
+
+    /**
      * Teilt $total so auf die Werte auf, dass die ganzen Anteile genau $total ergeben (Größte-Rest-Verfahren).
      *
      * @param list<float> $values

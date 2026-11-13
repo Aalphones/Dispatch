@@ -14,7 +14,7 @@ Entwurf (freigegeben am 2026-11-13): [`artifacts/`](artifacts/README.md). Teil 1
 | 4 | [Laden, Demo-Artikel, Doku, ADR-029](phase-4-laden-demo-doku.md) | standard | complete |
 | 5 | [Diagramme: Syntax, Datenlesen, Formprüfung](phase-5-diagramme-syntax.md) | standard | complete |
 | 6 | [Diagramme: statische Typen als Server-SVG, Entwurf, Palette](phase-6-diagramme-statisch.md) | standard | complete |
-| 7 | [Diagramme: Sankey, Baumkarte, Blasen, Karte](phase-7-diagramme-komplex.md) | standard | pending |
+| 7 | [Diagramme: Sankey, Baumkarte, Blasen, Karte](phase-7-diagramme-komplex.md) | standard | complete |
 | 8 | [Diagramme: Interaktion, Laden, Demo, Doku, ADR-030](phase-8-diagramme-interaktion-laden-doku.md) | standard | pending |
 
 Reihenfolge: 1 → 2 → 3 → 4, dann 5 → 6 → 7 → 8. Phase 5 baut auf Phase 1, 6 auf 2 und 5, 8 auf 4 und 7.
@@ -88,6 +88,8 @@ Phase 4: app/src/Site/Assets.php, app/src/Site/Builder.php, app/templates/layout
 ## Deviations from plan
 
 ADR-Nummer 032 statt 029 (029 ist der Feed-ADR); Phase 8 behält 030.
+
+Phase 7: Sankey-Knoten mit 8 statt 2 Einheiten Abstand (wie im freigegebenen Entwurf, wegen Beschriftungen); Sankey-Kennungen `k1…` statt Namen; Baumkarte höchstens 8 Gruppen (Farbgrenze), Weltkarte in 110m-Auflösung ohne Kleinstaaten; Kopfzellen der Blasen-Tabelle beschriften die Achsen.
 
 ## Follow-ups
 

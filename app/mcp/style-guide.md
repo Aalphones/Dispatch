@@ -103,10 +103,10 @@ Du schreibst nur eine Datentabelle in eine `figure`; den Server zeichnet das Dia
 | Wie sich ein Wert zusammensetzt | `waterfall` | Beschriftung, Wert (mit Vorzeichen); Summenzeilen mit `<tr data-sum="true">` | Schritte von Start zu Ergebnis |
 | Muster in zwei Dimensionen | `heatmap` (interaktiv möglich) | leer, Spalte 1 … n → Zeilenname, Werte (höchstens 24 × 24) | Häufung und Ausreißer |
 | Verlauf eines Jahres | `calendar` (interaktiv möglich) | Datum `JJJJ-MM-TT`, Wert (ein Kalenderjahr) | Saisonmuster, tägliche Werte |
-| Flüsse zwischen Stationen | `sankey` (interaktiv möglich) | Von, Nach, Wert (höchstens 40 Verbindungen, keine Kreisläufe, nicht negativ) | Herkunft und Verbleib |
-| Gewichte in Gruppen | `treemap` (interaktiv möglich) | Gruppe, Untergruppe, Wert (höchstens 60 Blätter, nicht negativ) | Anteile in einer Hierarchie |
-| Zusammenhang dreier Größen | `bubble` (interaktiv möglich) | Name, x, y, Größe, Kategorie (höchstens 60 Zeilen, 8 Kategorien; Größe nicht negativ) | Streuung mit Gewicht |
-| Werte nach Region | `map` (interaktiv möglich) | Region, Wert, Name; `data-map="de"` (Codes `DE-BY` …) oder `data-map="welt"` (ISO-Alpha-2, z. B. `FR`) | räumliche Verteilung |
+| Flüsse zwischen Stationen | `sankey` (interaktiv möglich) | Von, Nach, Wert (höchstens 40 Verbindungen und 5 Spalten, keine Kreisläufe, nicht negativ) | Herkunft und Verbleib |
+| Gewichte in Gruppen | `treemap` (interaktiv möglich) | Gruppe, Untergruppe, Wert (höchstens 60 Blätter und 8 Gruppen, nicht negativ) | Anteile in einer Hierarchie |
+| Zusammenhang dreier Größen | `bubble` (interaktiv möglich) | Name, x, y, Größe, Kategorie (höchstens 60 Zeilen, 8 Kategorien; Größe nicht negativ; die Kopfzellen von x, y und Größe beschriften Achsen und Hinweise, also mit Einheit schreiben, z. B. „Einkommen in Tsd. €“) | Streuung mit Gewicht |
+| Werte nach Region | `map` (interaktiv möglich) | Region, Wert, Name; `data-map="de"` (Codes `DE-BY` …) oder `data-map="welt"` (ISO-Alpha-2, z. B. `FR`; Kleinstaaten fehlen auf der Weltkarte); Regionen ohne Zeile erscheinen schraffiert als „keine Daten“ | räumliche Verteilung |
 
 ## Belege
 

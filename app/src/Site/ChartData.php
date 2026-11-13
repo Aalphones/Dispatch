@@ -33,18 +33,6 @@ final class ChartData
 
     private const NUMBER_PATTERN = '/^[-+]?[0-9]+([.,][0-9]+)?\z/';
     private const DATE_PATTERN = '/^([0-9]{4})-([0-9]{2})-([0-9]{2})\z/';
-    private const DE_REGIONS = [
-        'DE-BW', 'DE-BY', 'DE-BE', 'DE-BB', 'DE-HB', 'DE-HH', 'DE-HE', 'DE-MV',
-        'DE-NI', 'DE-NW', 'DE-RP', 'DE-SL', 'DE-SN', 'DE-ST', 'DE-SH', 'DE-TH',
-    ];
-    /** ISO-3166-1-Alpha-2-Codes (Länder der Weltkarte) */
-    private const WORLD_REGIONS = 'AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ '
-        . 'CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR '
-        . 'GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP '
-        . 'KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ '
-        . 'NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW '
-        . 'SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ '
-        . 'UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW';
 
     /** @var list<string> */
     private array $errors = [];
@@ -335,6 +323,8 @@ final class ChartData
         }
         if ($this->hasCycle($graph)) {
             $this->errors[] = 'Ein Sankey-Diagramm darf keine Kreisläufe haben (Von und Nach führen im Kreis zurück).';
+        } elseif (SankeyLayout::columns($links) !== [] && max(SankeyLayout::columns($links)) + 1 > SankeyLayout::MAX_COLUMNS) {
+            $this->errors[] = sprintf('Ein Sankey-Diagramm hat höchstens %d Spalten (längster Weg von einer Quelle zum Ziel).', SankeyLayout::MAX_COLUMNS);
         }
 
         return ['links' => $links];
@@ -383,13 +373,17 @@ final class ChartData
         $this->limit(count($table['rows']), self::MAX_LEAVES, 'Blätter');
 
         $leaves = [];
+        $groups = [];
         foreach ($table['rows'] as $index => $row) {
+            $groups[$row['cells'][0]] = true;
             $leaves[] = [
                 'group' => $row['cells'][0],
                 'label' => $row['cells'][1],
                 'value' => $this->numberAt($row['cells'], 2, $index + 1, true),
             ];
         }
+
+        $this->limit(count($groups), self::MAX_CATEGORIES, 'Gruppen');
 
         return ['leaves' => $leaves];
     }
@@ -419,7 +413,7 @@ final class ChartData
         }
         $this->limit(count($categories), self::MAX_CATEGORIES, 'Kategorien');
 
-        return ['points' => $points];
+        return ['points' => $points, 'axes' => [$table['header'][1], $table['header'][2], $table['header'][3]]];
     }
 
     /**
@@ -439,12 +433,12 @@ final class ChartData
         }
         $this->limit(count($table['rows']), self::MAX_REGIONS, 'Regionen');
 
-        $known = $map === 'de' ? self::DE_REGIONS : explode(' ', self::WORLD_REGIONS);
+        $known = ChartMaps::codes($map);
         $regions = [];
         foreach ($table['rows'] as $index => $row) {
             $code = $row['cells'][0];
             if (!in_array($code, $known, true)) {
-                $this->errors[] = sprintf('Datenzeile %d: „%s“ ist kein Regionscode der Karte „%s“.', $index + 1, $code, $map);
+                $this->errors[] = sprintf('Datenzeile %d: „%s“ ist kein Regionscode der Karte „%s“ (de: ISO 3166-2 wie DE-BY; welt: ISO-Alpha-2 wie FR).', $index + 1, $code, $map);
             }
             $regions[] = ['code' => $code, 'value' => $this->numberAt($row['cells'], 1, $index + 1, false), 'name' => $row['cells'][2]];
         }

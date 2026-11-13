@@ -8,6 +8,6 @@ Ein Lauf schreibt genau einen Artikel. Die Redaktionsrichtlinien aus dem Briefin
 4. **Bebildern:** Bilder nach dem Ampelsystem der Redaktionsrichtlinien (Abschnitt 5) recherchieren — eigenes Material, freie Lizenzen, offizielle Pressebereiche, im begründeten Einzelfall Bildzitate — und mit `import_media_from_url` oder `upload_media` übergeben, mit Urheber, Rechtsgrundlage im Feld `license`, Lizenz-Link, Herkunftsseite, Alt-Text und Bildunterschrift. Bearbeitung und Begründungen für gelbe Fälle kommen je Medien-UID in `editor_notes`. Eigene Diagramme als PNG mit `upload_media`.
 5. **Schreiben:** `create_post` mit Quellen, Belegen im Text, Titelbild (`cover_media_uid`), passendem Layout und Akzentfarbe. Prüfe `sanitizer_notes`: Was dort steht, hat der Server entfernt.
 6. **Form prüfen:** `validate_post` meldet fehlende oder unstimmige Pflichtangaben; ergänze mit `update_post`, bis keine Fehler mehr bleiben. Die inhaltliche Prüfung machst du vorher selbst.
-7. **Zur Freigabe einreichen:** `submit_post`. Veröffentlichen kann nur der Inhaber.
+7. **Zur Freigabe einreichen:** `submit_post` mit `model` (dein Modell, z. B. "Claude Sonnet 5.5"). Veröffentlichen kann nur der Inhaber.
 
 **Abschlussbericht:** Titel, Artikel-ID, Zahl der Quellen, offene Punkte.

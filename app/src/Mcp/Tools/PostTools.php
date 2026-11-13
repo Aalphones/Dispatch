@@ -158,12 +158,15 @@ final class PostTools
         $registry->add(new Tool(
             'submit_post',
             'Artikel einreichen',
-            'Prüft den Artikel (wie validate_post) und legt ihn dem Inhaber zur Freigabe vor; Status wird review, öffentlich ändert sich nichts. Bei Formfehlern kommt die Fehlerliste statt der Einreichung. Das Ergebnis enthält preview_url: den Vorschau-Link, den der Inhaber ohne Anmeldung nur lesend öffnen kann (sieben Tage gültig). Beispiel: {"id": 12}. Danach ist der Lauf mit dem Abschlussbericht beendet; zurückziehen geht mit withdraw_post.',
-            Schema::object(['id' => Schema::integer('Artikel-ID')], ['id']),
+            'Prüft den Artikel (wie validate_post) und legt ihn dem Inhaber zur Freigabe vor; Status wird review, öffentlich ändert sich nichts. Bei Formfehlern kommt die Fehlerliste statt der Einreichung. Das Ergebnis enthält preview_url: den Vorschau-Link, den der Inhaber ohne Anmeldung nur lesend öffnen kann (sieben Tage gültig). Pflicht ist model: das Modell, das den Artikel recherchiert und verfasst hat; der Inhaber sieht es in der Freigabe, öffentlich erscheint es nicht. Beispiel: {"id": 12, "model": "Claude Sonnet 5.5"}. Danach ist der Lauf mit dem Abschlussbericht beendet; zurückziehen geht mit withdraw_post.',
+            Schema::object([
+                'id' => Schema::integer('Artikel-ID'),
+                'model' => Schema::text('Dein Modell mit Anbieter und Version, z. B. "Claude Sonnet 5.5", "Grok 4" oder "ChatGPT GPT-5"; 1 bis 80 Zeichen'),
+            ], ['id', 'model']),
             Tool::annotations('Artikel einreichen', 'W'),
             Scopes::WRITE,
             static function (array $args, Actor $actor) use ($posts): ToolResult {
-                $post = self::present($posts->submit((int) $args['id'], $actor), false);
+                $post = self::present($posts->submit((int) $args['id'], $actor, (string) $args['model']), false);
 
                 return ToolResult::json($post + ['preview_url' => PreviewLink::url((int) $post['id'])]);
             }

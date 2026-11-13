@@ -41,6 +41,7 @@ final class PostService
     private const SOURCE_KINDS = ['web', 'news', 'study', 'official', 'dataset', 'book', 'interview', 'video', 'podcast', 'social', 'other'];
 
     private const REVIEW_NOTE_MAX_LENGTH = 20000;
+    private const AUTHOR_MODEL_MAX_LENGTH = 80;
     private const SEARCH_MIN_LENGTH = 2;
     private const SEARCH_MAX_LIMIT = 50;
     private const TITLE_MAX_LENGTH = 200;
@@ -313,9 +314,11 @@ final class PostService
     }
 
     /** @return array<string, mixed> der Artikel nach dem Übergang */
-    public function submit(int $id, Actor $actor): array
+    public function submit(int $id, Actor $actor, ?string $authorModel = null): array
     {
-        return Transaction::join($this->pdo, function () use ($id, $actor): array {
+        $authorModel = $authorModel === null ? null : $this->normalizeAuthorModel($authorModel);
+
+        return Transaction::join($this->pdo, function () use ($id, $actor, $authorModel): array {
             $post = $this->lockedPost($id);
             $hasUnpublishedChanges = $post['published_revision'] !== null && (int) $post['revision'] > (int) $post['published_revision'];
             $isAllowed = $post['status'] === 'draft' || ($post['status'] === 'published' && $hasUnpublishedChanges);
@@ -324,9 +327,9 @@ final class PostService
             }
 
             $this->assertFormOk($id);
-            $this->posts->setStatus($id, ['status' => 'review']);
+            $this->posts->setStatus($id, ['status' => 'review'] + ($authorModel === null ? [] : ['author_model' => $authorModel]));
             $this->queueAfter($post, 'markReview');
-            $this->audit->record($actor, 'post.submit', 'post:' . $id, ['revision' => (int) $post['revision']]);
+            $this->audit->record($actor, 'post.submit', 'post:' . $id, ['revision' => (int) $post['revision']] + ($authorModel === null ? [] : ['author_model' => $authorModel]));
 
             return $this->get($id);
         });
@@ -586,6 +589,7 @@ final class PostService
         return $snapshot + [
             'status' => $post['status'],
             'review_note' => $post['review_note'],
+            'author_model' => $post['author_model'],
             'published_revision' => $post['published_revision'] === null ? null : (int) $post['published_revision'],
             'published_at' => $post['published_at'],
         ];
@@ -818,6 +822,16 @@ final class PostService
         }
         if (!is_string($value) || mb_strlen($value) > self::EDITOR_NOTES_MAX_LENGTH) {
             throw $this->invalid('editor_notes', sprintf('muss ein Text mit höchstens %d Zeichen oder null sein', self::EDITOR_NOTES_MAX_LENGTH));
+        }
+
+        return $value;
+    }
+
+    private function normalizeAuthorModel(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '' || mb_strlen($value) > self::AUTHOR_MODEL_MAX_LENGTH) {
+            throw $this->invalid('model', sprintf('muss 1 bis %d Zeichen lang sein, z. B. "Claude Sonnet 5.5", "Grok 4" oder "ChatGPT GPT-5"', self::AUTHOR_MODEL_MAX_LENGTH));
         }
 
         return $value;

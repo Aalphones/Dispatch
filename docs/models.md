@@ -131,6 +131,7 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 | `editor_notes` | MEDIUMTEXT NULL | |
 | `review_note` | TEXT NULL | |
 | `ai_assisted` | TINYINT(1) | Default 1 |
+| `author_model` | VARCHAR(80) NULL | Modell, das der Agent beim `submit_post` angibt (Migration 015); nur für den Inhaber sichtbar, nicht im Snapshot und nicht öffentlich |
 | `word_count` | INT UNSIGNED | Default 0 |
 | `revision` | INT UNSIGNED | Default 1 |
 | `published_revision` | INT UNSIGNED NULL | |

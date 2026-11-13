@@ -123,6 +123,7 @@ final class PreviewController
                 'revision' => $post['revision'],
                 'published_revision' => $post['published_revision'],
                 'review_note' => $post['review_note'],
+                'author_model' => $post['author_model'],
                 'word_count' => $post['word_count'],
                 'sources' => count($post['sources']),
                 'updated_at' => $snapshot['updated_at'],

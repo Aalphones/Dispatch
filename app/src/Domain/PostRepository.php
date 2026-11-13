@@ -19,7 +19,7 @@ final class PostRepository
     private const LIST_COLUMNS = [
         'id', 'slug', 'title', 'subtitle', 'kicker', 'excerpt', 'status', 'tags', 'layout', 'accent',
         'cover_media_id', 'seo_title', 'seo_description', 'origin', 'queue_item_id', 'depth', 'review_note',
-        'ai_assisted', 'word_count', 'revision', 'published_revision', 'published_at', 'created_at', 'updated_at',
+        'ai_assisted', 'author_model', 'word_count', 'revision', 'published_revision', 'published_at', 'created_at', 'updated_at',
     ];
 
     private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
@@ -412,7 +412,7 @@ final class PostRepository
                 $assignments[] = 'published_at = COALESCE(published_at, UTC_TIMESTAMP())';
                 continue;
             }
-            if (!in_array($column, ['status', 'review_note', 'published_revision'], true)) {
+            if (!in_array($column, ['status', 'review_note', 'published_revision', 'author_model'], true)) {
                 throw new \InvalidArgumentException('Unbekannte Statusspalte: ' . $column);
             }
             $assignments[] = $column . ' = ?';

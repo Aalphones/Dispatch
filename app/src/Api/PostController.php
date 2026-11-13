@@ -54,6 +54,7 @@ final class PostController
                     'word_count' => (int) $row['word_count'],
                     'sources' => $form->metrics['sources'],
                     'review_note' => $row['review_note'],
+                    'author_model' => $row['author_model'],
                     'form' => ['errors' => count($form->errors), 'warnings' => count($form->warnings)],
                 ];
             }

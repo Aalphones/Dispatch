@@ -16,14 +16,16 @@ function plural(count, one, many) {
 }
 
 function checks(form, post) {
+	const model = post.author_model ? [el('span', { class: 'pruef', title: 'Modell, das den Artikel verfasst hat (Angabe des Agenten)' }, post.author_model)] : [];
 	const errors = form.errors.map((finding) => el('span', { class: 'pruef fehler', title: finding.message }, [icon('warn'), finding.message]));
 	const warnings = form.warnings.map((finding) => el('span', { class: 'pruef warn', title: 'Warnung, blockiert nicht' }, [icon('warn'), finding.message]));
 	if (errors.length > 0) {
-		return [...errors, ...warnings];
+		return [...model, ...errors, ...warnings];
 	}
 	const words = post.word_count.toLocaleString('de-DE') + ' Wörter';
 
 	return [
+		...model,
 		el('span', { class: 'pruef ok' }, [icon('check'), plural(post.sources, 'Quelle', 'Quellen')]),
 		el('span', { class: 'pruef ok' }, [icon('check'), words]),
 		...warnings,
@@ -280,7 +282,7 @@ function postCard(post) {
 	const isReview = post.status === 'review';
 	const errors = post.form.errors;
 	const meta = isReview
-		? 'Eingereicht ' + when(post.updated_at) + ' · ' + post.word_count.toLocaleString('de-DE') + ' Wörter · ' + plural(post.sources, 'Quelle', 'Quellen') + ' · Formprüfung ' + (errors === 0 ? 'ok' : errors + ' Fehler')
+		? 'Eingereicht ' + when(post.updated_at) + (post.author_model ? ' von ' + post.author_model : '') + ' · ' + post.word_count.toLocaleString('de-DE') + ' Wörter · ' + plural(post.sources, 'Quelle', 'Quellen') + ' · Formprüfung ' + (errors === 0 ? 'ok' : errors + ' Fehler')
 		: 'Deine Anmerkung: „' + shorten(post.review_note, NOTE_PREVIEW) + '“';
 
 	return el('article', { class: 'wartekarte', 'data-art': 'post' }, [

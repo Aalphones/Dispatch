@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entwurf: Gestaltungs-Bausteine für Artikel (DISPATCH)</title>
+<link rel="stylesheet" href="../../../../app/theme/style.css">
+<link rel="stylesheet" href="_entwurf-bausteine/bausteine.css">
+<script src="_entwurf-bausteine/bausteine.js" defer></script>
+</head>
+<body data-seite="artikel">
+
+<div class="dummy" role="region" aria-label="Steuerung des Entwurfs">
+  <b>Entwurf</b>
+  <label>Thema
+    <select id="d-thema">
+      <option value="">System</option>
+      <option value="hell">Hell</option>
+      <option value="dunkel">Dunkel</option>
+    </select>
+  </label>
+  <label>Bilder je Galerie
+    <select id="d-menge">
+      <option value="">Beispiel (5–7)</option>
+      <option value="2">Wenige (2)</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="d-ohnejs"> Ohne JavaScript</label>
+  <label><input type="checkbox" id="d-syntax"> Syntax für Agenten zeigen</label>
+  <span class="stufe" id="d-stufe"></span>
+</div>
+<p class="dummy-wofuer"><b>Wofür:</b> Leser erfassen Bildserien, Vergleiche, Bewertungen und Varianten, ohne den Artikel zu verlassen. Jeder Abschnitt unten zeigt einen Baustein so, wie der Renderer ihn ausliefert. <span>· Bilder: Demo-Bilder aus bin/demo (Farbflächen, das „Vorher“-Bild nur grau gefiltert), Texte und Werte erfunden</span></p>
+
+<header>
+  <div class="leiste">
+    <div class="wrap">
+      <span class="klein ausgabe-zeile"><span class="ausgabe">Ausgabe Nr. 14</span><span class="ausgabe-datum"> · 12. November 2026</span></span>
+    </div>
+  </div>
+</header>
+<nav class="nav" aria-label="Kategorien">
+  <ul>
+    <li><a href="#">Wissenschaft</a></li>
+    <li><a href="#">Technik</a></li>
+    <li><a href="#">Gesellschaft</a></li>
+    <li><a href="#">Wirtschaft</a></li>
+    <li><a href="#">Kultur</a></li>
+  </ul>
+</nav>
+
+<main id="inhalt">
+<article class="artikel wrap layout-standard">
+  <header class="artikelkopf">
+    <span class="klein dach">Natur &amp; Umwelt</span>
+    <h1>Ein Sommer am Gletscher: Was Bilder, Messwerte und Vergleiche zeigen</h1>
+    <p class="unterzeile">Beispielartikel, der jeden neuen Gestaltungs-Baustein einmal verwendet</p>
+    <div class="autor"><span>12. November 2026</span></div>
+  </header>
+
+  <div class="koerper">
+    <aside class="seitenspalte" id="seitenspalte">
+      <nav class="iv" aria-label="Inhaltsverzeichnis">
+        <span class="klein">Inhalt</span>
+        <ol>
+          <li><a href="#galerien">Drei neue Galerie-Formen</a></li>
+          <li><a href="#vergleich">Vorher und nachher</a></li>
+          <li><a href="#zeitstrahl">Chronik des Rückzugs</a></li>
+          <li><a href="#hotspots">Ein Bild mit Erklärpunkten</a></li>
+          <li><a href="#wertung">Wertung der Messstationen</a></li>
+          <li><a href="#fragen">Häufige Fragen</a></li>
+        </ol>
+      </nav>
+    </aside>
+
+    <div class="text">
+<p class="lead">Ein Gletscher verändert sich langsam und dann plötzlich. Dieser Artikel zeigt, wie die neuen Bausteine solche Geschichten erzählen.</p>
+<aside class="tldr"><b class="kurz-titel">Kurz gesagt</b><p>Jeder Baustein hat eine Fassung ohne JavaScript; das Skript macht ihn nur bequemer.</p></aside>
+
+<!-- ============ 1. Galerien ============ -->
+<h2 id="galerien">Drei neue Galerie-Formen</h2>
+<p class="d-wofuer"><b>Wofür:</b> Mosaik zeigt eine Serie auf einen Blick; Karussell erzählt eine Abfolge Bild für Bild; Bildstreifen lädt zum Stöbern ein und spart Höhe. Ein Klick öffnet die Bildansicht, darin blättert man mit Pfeilen, Tasten oder Wischen durch die ganze Galerie.</p>
+
+<h3>Mosaik</h3>
+<pre class="d-syntax"><code>&lt;div class="gallery" data-variant="mosaic" data-media="m…,m…,m…"&gt;&lt;/div&gt;</code></pre>
+<figure class="galerie" data-variante="mosaik" data-anzahl="7">
+  <div class="foto" data-unterschrift="Abbruchkante am Gletschertor · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b1.jpg" width="1200" height="800" alt="Beispielbild 1" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Schmelzwasserbach im August · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b2.jpg" width="1200" height="800" alt="Beispielbild 2" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Messpegel an der Moräne · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b3.jpg" width="1200" height="800" alt="Beispielbild 3" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Hütte der Messgruppe · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b4.jpg" width="1200" height="800" alt="Beispielbild 4" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Morgennebel über dem Tal · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b5.jpg" width="1200" height="800" alt="Beispielbild 5" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Spalten im oberen Becken · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b6.jpg" width="1200" height="800" alt="Beispielbild 6" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Rückweg über das Geröllfeld · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b7.jpg" width="1200" height="800" alt="Beispielbild 7" loading="lazy"></picture></div>
+  <figcaption><span class="nachweis">Fotos 1–7: Beispiel · <a href="#" rel="license">CC0 1.0</a></span></figcaption>
+</figure>
+
+<h3>Karussell</h3>
+<pre class="d-syntax"><code>&lt;div class="gallery" data-variant="carousel" data-media="m…,m…,m…"&gt;&lt;/div&gt;</code></pre>
+<figure class="galerie" data-variante="karussell" data-anzahl="6">
+  <div class="spur">
+    <div class="foto" data-unterschrift="06:10 Uhr – Aufbruch an der Hütte · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b8.jpg" width="1200" height="800" alt="Beispielbild Karussell 1" loading="lazy"></picture></div>
+    <div class="foto" data-unterschrift="07:30 Uhr – Querung des Bachs · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b9.jpg" width="1200" height="800" alt="Beispielbild Karussell 2" loading="lazy"></picture></div>
+    <div class="foto" data-unterschrift="09:00 Uhr – erste Pegelmessung · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b10.jpg" width="1200" height="800" alt="Beispielbild Karussell 3" loading="lazy"></picture></div>
+    <div class="foto" data-unterschrift="11:45 Uhr – Bohrkern aus dem Firn · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b11.jpg" width="1200" height="800" alt="Beispielbild Karussell 4" loading="lazy"></picture></div>
+    <div class="foto" data-unterschrift="14:20 Uhr – Drohnenflug über die Zunge · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b12.jpg" width="1200" height="800" alt="Beispielbild Karussell 5" loading="lazy"></picture></div>
+    <div class="foto" data-unterschrift="18:05 Uhr – Rückkehr im Abendlicht · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b13.jpg" width="1200" height="800" alt="Beispielbild Karussell 6" loading="lazy"></picture></div>
+  </div>
+  <figcaption><span class="nachweis">Fotos 1–6: Beispiel · <a href="#" rel="license">CC0 1.0</a></span></figcaption>
+</figure>
+
+<h3>Bildstreifen</h3>
+<pre class="d-syntax"><code>&lt;div class="gallery" data-variant="strips" data-media="m…,m…,m…"&gt;&lt;/div&gt;</code></pre>
+<figure class="galerie" data-variante="streifen" data-anzahl="5">
+  <div class="foto" data-unterschrift="Gletschertor · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b14.jpg" width="1200" height="800" alt="Beispielbild Streifen 1" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Seitenmoräne · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b15.jpg" width="1200" height="800" alt="Beispielbild Streifen 2" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Firnbecken · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b16.jpg" width="1200" height="800" alt="Beispielbild Streifen 3" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Schmelzwassersee · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b17.jpg" width="1200" height="800" alt="Beispielbild Streifen 4" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Messstation Nord · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b18.jpg" width="1200" height="800" alt="Beispielbild Streifen 5" loading="lazy"></picture></div>
+  <figcaption><span class="nachweis">Fotos 1–5: Beispiel · <a href="#" rel="license">CC0 1.0</a></span></figcaption>
+</figure>
+<h3>Bisherige Galerie (Standard)</h3>
+<pre class="d-syntax"><code>&lt;div class="gallery" data-media="m…,m…,m…"&gt;&lt;/div&gt;</code></pre>
+<figure class="galerie" data-anzahl="3">
+  <div class="foto" data-unterschrift="Pegel 3 im Hochwasser · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b19.jpg" width="1200" height="800" alt="Beispielbild Standard 1" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Seitenbach · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b3.jpg" width="1200" height="800" alt="Beispielbild Standard 2" loading="lazy"></picture></div>
+  <div class="foto" data-unterschrift="Nebelbank · Foto: Beispiel · CC0 1.0"><picture><img src="_entwurf-bausteine/bilder/b5.jpg" width="1200" height="800" alt="Beispielbild Standard 3" loading="lazy"></picture></div>
+  <figcaption><span class="nachweis">Fotos 1–3: Beispiel · <a href="#" rel="license">CC0 1.0</a></span></figcaption>
+</figure>
+<p>Diese Form bleibt unverändert, wenn <code>data-variant</code> fehlt. Die Bildansicht mit Vorschaubildern und Tastatursteuerung gilt für alle Galerien und Einzelbilder: Klick oder Enter öffnet, ←/→ blättert, Pos1/Ende springt, Esc schließt.</p>
+
+<!-- ============ 2. Vorher/Nachher ============ -->
+<h2 id="vergleich">Vorher und nachher</h2>
+<p class="d-wofuer"><b>Wofür:</b> Zwei Aufnahmen derselben Stelle übereinanderlegen und mit einem Regler vergleichen – Veränderung wird sichtbar, ohne zwei Bilder im Kopf abzugleichen.</p>
+<pre class="d-syntax"><code>&lt;figure class="before-after" data-media="m…ALT,m…NEU" data-labels="1985|2025"&gt;
+  &lt;figcaption&gt;Gletscherzunge 1985 und 2025&lt;/figcaption&gt;
+&lt;/figure&gt;</code></pre>
+<figure class="vergleich">
+  <div class="vergleich-flaeche">
+    <div class="vergleich-bild vorher"><picture><img src="_entwurf-bausteine/bilder/b1.jpg" data-d-grau="1" width="1200" height="800" alt="Gletscherzunge 1985 (Beispielbild)" loading="lazy"></picture><span class="vergleich-marke">1985</span></div>
+    <div class="vergleich-bild nachher"><picture><img src="_entwurf-bausteine/bilder/b1.jpg" width="1200" height="800" alt="Gletscherzunge 2025 (Beispielbild)" loading="lazy"></picture><span class="vergleich-marke">2025</span></div>
+  </div>
+  <figcaption>Gletscherzunge 1985 und 2025 <span class="nachweis">Fotos: Beispiel · <a href="#" rel="license">CC0 1.0</a></span></figcaption>
+</figure>
+<p>Ohne eigene Beschriftung stehen „Vorher“ und „Nachher“ auf den Bildern.</p>
+<aside class="tldr"><b class="kurz-titel">Kurz gesagt</b><p>Der Regler lässt sich ziehen, antippen oder mit den Pfeiltasten bewegen.</p></aside>
+
+<!-- ============ 2b. Zeitstrahl ============ -->
+<h2 id="zeitstrahl">Chronik des Rückzugs</h2>
+<p class="d-wofuer"><b>Wofür:</b> Eine Abfolge von Ereignissen mit Datum erzählen – Geschichte, Projektverlauf, Tagesablauf. Wichtige Einträge lassen sich hervorheben. Funktioniert ganz ohne JavaScript; auf dem Handy steht das Datum über dem Text.</p>
+<pre class="d-syntax"><code>&lt;ol class="timeline"&gt;
+  &lt;li data-date="1850" data-highlight&gt;&lt;b&gt;Höchststand&lt;/b&gt; Die Zunge reicht bis …&lt;/li&gt;
+  &lt;li data-date="Mai 1998"&gt;&lt;b&gt;Messstation Nord&lt;/b&gt; Erste Daten …&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+<ol class="zeitstrahl">
+  <li class="markiert"><span class="zeitstrahl-datum">1850</span><div class="zeitstrahl-text"><b>Höchststand der Kleinen Eiszeit</b> Die Zunge reicht bis an den heutigen Parkplatz; die Moräne markiert die Grenze bis heute.</div></li>
+  <li><span class="zeitstrahl-datum">1921</span><div class="zeitstrahl-text"><b>Erste Vermessung</b> Ein Trupp der Universität setzt sechs Pegel und kartiert die Zunge.</div></li>
+  <li><span class="zeitstrahl-datum">1985</span><div class="zeitstrahl-text"><b>Das Vorher-Foto</b> Die Aufnahme aus dem Vergleich oben entsteht.</div></li>
+  <li><span class="zeitstrahl-datum">Mai 1998</span><div class="zeitstrahl-text"><b>Messstation Nord</b> Seitdem Temperatur, Wind und Strahlung im Zehn-Minuten-Takt.</div></li>
+  <li class="markiert"><span class="zeitstrahl-datum">Sommer 2022</span><div class="zeitstrahl-text"><b>Rekordschmelze</b> In einem einzigen Sommer verliert der Gletscher sechs Prozent seines Volumens.</div></li>
+  <li><span class="zeitstrahl-datum">2025</span><div class="zeitstrahl-text"><b>Das Nachher-Foto</b> Die Zunge liegt 1,4 Kilometer hinter der Moräne von 1850.</div></li>
+</ol>
+<p>Das Datum ist freier Text bis 20 Zeichen (Jahr, Monat, Uhrzeit). Einträge erscheinen in der Reihenfolge, in der sie geschrieben sind.</p>
+
+<!-- ============ 3. Hotspots ============ -->
+<h2 id="hotspots">Ein Bild mit Erklärpunkten</h2>
+<p class="d-wofuer"><b>Wofür:</b> Ein Bild an mehreren Stellen erklären, ohne den Text mit Ortsangaben („links oben…“) zu füllen. Die nummerierte Liste darunter steht immer da – sie ist zugleich die Fassung für Bildschirmleser, Druck und ohne JavaScript.</p>
+<pre class="d-syntax"><code>&lt;figure class="hotspots" data-media="m…"&gt;
+  &lt;ol&gt;
+    &lt;li data-x="22" data-y="35"&gt;&lt;b&gt;Firnlinie&lt;/b&gt; Grenze zwischen …&lt;/li&gt;
+    &lt;li data-x="61" data-y="58"&gt;&lt;b&gt;Gletschertor&lt;/b&gt; Hier tritt …&lt;/li&gt;
+  &lt;/ol&gt;
+  &lt;figcaption&gt;…&lt;/figcaption&gt;
+&lt;/figure&gt;</code></pre>
+<figure class="erklaerbild">
+  <div class="erklaerbild-flaeche">
+    <picture><img src="_entwurf-bausteine/bilder/b2.jpg" width="1200" height="800" alt="Übersicht des Gletschers mit Messpunkten (Beispielbild)" loading="lazy"></picture>
+  </div>
+  <ol class="erklaerbild-liste">
+    <li data-x="22" data-y="35"><b>Firnlinie</b> Grenze zwischen Altschnee und blankem Eis; sie wandert jedes Jahr um einige Meter nach oben.</li>
+    <li data-x="61" data-y="58"><b>Gletschertor</b> Hier tritt das Schmelzwasser aus. Im August führt der Bach bis zu viermal so viel Wasser wie im Mai.</li>
+    <li data-x="80" data-y="22"><b>Messstation Nord</b> Misst seit 1998 Temperatur, Wind und Strahlung im Zehn-Minuten-Takt.</li>
+    <li data-x="40" data-y="78"><b>Moräne von 1850 mit einem sehr langen Namen, damit man sieht, wie Text umbricht</b> Der Wall zeigt den Höchststand der Kleinen Eiszeit.</li>
+  </ol>
+  <figcaption>Der Gletscher von Süden <span class="nachweis">Foto: Beispiel · <a href="#" rel="license">CC0 1.0</a></span></figcaption>
+</figure>
+
+<!-- ============ 4. Wertung ============ -->
+<h2 id="wertung">Wertung der Messstationen</h2>
+<p class="d-wofuer"><b>Wofür:</b> Eine Bewertung nach mehreren Kriterien auf einen Blick vergleichbar machen. Der Gesamtwert steht oben und groß, die Einzelwerte darunter als Balken mit Zahl.</p>
+<pre class="d-syntax"><code>&lt;ul class="rating" data-max="10" data-total="7.8"&gt;
+  &lt;li data-score="9"&gt;Datenqualität&lt;/li&gt;
+  &lt;li data-score="6.5"&gt;Erreichbarkeit&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<div class="wertung">
+  <p class="wertung-gesamt"><span class="klein">Gesamt</span><b>7,8</b><span>von 10</span></p>
+  <ul>
+    <li><span class="wertung-name">Datenqualität</span><meter min="0" max="10" value="9">9 von 10</meter><span class="wertung-wert">9</span></li>
+    <li><span class="wertung-name">Erreichbarkeit</span><meter min="0" max="10" value="6.5">6,5 von 10</meter><span class="wertung-wert">6,5</span></li>
+    <li><span class="wertung-name">Wartungsaufwand</span><meter min="0" max="10" value="4">4 von 10</meter><span class="wertung-wert">4</span></li>
+    <li><span class="wertung-name">Stromversorgung im Winter bei geschlossener Schneedecke</span><meter min="0" max="10" value="8">8 von 10</meter><span class="wertung-wert">8</span></li>
+    <li><span class="wertung-name">Kosten</span><meter min="0" max="10" value="10">10 von 10</meter><span class="wertung-wert">10</span></li>
+  </ul>
+</div>
+<p>Ohne <code>data-total</code> entfällt die Gesamtzeile; <code>data-max</code> darf 5, 10 oder 100 sein.</p>
+
+<!-- ============ 6. Aufklappbarer Text ============ -->
+<h2 id="fragen">Häufige Fragen</h2>
+<p class="d-wofuer"><b>Wofür:</b> Ergänzende Fragen und Details anbieten, ohne den Lesefluss zu unterbrechen. Es ist immer nur ein Eintrag offen; der Browser erledigt das ohne Skript.</p>
+<pre class="d-syntax"><code>&lt;div class="accordion"&gt;
+  &lt;details&gt;&lt;summary&gt;Frage&lt;/summary&gt;&lt;p&gt;Antwort …&lt;/p&gt;&lt;/details&gt;
+  &lt;details&gt;&lt;summary&gt;Frage&lt;/summary&gt;&lt;p&gt;Antwort …&lt;/p&gt;&lt;/details&gt;
+&lt;/div&gt;</code></pre>
+<div class="akkordeon">
+  <details name="akkordeon-1" open><summary>Warum schmilzt der Gletscher von unten?</summary><p>Schmelzwasser sickert durch Spalten bis zum Grund, wärmt das Eis und wirkt dort wie ein Schmierfilm.</p></details>
+  <details name="akkordeon-1"><summary>Wie genau sind die Messungen?</summary><p>Die Pegel lösen auf einen Zentimeter auf; die Volumenberechnung hat eine Unsicherheit von etwa fünf Prozent.</p></details>
+  <details name="akkordeon-1"><summary>Kann man den Gletscher besuchen, und was sollte man beachten, wenn man über das Geröllfeld absteigt?</summary><p>Ja, über den markierten Weg ab der Hütte. Das Gletschertor selbst ist wegen Steinschlag gesperrt.</p></details>
+  <details name="akkordeon-1"><summary>Wer finanziert das Messnetz?</summary><p>Zwei Universitäten und der Alpenverein teilen sich die Kosten.</p></details>
+</div>
+<aside class="tldr"><b class="kurz-titel">Kurz gesagt</b><p>Mehr Bausteine heißt nicht mehr Bausteine je Artikel: jeder dient einer bestimmten Erzählform.</p></aside>
+    </div>
+  </div>
+</article>
+</main>
+
+</body>
+</html>

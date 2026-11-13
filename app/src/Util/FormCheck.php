@@ -15,6 +15,9 @@ final class FormCheck
     private const LONGFORM_MIN_WORDS = 1500;
     private const MAX_CATEGORIES = 3;
     private const DUPLICATE_PERCENT = 80.0;
+    private const MAX_HOTSPOTS = 12;
+    private const MAX_STRIPS = 8;
+    private const DEFAULT_RATING_MAX = 10;
     private const WORDS_PER_MINUTE = 200;
     private const KINDS_WITHOUT_URL = ['book', 'interview', 'other'];
     private const REFERENCE_PATTERN = '/data-(media|cite)="([^"]*)"/';
@@ -68,6 +71,7 @@ final class FormCheck
         $this->checkSourceDetails($sources);
         $this->checkCitations($sources, $citations);
         $this->checkMedia($snapshot, $html, $mediaByUid, $rules);
+        $this->checkComponents($html, $mediaByUid);
         $this->checkCategories((array) $snapshot['categories']);
         $this->checkDuplicate((string) $snapshot['title'], $otherLiveTitles);
 
@@ -258,6 +262,105 @@ final class FormCheck
                 $this->error('media_incomplete', 'media.' . $uid . '.' . $column, sprintf('Beim Medium „%s“ fehlt die Angabe „%s“. Ergänze sie in den Medien-Metadaten.', $uid, $column));
             }
         }
+    }
+
+    /**
+     * Prüft die Gestaltungs-Bausteine auf Inhalt, den der Sanitizer nicht beurteilen kann (Anzahl, Bezug zwischen Attributen).
+     *
+     * @param array<string, array<string, mixed>> $mediaByUid
+     */
+    private function checkComponents(string $html, array $mediaByUid): void
+    {
+        if (trim($html) === '') {
+            return;
+        }
+
+        $document = \Dom\HTMLDocument::createFromString('<!doctype html><body>' . $html, LIBXML_NOERROR, 'UTF-8');
+
+        foreach ($document->querySelectorAll('figure.before-after') as $figure) {
+            $this->checkBeforeAfter($figure, $mediaByUid);
+        }
+        foreach ($document->querySelectorAll('figure.hotspots') as $figure) {
+            $this->checkHotspots($figure);
+        }
+        foreach ($document->querySelectorAll('ul.rating') as $list) {
+            $this->checkRating($list);
+        }
+        foreach ($document->querySelectorAll('div.gallery[data-variant]') as $gallery) {
+            $this->checkGalleryVariant($gallery);
+        }
+    }
+
+    /** @param array<string, array<string, mixed>> $mediaByUid */
+    private function checkBeforeAfter(\Dom\Element $figure, array $mediaByUid): void
+    {
+        $uids = self::splitList((string) $figure->getAttribute('data-media'));
+        $known = array_filter($uids, static fn (string $uid): bool => isset($mediaByUid[$uid]));
+        if (count($uids) !== 2 || count($known) !== 2) {
+            $this->componentInvalid('Vorher/Nachher braucht genau zwei bekannte Bilder in data-media.');
+        }
+    }
+
+    private function checkHotspots(\Dom\Element $figure): void
+    {
+        $items = $figure->querySelectorAll('li');
+        $placed = 0;
+        foreach ($items as $item) {
+            if ($item->hasAttribute('data-x') && $item->hasAttribute('data-y')) {
+                $placed++;
+            }
+        }
+
+        if ($placed === 0) {
+            $this->componentInvalid('Erklärpunkte brauchen mindestens ein <li> mit data-x und data-y (0 bis 100).');
+        }
+        if ($items->length > self::MAX_HOTSPOTS) {
+            $this->componentInvalid(sprintf('Erklärpunkte erlauben höchstens %d Punkte, es sind %d.', self::MAX_HOTSPOTS, $items->length));
+        }
+    }
+
+    private function checkRating(\Dom\Element $list): void
+    {
+        $max = (float) ($list->getAttribute('data-max') ?? self::DEFAULT_RATING_MAX);
+        $scored = 0;
+        $tooHigh = false;
+        foreach ($list->querySelectorAll('li[data-score]') as $item) {
+            $scored++;
+            if ((float) $item->getAttribute('data-score') > $max) {
+                $tooHigh = true;
+            }
+        }
+
+        if ($scored === 0) {
+            $this->componentInvalid('Eine Wertung braucht mindestens ein <li> mit data-score.');
+        }
+        if ($tooHigh) {
+            $this->componentInvalid(sprintf('Eine Wertung hat ein data-score über dem Höchstwert (data-max, Standard %d).', self::DEFAULT_RATING_MAX));
+        }
+    }
+
+    private function checkGalleryVariant(\Dom\Element $gallery): void
+    {
+        $variant = (string) $gallery->getAttribute('data-variant');
+        $count = count(self::splitList((string) $gallery->getAttribute('data-media')));
+
+        if (in_array($variant, ['carousel', 'strips'], true) && $count < 2) {
+            $this->componentInvalid(sprintf('Die Galerie-Form „%s“ braucht mindestens zwei Bilder in data-media.', $variant));
+        }
+        if ($variant === 'strips' && $count > self::MAX_STRIPS) {
+            $this->componentInvalid(sprintf('Die Galerie-Form „strips“ erlaubt höchstens %d Bilder, es sind %d.', self::MAX_STRIPS, $count));
+        }
+    }
+
+    /** @return list<string> */
+    private static function splitList(string $value): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', $value)), static fn (string $part): bool => $part !== ''));
+    }
+
+    private function componentInvalid(string $message): void
+    {
+        $this->warning('component_invalid', 'content_html', $message);
     }
 
     /** @param list<array<string, mixed>> $categories */

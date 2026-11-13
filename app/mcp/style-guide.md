@@ -14,7 +14,7 @@
 
 Erlaubt sind genau diese Klassen; jede andere wird entfernt.
 
-`lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote`, `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`.
+`lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote`, `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`, sowie die Bausteine `before-after`, `hotspots`, `rating`, `accordion` und `highlight` (siehe „Bausteine“).
 
 Pflicht in jedem Artikel: ein `tldr` direkt nach dem Einstieg (Gesamt-Kasten) und eines am Ende jedes `<h2>`-Abschnitts, jeweils direkt im Text, nicht in `section` oder `div` verschachtelt. Fehlt eines, warnt die Formprüfung (`tldr_missing`).
 
@@ -37,10 +37,50 @@ Nachrichtlich und wertend getrennt halten: Wertendes steht in `opinion`.
 Medien kommen aus der Medienbibliothek (`import_media_from_url`, `upload_media`) und werden über ihre UID eingebunden (`m` plus zehn Hexzeichen, z. B. `m3f9a01b2c4`).
 
 - **Bild, Video, Audio:** `<figure data-media="UID" data-layout="wide"><figcaption>Bildunterschrift</figcaption></figure>`. `data-layout` ist optional: `inline` (Standard), `wide`, `full`, `left`, `right`. Die Nachweiszeile (Urheber, Lizenz) setzt der Renderer; ohne eigene `figcaption` nimmt er die Bildunterschrift des Mediums.
-- **Galerie:** `<div class="gallery" data-media="UID1,UID2,UID3"></div>`, höchstens 30 UIDs.
+- **Galerie:** `<div class="gallery" data-media="UID1,UID2,UID3"></div>`, höchstens 30 UIDs. Optional `data-variant="mosaic"`, `"carousel"` oder `"strips"` (siehe „Bausteine“); ohne `data-variant` erscheint das bisherige Raster.
 - **Einbettung** (lädt erst nach Klick): `<figure data-embed="youtube" data-id="VIDEO-ID"></figure>`; Anbieter `youtube` oder `vimeo`, `data-id` aus Buchstaben, Ziffern, `_` und `-`.
 - Das Titelbild steht nicht im Text, sondern im Feld `cover_media_uid` und muss ein Bild sein.
 - Unbekannte UIDs blockieren das Einreichen (`unknown_media`).
+
+## Bausteine
+
+Der Server erzeugt aus dieser Syntax das fertige Markup samt Bedienung; eigenes CSS, JavaScript oder SVG gibt es weiterhin nicht. Falsche Werte entfernt der Sanitizer, schief befüllte Bausteine meldet die Formprüfung (`component_invalid`). Jedes Bild öffnet auf der Artikelseite zusätzlich in einer Bildansicht mit Blättern; dafür ist nichts zu schreiben.
+
+- **Galerie-Formen:** Mosaik zeigt eine Serie auf einen Blick, Karussell erzählt eine Abfolge Bild für Bild, Bildstreifen lädt zum Stöbern ein und spart Höhe. Karussell und Bildstreifen brauchen mindestens 2 Bilder, Bildstreifen höchstens 8.
+
+  ```html
+  <div class="gallery" data-variant="carousel" data-media="UID1,UID2,UID3"></div>
+  ```
+
+- **Vorher/Nachher:** zwei Aufnahmen derselben Stelle mit einem Regler vergleichen. `data-media` nennt genau zwei Bild-UIDs (alt, neu), `data-labels` zwei Beschriftungen bis 40 Zeichen, getrennt durch `|`; ohne sie stehen „Vorher“ und „Nachher“ da.
+
+  ```html
+  <figure class="before-after" data-media="UID_ALT,UID_NEU" data-labels="1985|2025"><figcaption>Gletscherzunge 1985 und 2025</figcaption></figure>
+  ```
+
+- **Erklärpunkte:** ein Bild an mehreren Stellen erklären, ohne Ortsangaben im Text. `data-x` und `data-y` sind Prozent von links bzw. oben (0 bis 100, höchstens eine Nachkommastelle), höchstens 12 Punkte.
+
+  ```html
+  <figure class="hotspots" data-media="UID"><ol><li data-x="22" data-y="35"><b>Titel</b> Text</li></ol><figcaption>Beschreibung</figcaption></figure>
+  ```
+
+- **Wertung:** eine Bewertung nach mehreren Kriterien vergleichbar machen. `data-max` ist 5, 10 oder 100 (Standard 10); `data-score` und `data-total` liegen zwischen 0 und 999 mit höchstens einer Nachkommastelle und dürfen `data-max` nicht überschreiten; ohne `data-total` entfällt die Gesamtzeile.
+
+  ```html
+  <ul class="rating" data-max="10" data-total="7.8"><li data-score="9">Datenqualität</li><li data-score="6.5">Nachvollziehbarkeit</li></ul>
+  ```
+
+- **Zeitstrahl:** Ereignisse mit Datum in Abfolge erzählen. Das Datum steht in `<time datetime="…">`, die Klasse `highlight` am `li` hebt wichtige Einträge hervor.
+
+  ```html
+  <ol class="timeline"><li class="highlight"><time datetime="1850">1850</time> <b>Höchststand</b> Die Zunge reicht bis …</li><li><time datetime="1920-05">Mai 1920</time> Erste Messung …</li></ol>
+  ```
+
+- **Aufklappbarer Text:** ergänzende Fragen und Details anbieten, ohne den Lesefluss zu unterbrechen; immer nur ein Eintrag ist offen.
+
+  ```html
+  <div class="accordion"><details><summary>Frage</summary><p>Antwort …</p></details><details><summary>Weitere Frage</summary><p>Antwort …</p></details></div>
+  ```
 
 ## Belege
 
@@ -84,6 +124,7 @@ Warnungen:
 - `excerpt_length`: Teaser außerhalb von 70 bis 180 Zeichen.
 - `no_subheadings`: über 700 Wörter ohne `<h2>`.
 - `tldr_missing`: ein Kasten „Kurz gesagt“ fehlt — vor der ersten `<h2>` (Gesamt-Kasten) oder in einem `<h2>`-Abschnitt; die Meldung nennt die Abschnitte.
+- `component_invalid`: ein Baustein ist falsch befüllt — Vorher/Nachher ohne genau zwei bekannte Bilder, Erklärpunkte ohne Punkt mit `data-x`/`data-y` oder mit mehr als 12, Wertung ohne `data-score` oder über `data-max`, Galerie-Form „carousel“/„strips“ mit weniger als 2 Bildern, „strips“ mit mehr als 8; die Meldung nennt Baustein und Fehler.
 - `longform_short`: Layout `longform` unter 1500 Wörtern.
 - `source_publisher_missing`: Quelle ohne `publisher`.
 - `uncited_source`: Quelle wird im Text nirgends zitiert.

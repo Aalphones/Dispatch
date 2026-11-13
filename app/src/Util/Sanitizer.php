@@ -38,7 +38,11 @@ final class Sanitizer
         'lead', 'tldr', 'callout', 'note', 'warning', 'key', 'factbox', 'pullquote', 'stats', 'stat',
         'timeline', 'steps', 'checklist', 'two-col', 'pros', 'cons', 'compare', 'qa', 'definition',
         'details', 'opinion', 'update', 'sidenote', 'dropcap', 'gallery',
+        'before-after', 'hotspots', 'rating', 'accordion', 'highlight',
     ];
+
+    private const GALLERY_VARIANTS = ['mosaic', 'carousel', 'strips'];
+    private const RATING_MAXIMA = ['5', '10', '100'];
 
     private const ALLOWED_LAYOUTS = ['inline', 'wide', 'full', 'left', 'right'];
     private const ALLOWED_EMBEDS = ['youtube', 'vimeo'];
@@ -48,6 +52,10 @@ final class Sanitizer
     private const CITE_PATTERN = '/^[A-Za-z0-9][A-Za-z0-9._-]{0,59}(,[A-Za-z0-9][A-Za-z0-9._-]{0,59})*\z/';
     private const MEDIA_PATTERN = '/^m[0-9a-f]{10}\z/';
     private const GALLERY_MEDIA_PATTERN = '/^m[0-9a-f]{10}(,m[0-9a-f]{10}){0,29}\z/';
+    private const PAIR_MEDIA_PATTERN = '/^m[0-9a-f]{10},m[0-9a-f]{10}\z/';
+    private const LABELS_PATTERN = '/^[^|<>"]{1,40}\|[^|<>"]{1,40}\z/u';
+    private const COORDINATE_PATTERN = '/^(100|[0-9]{1,2})(\.[0-9])?\z/';
+    private const SCORE_PATTERN = '/^[0-9]{1,3}(\.[0-9])?\z/';
     private const EMBED_ID_PATTERN = '/^[A-Za-z0-9_-]{1,64}\z/';
     private const SPAN_PATTERN = '/^[0-9]{1,2}\z/';
     private const SPAN_MAX = 50;
@@ -238,7 +246,24 @@ final class Sanitizer
             'a href' => $this->safeHref($value),
             'a title', 'abbr title' => $value,
             'a data-cite' => $this->matching(self::CITE_PATTERN, $value),
-            'figure data-media' => $this->matching(self::MEDIA_PATTERN, $value),
+            'figure data-media' => $this->matching(
+                in_array('before-after', $classes, true) ? self::PAIR_MEDIA_PATTERN : self::MEDIA_PATTERN,
+                $value,
+            ),
+            'figure data-labels' => in_array('before-after', $classes, true)
+                ? $this->matching(self::LABELS_PATTERN, $value)
+                : null,
+            'div data-variant' => in_array('gallery', $classes, true)
+                ? $this->oneOf(self::GALLERY_VARIANTS, $value)
+                : null,
+            'li data-x', 'li data-y' => $this->matching(self::COORDINATE_PATTERN, $value),
+            'ul data-max' => in_array('rating', $classes, true)
+                ? $this->oneOf(self::RATING_MAXIMA, $value)
+                : null,
+            'ul data-total' => in_array('rating', $classes, true)
+                ? $this->matching(self::SCORE_PATTERN, $value)
+                : null,
+            'li data-score' => $this->matching(self::SCORE_PATTERN, $value),
             'figure data-layout', 'div data-layout' => $this->oneOf(self::ALLOWED_LAYOUTS, $value),
             'figure data-embed' => $this->oneOf(self::ALLOWED_EMBEDS, $value),
             'figure data-id' => $this->matching(self::EMBED_ID_PATTERN, $value),

@@ -23,18 +23,24 @@ Verstanden, bevor geändert (Chesterton): `keptAttributeValue()` liefert `null` 
 
 ## Checkliste
 
-- [ ] `Sanitizer::ALLOWED_CLASSES` um `before-after`, `hotspots`, `rating`, `accordion`, `highlight` ergänzen.
-- [ ] Konstanten anlegen: `PAIR_MEDIA_PATTERN = '/^m[0-9a-f]{10},m[0-9a-f]{10}\z/'`, `LABELS_PATTERN = '/^[^|<>"]{1,40}\|[^|<>"]{1,40}\z/u'`, `COORDINATE_PATTERN = '/^(100|[0-9]{1,2})(\.[0-9])?\z/'`, `SCORE_PATTERN = '/^[0-9]{1,3}(\.[0-9])?\z/'`, `GALLERY_VARIANTS = ['mosaic', 'carousel', 'strips']`, `RATING_MAXIMA = ['5', '10', '100']`.
-- [ ] `keptAttributeValue()` erweitern:
+- [x] `Sanitizer::ALLOWED_CLASSES` um `before-after`, `hotspots`, `rating`, `accordion`, `highlight` ergänzen.
+- [x] Konstanten anlegen: `PAIR_MEDIA_PATTERN = '/^m[0-9a-f]{10},m[0-9a-f]{10}\z/'`, `LABELS_PATTERN = '/^[^|<>"]{1,40}\|[^|<>"]{1,40}\z/u'`, `COORDINATE_PATTERN = '/^(100|[0-9]{1,2})(\.[0-9])?\z/'`, `SCORE_PATTERN = '/^[0-9]{1,3}(\.[0-9])?\z/'`, `GALLERY_VARIANTS = ['mosaic', 'carousel', 'strips']`, `RATING_MAXIMA = ['5', '10', '100']`.
+- [x] `keptAttributeValue()` erweitern:
   - `'figure data-media'` → bei Klasse `before-after` `PAIR_MEDIA_PATTERN`, sonst wie bisher `MEDIA_PATTERN`.
   - `'figure data-labels'` → nur mit Klasse `before-after`, `LABELS_PATTERN`.
   - `'div data-variant'` → nur mit Klasse `gallery`, `oneOf(GALLERY_VARIANTS)`.
   - `'li data-x'`, `'li data-y'` → `COORDINATE_PATTERN` (ohne Klassenbedingung; das `li` kennt seine Liste nicht).
   - `'ul data-max'` → nur mit Klasse `rating`, `oneOf(RATING_MAXIMA)`.
   - `'ul data-total'` → nur mit Klasse `rating`, `SCORE_PATTERN`; `'li data-score'` → `SCORE_PATTERN`.
-- [ ] `FormCheck`: private Methode `checkComponents(string $html, array $mediaByUid)` und Aufruf in `check()` nach `checkMedia()`. Fragment wie im Renderer laden (`\Dom\HTMLDocument::createFromString('<!doctype html><body>' . $html, LIBXML_NOERROR, 'UTF-8')`), Bausteine per `querySelectorAll` finden, Fälle aus AK 3 prüfen, je Fund eine `component_invalid`-Warnung. Beispieltext: „Vorher/Nachher braucht genau zwei Bilder in data-media.“
-- [ ] `app/mcp/style-guide.md`: Klassenliste ergänzen; neuer Abschnitt „Bausteine“ unter „Medien“ mit je einem Beispiel aus der Kontrakt-Tabelle (Galerie-Formen, Vorher/Nachher, Erklärpunkte, Wertung, Zeitstrahl mit `<time>` und `highlight`, Aufklappbarer Text) und je einem Satz „wofür“ (Text aus `artifacts/entwurf-bausteine.html`, Kästen „Wofür“); Galerie-Zeile um `data-variant` ergänzen; Warnung `component_invalid` in die Liste.
-- [ ] Prüfen: kleines Skript im Scratchpad (nicht im Repo), das `(new Sanitizer())->sanitize()` mit allen Beispielen aus AK 1/2 aufruft und Ausgabe plus Hinweise ausgibt; Ergebnis gegen AK abgleichen.
-- [ ] `php -l app/src/Util/Sanitizer.php app/src/Util/FormCheck.php`.
+- [x] `FormCheck`: private Methode `checkComponents(string $html, array $mediaByUid)` und Aufruf in `check()` nach `checkMedia()`. Fragment wie im Renderer laden (`\Dom\HTMLDocument::createFromString('<!doctype html><body>' . $html, LIBXML_NOERROR, 'UTF-8')`), Bausteine per `querySelectorAll` finden, Fälle aus AK 3 prüfen, je Fund eine `component_invalid`-Warnung. Beispieltext: „Vorher/Nachher braucht genau zwei Bilder in data-media.“
+- [x] `app/mcp/style-guide.md`: Klassenliste ergänzen; neuer Abschnitt „Bausteine“ unter „Medien“ mit je einem Beispiel aus der Kontrakt-Tabelle (Galerie-Formen, Vorher/Nachher, Erklärpunkte, Wertung, Zeitstrahl mit `<time>` und `highlight`, Aufklappbarer Text) und je einem Satz „wofür“ (Text aus `artifacts/entwurf-bausteine.html`, Kästen „Wofür“); Galerie-Zeile um `data-variant` ergänzen; Warnung `component_invalid` in die Liste.
+- [x] Prüfen: kleines Skript im Scratchpad (nicht im Repo), das `(new Sanitizer())->sanitize()` mit allen Beispielen aus AK 1/2 aufruft und Ausgabe plus Hinweise ausgibt; Ergebnis gegen AK abgleichen.
+- [x] `php -l app/src/Util/Sanitizer.php app/src/Util/FormCheck.php`.
 
 ## Report-Back
+
+Status: complete. Alle Checklistenpunkte erledigt (Häkchen unten nachgezogen durch Statuszeile); Prüfskript im Scratchpad bestätigt AK 1–3, `php -l` grün.
+
+- Sanitizer: Klassen, Konstanten, Wertregeln wie geplant. Bei fehlerhaftem `data-x` bleibt das `li` ohne `data-x` stehen; die Formprüfung meldet dann „kein li mit data-x und data-y“.
+- FormCheck: `checkComponents()` mit je einer Methode pro Baustein; Meldungen nennen Baustein und Fehler. Wertung vergleicht `data-score` gegen `data-max` (Standard 10).
+- Style-Guide: Abschnitt „Bausteine“, Galerie-Zeile, Klassenliste, Warnung `component_invalid`. Zeitstrahl-Beispiel folgt dem Kontrakt (`<time datetime>`, `highlight`), nicht dem älteren Entwurfs-Text (`data-date`).

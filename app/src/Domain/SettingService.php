@@ -11,7 +11,7 @@ final class SettingService
 {
     public const PUBLIC_KEYS = [
         'site_title', 'site_tagline', 'site_description', 'author_name', 'author_url',
-        'accent', 'ai_disclosure', 'ai_disclosure_text',
+        'accent', 'ai_disclosure', 'ai_disclosure_text', 'release_per_day',
     ];
 
     public const INTERNAL_KEYS = ['language', 'locale', 'posts_per_page', 'queue_claim_minutes'];
@@ -29,6 +29,7 @@ final class SettingService
         'locale' => 'de_DE',
         'posts_per_page' => 12,
         'queue_claim_minutes' => 180,
+        'release_per_day' => 2,
     ];
 
     /** Höchstlängen der Zeichenketten (Zeichen, nach dem Trimmen). */
@@ -153,6 +154,11 @@ final class SettingService
             $this->settings->upsert($name, $value);
             $audit->record($actor, 'setting.set', 'setting:' . $name, ['old' => $old, 'new' => $value]);
         }
+
+        // Das Tageslimit ändert alle Termine: Der gemerkte Prüfzeitpunkt ist dann veraltet.
+        if (array_key_exists('release_per_day', $values)) {
+            (new ScheduleClock((string) $this->config['storage_dir']))->forget();
+        }
     }
 
     private function normalize(string $name, mixed $value): mixed
@@ -167,6 +173,9 @@ final class SettingService
 
             case 'posts_per_page':
                 return $this->integerInRange($name, $value, 1, 100);
+
+            case 'release_per_day':
+                return $this->integerInRange($name, $value, 1, 6);
 
             case 'queue_claim_minutes':
                 return $this->integerInRange($name, $value, 15, 1440);

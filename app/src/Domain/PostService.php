@@ -9,6 +9,7 @@ use Dispatch\Util\FormCheck;
 use Dispatch\Util\FormCheckResult;
 use Dispatch\Util\Sanitizer;
 use Dispatch\Util\Text;
+use DateTimeImmutable;
 use PDO;
 
 final class PostService
@@ -38,6 +39,7 @@ final class PostService
     private const LAYOUTS = ['standard', 'feature', 'longform', 'briefing'];
     private const DEPTHS = ['standard', 'deep'];
     private const ORIGINS = ['scheduled', 'manual'];
+    private const WHEN = ['now', 'slot', 'fixed'];
     private const SOURCE_KINDS = ['web', 'news', 'study', 'official', 'dataset', 'book', 'interview', 'video', 'podcast', 'social', 'other'];
 
     private const REVIEW_NOTE_MAX_LENGTH = 20000;
@@ -136,6 +138,13 @@ final class PostService
         }
         if ($current['status'] === 'archived') {
             throw new DomainError('archived', 'Der Artikel ist archiviert und lässt sich nicht mehr ändern.', ['id' => $id]);
+        }
+        if ($current['status'] === 'scheduled') {
+            throw new DomainError(
+                'invalid_transition',
+                'Der Artikel ist eingeplant und wartet auf seinen Termin. Ändern geht erst, wenn der Inhaber ihn aus dem Plan nimmt.',
+                ['id' => $id, 'status' => 'scheduled', 'action' => 'update']
+            );
         }
 
         $normalized = $this->normalize($patch, $id, $actor, $current);
@@ -335,28 +344,159 @@ final class PostService
         });
     }
 
-    /** @return array<string, mixed> */
-    public function approve(int $id, Actor $actor): array
+    /**
+     * Gibt frei. Ein nie veröffentlichter Artikel erscheint sofort (`now`) oder wird eingeplant (`slot`: Warteschlange,
+     * `fixed`: fester Termin `$at`, UTC). Eine neue Fassung eines Live-Artikels geht immer sofort online (ADR-028).
+     *
+     * @return array<string, mixed>
+     */
+    public function approve(int $id, Actor $actor, string $when = 'now', ?DateTimeImmutable $at = null): array
     {
         $this->requireOwner($actor, 'freigeben');
+        $this->assertWhen($when, $at);
 
-        return Transaction::join($this->pdo, function () use ($id, $actor): array {
+        $isScheduled = false;
+        $result = Transaction::join($this->pdo, function () use ($id, $actor, $when, $at, &$isScheduled): array {
             $post = $this->lockedPost($id);
             if ($post['status'] !== 'review') {
                 throw $this->invalidTransition($post, 'approve');
             }
 
             $this->assertFormOk($id);
+            $isScheduled = $post['published_revision'] === null && $when !== 'now';
+            if ($isScheduled) {
+                $this->posts->setStatus($id, [
+                    'status' => 'scheduled',
+                    'review_note' => null,
+                    'schedule_mode' => $when,
+                    'scheduled_at' => $when === 'fixed' ? $at->format('Y-m-d H:i:s') : null,
+                    'scheduled_since' => gmdate('Y-m-d H:i:s'),
+                ]);
+            } else {
+                $this->posts->setStatus($id, [
+                    'status' => 'published',
+                    'published_revision' => (int) $post['revision'],
+                    'touch_published_at' => true,
+                    'review_note' => null,
+                ]);
+            }
+            $this->queueAfter($post, 'markDone');
+            $this->audit->record($actor, 'post.approve', 'post:' . $id, [
+                'revision' => (int) $post['revision'],
+                'when' => $isScheduled ? $when : 'now',
+                'at' => $isScheduled && $when === 'fixed' ? $at->format('Y-m-d H:i:s') : null,
+            ]);
+
+            return $this->get($id);
+        });
+
+        if ($isScheduled) {
+            $this->forgetSchedule();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Ändert den Zeitpunkt eines eingeplanten Artikels. `slot` hängt ihn ans Ende der Warteschlange,
+     * `fixed` setzt den Termin `$at` (UTC), `now` veröffentlicht ihn sofort.
+     *
+     * @return array<string, mixed>
+     */
+    public function reschedule(int $id, string $when, ?DateTimeImmutable $at, Actor $actor): array
+    {
+        $this->requireOwner($actor, 'neu einplanen');
+        $this->assertWhen($when, $at);
+
+        $result = Transaction::join($this->pdo, function () use ($id, $when, $at, $actor): array {
+            $post = $this->lockedPost($id);
+            if ($post['status'] !== 'scheduled') {
+                throw $this->invalidTransition($post, 'reschedule');
+            }
+
+            $isChanged = true;
+            if ($when === 'now') {
+                $this->posts->setStatus($id, [
+                    'status' => 'published',
+                    'published_revision' => (int) $post['revision'],
+                    'touch_published_at' => true,
+                    'schedule_mode' => null,
+                ]);
+            } elseif ($when === 'slot' && $post['schedule_mode'] === 'slot') {
+                $isChanged = false;
+            } elseif ($when === 'slot') {
+                $this->posts->setStatus($id, ['schedule_mode' => 'slot', 'scheduled_at' => null, 'scheduled_since' => gmdate('Y-m-d H:i:s')]);
+            } else {
+                $this->posts->setStatus($id, ['schedule_mode' => 'fixed', 'scheduled_at' => $at->format('Y-m-d H:i:s')]);
+            }
+            if ($isChanged) {
+                $this->audit->record($actor, 'post.reschedule', 'post:' . $id, [
+                    'when' => $when,
+                    'at' => $when === 'fixed' ? $at->format('Y-m-d H:i:s') : null,
+                ]);
+            }
+
+            return $this->get($id);
+        });
+
+        $this->forgetSchedule();
+
+        return $result;
+    }
+
+    /**
+     * Nimmt einen eingeplanten Artikel aus dem Plan; er wartet wieder auf die Freigabe.
+     * Der Queue-Auftrag bleibt erledigt.
+     *
+     * @return array<string, mixed>
+     */
+    public function unschedule(int $id, Actor $actor): array
+    {
+        $this->requireOwner($actor, 'aus dem Plan nehmen');
+
+        $result = Transaction::join($this->pdo, function () use ($id, $actor): array {
+            $post = $this->lockedPost($id);
+            if ($post['status'] !== 'scheduled') {
+                throw $this->invalidTransition($post, 'unschedule');
+            }
+
+            $this->posts->setStatus($id, ['status' => 'review', 'schedule_mode' => null, 'scheduled_at' => null, 'scheduled_since' => null]);
+            $this->audit->record($actor, 'post.unschedule', 'post:' . $id, ['revision' => (int) $post['revision']]);
+
+            return $this->get($id);
+        });
+
+        $this->forgetSchedule();
+
+        return $result;
+    }
+
+    /**
+     * Nur für `ScheduleService::releaseDue`. Keine erneute Formprüfung: Der Inhalt ist seit der Freigabe gesperrt.
+     *
+     * @return bool false, wenn der Artikel nicht mehr eingeplant war (ein paralleler Auslöser war schneller)
+     */
+    public function release(int $id, ?string $slotUtc, Actor $actor): bool
+    {
+        return Transaction::join($this->pdo, function () use ($id, $slotUtc, $actor): bool {
+            $post = $this->lockedPost($id);
+            if ($post['status'] !== 'scheduled') {
+                return false;
+            }
+
             $this->posts->setStatus($id, [
                 'status' => 'published',
                 'published_revision' => (int) $post['revision'],
                 'touch_published_at' => true,
-                'review_note' => null,
+                'release_slot' => $slotUtc,
             ]);
-            $this->queueAfter($post, 'markDone');
-            $this->audit->record($actor, 'post.approve', 'post:' . $id, ['revision' => (int) $post['revision']]);
+            $this->audit->record($actor, 'post.release', 'post:' . $id, [
+                'revision' => (int) $post['revision'],
+                'mode' => $post['schedule_mode'],
+                'slot' => $slotUtc,
+            ]);
 
-            return $this->get($id);
+            return true;
         });
     }
 
@@ -468,8 +608,10 @@ final class PostService
      */
     public function discard(int $id, Actor $actor): void
     {
-        Transaction::join($this->pdo, function () use ($id, $actor): void {
+        $wasScheduled = false;
+        Transaction::join($this->pdo, function () use ($id, $actor, &$wasScheduled): void {
             $post = $this->lockedPost($id);
+            $wasScheduled = $post['status'] === 'scheduled';
             if ($post['published_revision'] !== null) {
                 throw new DomainError(
                     'invalid_transition',
@@ -489,6 +631,10 @@ final class PostService
             $this->queueAfter($post, 'reopen');
             $this->audit->record($actor, 'post.discard', 'post:' . $id, ['title' => $post['title'], 'slug' => $post['slug']]);
         });
+
+        if ($wasScheduled) {
+            $this->forgetSchedule();
+        }
     }
 
     /**
@@ -562,6 +708,22 @@ final class PostService
         }
     }
 
+    /** Den Zeitpunkt auf Zulässigkeit prüfen; ob `$at` in der Zukunft liegt, prüft `ScheduleService::parseAt`. */
+    private function assertWhen(string $when, ?DateTimeImmutable $at): void
+    {
+        if (!in_array($when, self::WHEN, true)) {
+            throw $this->invalid('when', 'muss now, slot oder fixed sein');
+        }
+        if ($when === 'fixed' && $at === null) {
+            throw $this->invalid('at', 'ist bei einem festen Termin Pflicht');
+        }
+    }
+
+    private function forgetSchedule(): void
+    {
+        (new ScheduleClock((string) $this->config['storage_dir']))->forget();
+    }
+
     private function requireOwner(Actor $actor, string $action): void
     {
         if (!$actor->isOwner()) {
@@ -592,6 +754,8 @@ final class PostService
             'author_model' => $post['author_model'],
             'published_revision' => $post['published_revision'] === null ? null : (int) $post['published_revision'],
             'published_at' => $post['published_at'],
+            'schedule_mode' => $post['schedule_mode'],
+            'scheduled_at' => $post['scheduled_at'],
         ];
     }
 

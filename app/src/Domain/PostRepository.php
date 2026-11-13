@@ -19,7 +19,13 @@ final class PostRepository
     private const LIST_COLUMNS = [
         'id', 'slug', 'title', 'subtitle', 'kicker', 'excerpt', 'status', 'tags', 'layout', 'accent',
         'cover_media_id', 'seo_title', 'seo_description', 'origin', 'queue_item_id', 'depth', 'review_note',
-        'ai_assisted', 'author_model', 'word_count', 'revision', 'published_revision', 'published_at', 'created_at', 'updated_at',
+        'ai_assisted', 'author_model', 'word_count', 'revision', 'published_revision', 'published_at', 'schedule_mode', 'scheduled_at', 'created_at', 'updated_at',
+    ];
+
+    /** Spalten, die `setStatus` schreiben darf. */
+    private const STATUS_COLUMNS = [
+        'status', 'review_note', 'published_revision', 'author_model',
+        'schedule_mode', 'scheduled_at', 'scheduled_since', 'release_slot',
     ];
 
     private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
@@ -365,7 +371,8 @@ final class PostRepository
     }
 
     /**
-     * Titel der Live-Stände (nicht des Arbeitsstands), gleiche Bedingung wie `livePosts()`.
+     * Titel der Live-Stände plus eingeplanter Artikel; deren Arbeitsstand ist der freigegebene, weil eingeplante
+     * Artikel gesperrt sind (ADR-028). Gleiche Bedingung wie `livePosts()`.
      *
      * @return list<string>
      */
@@ -384,6 +391,12 @@ final class PostRepository
             $titles[] = (string) $snapshot['title'];
         }
 
+        $scheduled = $this->pdo->prepare("SELECT title FROM posts WHERE status = 'scheduled' AND id <> ?");
+        $scheduled->execute([$exceptId ?? 0]);
+        foreach ($scheduled->fetchAll(PDO::FETCH_COLUMN) as $title) {
+            $titles[] = (string) $title;
+        }
+
         return $titles;
     }
 
@@ -398,7 +411,8 @@ final class PostRepository
     }
 
     /**
-     * Statuswechsel: nur `status`, `review_note`, `published_revision`; `touch_published_at => true`
+     * Statuswechsel: nur `status`, `review_note`, `published_revision`, `author_model` und die Plan-Spalten
+     * (`schedule_mode`, `scheduled_at`, `scheduled_since`, `release_slot`); `touch_published_at => true`
      * setzt `published_at` einmalig auf jetzt (UTC) und lässt einen vorhandenen Wert stehen.
      *
      * @param array<string, mixed> $fields
@@ -412,7 +426,7 @@ final class PostRepository
                 $assignments[] = 'published_at = COALESCE(published_at, UTC_TIMESTAMP())';
                 continue;
             }
-            if (!in_array($column, ['status', 'review_note', 'published_revision', 'author_model'], true)) {
+            if (!in_array($column, self::STATUS_COLUMNS, true)) {
                 throw new \InvalidArgumentException('Unbekannte Statusspalte: ' . $column);
             }
             $assignments[] = $column . ' = ?';

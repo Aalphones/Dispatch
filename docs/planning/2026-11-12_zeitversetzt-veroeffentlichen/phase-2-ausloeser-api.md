@@ -27,7 +27,7 @@ Ziel: Jede Anfrage an die Brücke prüft, ob etwas fällig ist, und der Inhaber 
 
 ### Auslöser
 
-- [ ] Neue Datei `app/src/Api/ScheduleTrigger.php` (`final class`), `public static function run(array $config): void`, Docblock „Fälligkeitsprüfung bei jeder Anfrage an die Brücke (ADR-027). Wirft nie: Ein Fehler hier darf die eigentliche Anfrage nicht stören.“ Ablauf, alles in `try { … } catch (Throwable $error) { Log::error('Fälligkeitsprüfung fehlgeschlagen', ['type' => $error::class, 'message' => $error->getMessage()]); }`:
+- [ ] Neue Datei `app/src/Api/ScheduleTrigger.php` (`final class`), `public static function run(array $config): void`, Docblock „Fälligkeitsprüfung bei jeder Anfrage an die Brücke (ADR-028). Wirft nie: Ein Fehler hier darf die eigentliche Anfrage nicht stören.“ Ablauf, alles in `try { … } catch (Throwable $error) { Log::error('Fälligkeitsprüfung fehlgeschlagen', ['type' => $error::class, 'message' => $error->getMessage()]); }`:
   1. `$clock = new ScheduleClock((string) $config['storage_dir']); $state = $clock->read(); $now = time();`
   2. `if ($state !== null && $state['next_check'] > $now && !$state['rebuild']) { return; }`
   3. `$pdo = Connection::open(); $service = new ScheduleService($pdo, $config); $nowUtc = new DateTimeImmutable('@' . $now);` (Zeitzone UTC).
@@ -35,7 +35,7 @@ Ziel: Jede Anfrage an die Brücke prüft, ob etwas fällig ist, und der Inhaber 
   5. `$rebuildOk = true; if ($released > 0 || ($state['rebuild'] ?? false)) { $rebuildOk = Rebuild::run($config, $pdo)['rebuilt']; }`
   6. `$next = $service->nextCheck($nowUtc); if ($released === 0 && $next <= $now) { $next = $now + ScheduleService::RETRY_SECONDS; } if (!$rebuildOk) { $next = min($next, $now + 300); }` (300 als Konstante `REBUILD_RETRY_SECONDS` in der Klasse).
   7. `$clock->write($next, !$rebuildOk);`
-- [ ] `app/index.php`: direkt vor `$router->dispatch($request);` die Zeile `ScheduleTrigger::run($config);` mit Kommentar „Eingeplante Artikel erscheinen beim ersten Aufruf ab ihrem Termin (ADR-027).“ und `use Dispatch\Api\ScheduleTrigger;`.
+- [ ] `app/index.php`: direkt vor `$router->dispatch($request);` die Zeile `ScheduleTrigger::run($config);` mit Kommentar „Eingeplante Artikel erscheinen beim ersten Aufruf ab ihrem Termin (ADR-028).“ und `use Dispatch\Api\ScheduleTrigger;`.
 
 ### API
 

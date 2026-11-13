@@ -1,5 +1,5 @@
 # STATE
 
-**Aktiver Plan:** `docs/planning/2026-11-12_kategorien-verwalten.md`
-**Phase:** 2/2 — Oberfläche und Doku (complete und auf Strato; Aufräumen von „Testlauf“ offen)
-**Nächster Schritt:** „Testlauf“ im Dialog löschen (prüft zugleich `DELETE` auf Strato), danach Plan archivieren.
+**Aktiver Plan:** `docs/planning/2026-11-12_zeitversetzt-veroeffentlichen/`
+**Phase:** 1/4 — Datenmodell und Fachlogik (complete); Phase 2 Auslöser und API (pending)
+**Nächster Schritt:** Phase 2 umsetzen. Nebenher offen: Plan `kategorien-verwalten` (Testlauf-Kategorie löschen, dann archivieren).

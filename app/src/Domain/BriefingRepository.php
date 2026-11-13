@@ -16,18 +16,18 @@ final class BriefingRepository
     }
 
     /**
-     * Live-Artikel einer Kategorie: veröffentlicht und nicht archiviert, direkte Zuordnung.
+     * Live und eingeplante Artikel einer Kategorie, direkte Zuordnung; ein eingeplanter Artikel zählt als heute erschienen.
      *
      * @return array<int, array{interest: int, post_count: int, last_published_at: string|null, days_since_last: int|null}> Schlüssel = Kategorie-ID
      */
     public function liveStatsByCategory(): array
     {
         $statement = $this->pdo->query(
-            "SELECT c.id, c.interest, COUNT(p.id) AS post_count, MAX(p.published_at) AS last_published_at,
-                    DATEDIFF(UTC_DATE(), DATE(MAX(p.published_at))) AS days_since_last
+            "SELECT c.id, c.interest, COUNT(p.id) AS post_count, MAX(COALESCE(p.published_at, UTC_TIMESTAMP())) AS last_published_at,
+                    DATEDIFF(UTC_DATE(), DATE(MAX(COALESCE(p.published_at, UTC_TIMESTAMP())))) AS days_since_last
              FROM categories c
              LEFT JOIN post_categories pc ON pc.category_id = c.id
-             LEFT JOIN posts p ON p.id = pc.post_id AND p.published_revision IS NOT NULL AND p.status <> 'archived'
+             LEFT JOIN posts p ON p.id = pc.post_id AND ((p.published_revision IS NOT NULL AND p.status <> 'archived') OR p.status = 'scheduled')
              GROUP BY c.id, c.interest"
         );
 

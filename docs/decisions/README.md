@@ -31,3 +31,4 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 025 | [Jede App per CIMD zulassen](025-jede-app-per-cimd.md) | Akzeptiert |
 | 026 | [Kategorien anlegen und löschen nur durch den Inhaber](026-kategorien-anlegen-loeschen-durch-inhaber.md) | Akzeptiert |
 | 027 | [Refresh-Token für jede App](027-refresh-token-fuer-jede-app.md) | Akzeptiert |
+| 028 | [Zeitversetztes Veröffentlichen ohne Cron](028-zeitversetztes-veroeffentlichen-ohne-cron.md) | Akzeptiert |

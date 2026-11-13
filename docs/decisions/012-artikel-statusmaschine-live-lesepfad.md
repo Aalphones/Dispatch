@@ -16,6 +16,8 @@ Die Regel „nichts ohne Freigabe online" muss im Code gelten, nicht nur in der 
 | `unpublish` | Inhaber | `published`; `review` mit gesetztem `published_revision` | `archived` | `published_revision` bleibt |
 | `discard` | Inhaber | jeder Status, nur wenn `published_revision IS NULL` | — | Artikel samt Revisionen, Quellen, Kategorien gelöscht |
 
+Ergänzt durch ADR-028: `approve` kann einplanen (`scheduled`), das Erscheinen löst `release` aus.
+
 Alles andere ist `invalid_transition`. Jede Aktion läuft in einer Transaktion auf der gesperrten Zeile (`SELECT … FOR UPDATE`), damit zwei Übergänge sich nicht überholen, und schreibt `post.<aktion>` ins Protokoll.
 
 - **`published_revision` bleibt beim Zurückziehen stehen.** Sie belegt, welche Revision zuletzt online war, und sperrt `discard`: Was einmal öffentlich war, wird nicht still gelöscht, auch wenn es die Website nicht mehr zeigt (Adresse, Feeds und Suchmaschinen kennen es).

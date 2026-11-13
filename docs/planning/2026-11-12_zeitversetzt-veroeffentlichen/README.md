@@ -40,7 +40,7 @@ Entwurf (freigegeben am 2026-11-12, verbindlich): [`artifacts/entwurf-veroeffent
 10. **Zeitangaben:** Datenbank in UTC (wie überall). Die API nimmt `at` als Wandzeit Europe/Berlin im Format `YYYY-MM-DDTHH:MM` (Wert eines `datetime-local`-Feldes) und liefert UTC `Y-m-d H:i:s`. Die Oberfläche zeigt jede Zeit in Europe/Berlin (`timeZone: 'Europe/Berlin'`), unabhängig vom Gerät.
 11. **Keine Reihenfolge von Hand** (diese Version): Vorziehen geht über „Fester Termin“ oder „Jetzt veröffentlichen“.
 12. **Der Queue-Auftrag (Thema) gilt mit der Freigabe als erledigt**, auch wenn der Artikel später aus dem Plan genommen wird (`QueueService::markDone` bleibt beim `approve`, `unschedule` fasst den Auftrag nicht an).
-13. **ADRs:** `027-zeitversetztes-veroeffentlichen-ohne-cron.md` (Entscheidungen 1–7, 9, 10) in Phase 1, `028-feed-und-sitemap-ueber-die-bruecke.md` (Entscheidung 8) in Phase 3. Nummern geprüft: höchste ADR auf Platte ist 026; `docs/planning/` reserviert keine Nummer ab 027.
+13. **ADRs:** `028-zeitversetztes-veroeffentlichen-ohne-cron.md` (Entscheidungen 1–7, 9, 10) in Phase 1, `029-feed-und-sitemap-ueber-die-bruecke.md` (Entscheidung 8) in Phase 3. Nummern geprüft: höchste ADR auf Platte ist 026; `docs/planning/` reserviert keine Nummer ab 028.
 
 Verworfen: externer Wecker (cron-job.org) — zusätzlicher Dienst, Inhaber wählte Besucher als Auslöser; nur Besucher ohne Feed — Feed und Suchmaschinen bekämen neue Artikel erst nach dem nächsten Besuch; verpasste Tage nachholen — erzeugt nach stillen Tagen eine Welle; Reihenfolge von Hand — mehr Oberfläche ohne genannten Bedarf.
 
@@ -48,16 +48,16 @@ Verworfen: externer Wecker (cron-job.org) — zusätzlicher Dienst, Inhaber wäh
 
 | Phase | Inhalt | Rating | Status |
 |---|---|---|---|
-| 1 | [Datenmodell und Fachlogik](phase-1-datenmodell-fachlogik.md): Migration 015, Status `scheduled`, `ScheduleService`/`ScheduleRepository`/`ScheduleClock`, Übergänge in `PostService`, Sperre für Agenten, Rotation und Dubletten, Einstellung `release_per_day`, ADR-027 | heikel | pending |
+| 1 | [Datenmodell und Fachlogik](phase-1-datenmodell-fachlogik.md): Migration 016, Status `scheduled`, `ScheduleService`/`ScheduleRepository`/`ScheduleClock`, Übergänge in `PostService`, Sperre für Agenten, Rotation und Dubletten, Einstellung `release_per_day`, ADR-028 | heikel | complete |
 | 2 | [Auslöser und API](phase-2-ausloeser-api.md): `ScheduleTrigger` in `app/index.php`, Routen (Freigeben mit Zeitpunkt, Termin ändern, aus dem Plan nehmen, Plan lesen und einstellen), Übersicht, MCP-Status, Doku | standard | pending |
-| 3 | [Feed und Sitemap über die Brücke](phase-3-feed-sitemap.md): `.htaccess`, `FeedController` mit `304`, `Response::file`, Dev-Router, ADR-028, Frontend-Regel | heikel | pending |
+| 3 | [Feed und Sitemap über die Brücke](phase-3-feed-sitemap.md): `.htaccess`, `FeedController` mit `304`, `Response::file`, Dev-Router, ADR-029, Frontend-Regel | heikel | pending |
 | 4 | [Oberfläche nach Entwurf](phase-4-oberflaeche.md): `redaktion/schedule.js`, Freigeben-Dialog, „Geplant“ auf der Startseite, Dialog „Veröffentlichungsplan“, Leiste des geplanten Artikels, Menüeintrag, CSS, Glossar und Code-Map | standard | pending |
 
 Reihenfolge zwingend 1 → 2 → 3 → 4 (Phase 3 braucht den Auslöser aus Phase 2, Phase 4 die Routen aus Phase 2).
 
 ## Kontrakt
 
-### Datenbank (Migration `015_schedule.sql`)
+### Datenbank (Migration `016_schedule.sql`)
 
 - `posts.status` ENUM `('draft', 'review', 'published', 'archived', 'scheduled')` — neuer Wert **am Ende**, damit MySQL die Tabelle nicht umkopieren muss.
 - `posts.schedule_mode` ENUM `('slot', 'fixed')` NULL — wie der Artikel eingeplant ist bzw. war; bleibt nach dem Erscheinen stehen (zeigt „Warteschlange“/„fester Termin“), `NULL` = sofort.
@@ -120,7 +120,7 @@ Plan-Antwort:
 - AK7: Fällt die Fälligkeitsprüfung aus (Datenbank weg, Ausnahme), antwortet die eigentliche Anfrage trotzdem normal; der Fehler steht im Log.
 - AK8: `/feed.xml` und `/sitemap.xml` liefern denselben Inhalt wie die gebauten Dateien, mit `ETag`/`Last-Modified`, `304` auf passende Bedingungen, `HEAD` ohne Rumpf; Nachbarordner (`/card/`, `/api/`, `/backend/`, `/scanner/`) bleiben unberührt.
 - AK9: Die Oberfläche entspricht dem Entwurf (Struktur-Punkte je Bildschirm in Phase 4); ein Erstnutzer kann ohne Anleitung einplanen, Termin ändern, aus dem Plan nehmen, sofort veröffentlichen und das Tageslimit ändern; jede Einstellung und jede nicht triviale Wahl hat ein i-Symbol.
-- AK10: `php -l` auf alle geänderten PHP-Dateien fehlerfrei (ADR-004: keine automatisierten Tests); `docs/models.md`, `docs/routes.md`, `docs/code-map.md`, `docs/glossary.md`, `docs/PROJECT.md`, `docs/conventions/frontend.md`, ADR-012 (Verweis), ADR-027, ADR-028 nachgezogen.
+- AK10: `php -l` auf alle geänderten PHP-Dateien fehlerfrei (ADR-004: keine automatisierten Tests); `docs/models.md`, `docs/routes.md`, `docs/code-map.md`, `docs/glossary.md`, `docs/PROJECT.md`, `docs/conventions/frontend.md`, ADR-012 (Verweis), ADR-028, ADR-029 nachgezogen.
 
 ## Konfidenz-Ausweis
 

@@ -25,6 +25,12 @@ final readonly class Actor
         return new self('deploy');
     }
 
+    /** Das System, wenn ein eingeplanter Artikel zu seinem Termin erscheint (ADR-028). */
+    public static function schedule(): self
+    {
+        return new self('schedule');
+    }
+
     public static function mcp(string $tokenName): self
     {
         return new self('mcp:' . $tokenName);

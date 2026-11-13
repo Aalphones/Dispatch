@@ -43,6 +43,6 @@ Ziel: Der Redaktionsmodus kann einplanen, den Plan zeigen, Termine ändern, aus 
 - [ ] Prüfen im Browser (lokal, angemeldet), je Bildschirm hell und dunkel bei 390 px und ≥ 1366 px gegen den Entwurf: P4-AK1 bis P4-AK7. Zustände: leer, ein Artikel, viele (mit `php -r` 20 Artikel einplanen), Fehler (Server stoppen, Dialog öffnen).
 - [ ] `docs/glossary.md`: Begriffe „Geplant“ (Status `scheduled`), „Veröffentlichungsplan“ (Dialog und `GET /dispatch/api/schedule`), „Warteschlange“ — „freigegebene Artikel ohne festen Termin, die der Reihe nach auf die Erscheinungstermine verteilt werden (`schedule_mode = slot`); nicht dasselbe wie Queue/Auftrag“, „Erscheinungstermin“ (Tabelle aus Entscheidung 5, `release_per_day`), „Fälligkeitsprüfung“ (`ScheduleTrigger`, `storage/schedule/next.json`); Zeile „Akteur“ um `schedule` ergänzen; Zeile „Queue / Auftrag“ um „nicht zu verwechseln mit der Warteschlange des Veröffentlichungsplans“.
 - [ ] `docs/code-map.md`: Zeile `theme/redaktion/` um `schedule.js` (Freigeben mit Zeitpunkt, „Geplant“ auf der Startseite, Dialog „Veröffentlichungsplan“, Leiste geplanter Artikel).
-- [ ] `docs/PROJECT.md`: unter Abweichungen vom Konzept: „Zeitversetztes Veröffentlichen ohne Cron (ADR-027), Feed und Sitemap über die Brücke (ADR-028) — das Konzept sah dafür später einen Strato-Cron vor.“
+- [ ] `docs/PROJECT.md`: unter Abweichungen vom Konzept: „Zeitversetztes Veröffentlichen ohne Cron (ADR-028), Feed und Sitemap über die Brücke (ADR-029) — das Konzept sah dafür später einen Strato-Cron vor.“
 
 ## Report-Back

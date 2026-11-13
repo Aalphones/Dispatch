@@ -52,7 +52,7 @@ Nicht in Meilenstein 1: `login_attempts` (M4), `oauth_clients`, `oauth_codes` (M
 
 ## Einstellungen (Tabelle `settings`)
 
-Werte stehen als JSON in `settings.value`; fehlt eine Zeile, gilt der Startwert. Der `Seeder` legt alle zwölf an (`php bin/dispatch seed`). Formvorgaben (`form_rules`, `publish_mode`, `stats_enabled`) stehen in `app/config.php`, nicht in der Tabelle; ein Änderungsversuch → `not_changeable`.
+Werte stehen als JSON in `settings.value`; fehlt eine Zeile, gilt der Startwert. Der `Seeder` legt alle dreizehn an (`php bin/dispatch seed`). Formvorgaben (`form_rules`, `publish_mode`, `stats_enabled`) stehen in `app/config.php`, nicht in der Tabelle; ein Änderungsversuch → `not_changeable`.
 
 | Schlüssel | Gruppe | Startwert | Prüfregel |
 |---|---|---|---|
@@ -68,6 +68,7 @@ Werte stehen als JSON in `settings.value`; fehlt eine Zeile, gilt der Startwert.
 | `locale` | intern | `de_DE` | `xx_XX` |
 | `posts_per_page` | intern | `12` | Ganzzahl 1–100 |
 | `queue_claim_minutes` | intern | `180` | Ganzzahl 15–1440 |
+| `release_per_day` | öffentlich (Agenten: Vorschlag) | `2` | Ganzzahl 1–6; Tageslimit der Warteschlange (ADR-028); Änderung löscht `storage/schedule/next.json` |
 
 Texte werden getrimmt. Fehler: `invalid_value` (Feld in `details`), unbekannter Name `unknown_setting`.
 
@@ -77,7 +78,7 @@ Texte werden getrimmt. Fehler: `invalid_value` (Feld in `details`), unbekannter 
 
 | Domäne | Öffentlich | Intern (jeder Akteur direkt) |
 |---|---|---|
-| Einstellungen | `site_title`, `site_tagline`, `site_description`, `author_name`, `author_url`, `accent`, `ai_disclosure`, `ai_disclosure_text` | `language`, `locale`, `posts_per_page`, `queue_claim_minutes` |
+| Einstellungen | `site_title`, `site_tagline`, `site_description`, `author_name`, `author_url`, `accent`, `ai_disclosure`, `ai_disclosure_text`, `release_per_day` | `language`, `locale`, `posts_per_page`, `queue_claim_minutes` |
 | Dokumente | `about` (`ueber`), `imprint` (`impressum`), `privacy` (`datenschutz`) | `editorial_guidelines`, `preferences` |
 | Kategorien | Anlegen; `slug`, `name`, `description`, `parent_id`, `position`, `active` | `interest`, `keywords`, `avoid` |
 
@@ -118,7 +119,7 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 | `kicker` | VARCHAR(80) NULL | |
 | `excerpt` | VARCHAR(400) NULL | |
 | `content_html` | MEDIUMTEXT | |
-| `status` | ENUM | `draft` (Default), `review`, `published`, `archived`; Index |
+| `status` | ENUM | `draft` (Default), `review`, `published`, `archived`, `scheduled` (Migration 016, am Ende); Index |
 | `tags` | JSON | |
 | `layout` | ENUM | `standard` (Default), `feature`, `longform`, `briefing` |
 | `accent` | CHAR(7) NULL | |
@@ -136,11 +137,17 @@ Ablage: `storage/media/<uid>/original.<ext>` plus die Dateien aus `variants`. Bi
 | `revision` | INT UNSIGNED | Default 1 |
 | `published_revision` | INT UNSIGNED NULL | |
 | `published_at` | DATETIME NULL | |
+| `schedule_mode` | ENUM NULL | `slot` (Warteschlange), `fixed` (fester Termin); bleibt nach dem Erscheinen stehen, `NULL` = sofort (Migration 016, ADR-028) |
+| `scheduled_at` | DATETIME NULL | fester Termin (UTC), nur bei `fixed` |
+| `scheduled_since` | DATETIME NULL | Zeitpunkt des Einplanens (UTC), Reihenfolge der Warteschlange |
+| `release_slot` | DATETIME NULL | belegter Erscheinungstermin (UTC), nur bei Warteschlange; Index `idx_posts_release_slot` |
 | `created_at`, `updated_at` | DATETIME | |
 
 **Regeln (`Domain/PostService`, `Util/Text`).** Slug aus dem Titel: `ä→ae, ö→oe, ü→ue, ß→ss`, dann ASCII-Transliteration, alles außer `[a-z0-9]` → `-`, höchstens 80 Zeichen an einer Wortgrenze, leer → `artikel`; belegt → `-2`, `-3`, … (nur automatisch erzeugte), ausdrücklich gesetzt und belegt → `slug_taken`. Nach der Veröffentlichung (`published_revision` gesetzt) ändert nur der Inhaber den Slug (`slug_locked`). Wortzahl (`word_count`): Blockelemente zählen als Trennung, Tags entfernt, Entities dekodiert, ein Wort ist eine Folge aus Buchstaben/Ziffern, innen verbunden durch `'`, `’` oder `-` („Test-Satz“ = 1, „3,5“ = 2). Jedes Speichern erhöht `revision` und schreibt eine Zeile in `post_revisions`; `update` durch einen Nicht-Inhaber setzt `review` → `draft` zurück, `published` bleibt, `archived` ist gesperrt.
 
 **Statusmaschine und Live-Lesepfad (ADR-012).** `submit` (jeder: `draft`, oder `published` mit `revision > published_revision` → `review`; Formprüfung), `approve` (Inhaber: `review` → `published`, `published_revision = revision`, `published_at` nur beim ersten Mal, Formprüfung erneut), `returnToAgent` (Inhaber: `review` → `draft`, `review_note`), `unpublish` (Inhaber: `published` oder `review` mit `published_revision` → `archived`, `published_revision` bleibt), `withdraw` (jeder, ADR-018: nur `review`; Ziel `published`, wenn `published_revision` gesetzt, sonst `draft`), `discard` (nur wenn `published_revision IS NULL`, löscht Artikel samt Revisionen, Quellen, Kategorien; Inhaber aus jedem Status, andere nur aus `draft`, sonst `forbidden`), `restoreRevision` (jeder: schreibt den Inhalt einer früheren Revision per `update` als neue Revision zurück, Slug bleibt; Audit `post.restore`). Sonst `invalid_transition`; Audit `post.<aktion>`. Die Website liest ausschließlich `PostRepository::livePosts()` — den Snapshot der Revision `published_revision` aller Artikel mit gesetzter `published_revision` und Status ≠ `archived`, nie den Arbeitsstand; zum Snapshot kommen `published_at` und `updated_at` (= `created_at` der Live-Revision). Formprüfung: `Util/FormCheck` (Regelcodes siehe Quelltext und Phase 6), Fehler blockieren `submit`/`approve`, Warnungen nie.
+
+**Einplanen (ADR-028).** `approve(id, actor, when = now, at)`: nie veröffentlichter Artikel mit `when = slot` oder `fixed` → `scheduled` (`schedule_mode`, `scheduled_since` = jetzt, bei `fixed` `scheduled_at`), sonst `published` wie oben; eine neue Fassung eines Live-Artikels (`published_revision` gesetzt) geht immer sofort online; unbekanntes `when`/`fixed` ohne `at` → `invalid_value`. `reschedule` (Inhaber: `scheduled` → `scheduled` oder bei `now` `published`; `slot` hängt ans Ende der Warteschlange), `unschedule` (Inhaber: `scheduled` → `review`, Plan-Spalten leer; der Queue-Auftrag bleibt `done`), `release` (Akteur `schedule`, nur `ScheduleService`: `scheduled` → `published`, `published_revision = revision`, `published_at` jetzt, bei Warteschlange `release_slot`; Audit `post.release`). `update`/`restoreRevision` auf `scheduled` → `invalid_transition` (auch für den Inhaber); `submit`, `withdraw`, `unpublish`, `returnToAgent` gehen aus `scheduled` nicht; `discard` geht für den Inhaber. Eingeplante Artikel zählen in der Rotation (`liveStatsByCategory`) als heute erschienen und ihre Titel in der Dubletten-Warnung (`liveTitles`); `livePosts()` kennt sie nicht, die Website zeigt sie erst nach `release`. Termine: Berliner Kalendertag, je `release_per_day` feste Uhrzeiten (1: 08:00 · 2: 08:00, 14:00 · 3: 08:00, 12:00, 16:00 · 4: 08:00, 11:00, 14:00, 17:00 · 5: 08:00, 10:30, 12:45, 15:15, 17:30 · 6: 08:00–18:00 alle 2 h), in UTC gespeichert und je Tag in Europe/Berlin gerechnet. Warteschlange: `scheduled_since`, dann `id`; ein Termin ist belegt, sobald ein Artikel mit diesem `release_slot` erschienen ist; Termine vergangener Tage werden nie nachgeholt. `ScheduleService::releaseDue` hält die Datenbanksperre `dispatch_schedule_release`; `ScheduleClock` merkt den nächsten Prüfzeitpunkt in `storage/schedule/next.json` (`{next_check, rebuild}`).
 
 ## post_revisions (005)
 

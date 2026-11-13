@@ -14,7 +14,7 @@ Apache vererbt die Regeln einer `.htaccess` in alle Unterordner: Header, `ErrorD
 - Global gelten nur: HTTPS erzwingen, `Options -Indexes`, `DirectoryIndex index.html`.
 - Die Weiterleitung `/` → `/card/` entfällt.
 - Alles Blog-Spezifische — CSP und weitere Sicherheits-Header, `ErrorDocument 404`, Cache-Zeiten — steht in einem `<If>`-Block, der die Nachbarordner (`card`, `api`, `backend`, `scanner`) ausnimmt.
-- Rewrites auf die Brücke greifen nur für `/dispatch/` und `/.well-known/oauth-*` (ADR-001).
+- Rewrites auf die Brücke greifen nur für `/dispatch/` und `/.well-known/oauth-*` (ADR-001). Ergänzt durch ADR-029: Rewrite von `/feed.xml` und `/sitemap.xml` auf die Brücke.
 
 ## Konsequenzen
 

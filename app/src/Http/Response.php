@@ -62,6 +62,38 @@ final class Response
         exit;
     }
 
+    /**
+     * Liefert eine Datei aus; ohne `$withBody` (HEAD) nur die Kopfzeilen samt Länge.
+     * Bewusst ohne `Cache-Control: no-store`: die Aufrufer setzen ihre eigene Zwischenspeicher-Regel.
+     *
+     * @param array<string, string> $headers
+     */
+    public static function file(string $path, string $contentType, array $headers, bool $withBody): never
+    {
+        http_response_code(200);
+        header('Content-Type: ' . $contentType);
+        header('Content-Length: ' . (string) filesize($path));
+        header('X-Content-Type-Options: nosniff');
+        foreach ($headers as $name => $value) {
+            header($name . ': ' . $value);
+        }
+
+        if ($withBody) {
+            readfile($path);
+        }
+        exit;
+    }
+
+    /** @param array<string, string> $headers */
+    public static function notModified(array $headers): never
+    {
+        http_response_code(304);
+        foreach ($headers as $name => $value) {
+            header($name . ': ' . $value);
+        }
+        exit;
+    }
+
     /** @param array<string, string> $headers */
     public static function error(string $code, string $message, int $status, array $headers = []): never
     {

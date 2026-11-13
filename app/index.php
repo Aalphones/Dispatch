@@ -6,6 +6,7 @@ use Dispatch\Api\AuthController;
 use Dispatch\Api\CategoryController;
 use Dispatch\Api\ChangeController;
 use Dispatch\Api\DeployController;
+use Dispatch\Api\FeedController;
 use Dispatch\Api\HitController;
 use Dispatch\Api\OAuthClientController;
 use Dispatch\Api\OAuthController;
@@ -82,6 +83,13 @@ $router->add('GET', '/dispatch/api/oauth-clients', static fn () => (new OAuthCli
 $router->add('DELETE', '/dispatch/api/oauth-clients/{id}', static fn (array $params) => (new OAuthClientController($config))->revoke($request, (int) $params['id']));
 // Der MCP-Endpunkt antwortet in JSON-RPC und prüft Origin und Anmeldung selbst.
 $router->add('POST', '/dispatch/mcp', static fn () => (new McpController($config))->handle($request));
+
+// Feed und Sitemap laufen durch die Brücke, damit ihr Abruf den Auslöser unten weckt (ADR-029).
+foreach (['feed.xml', 'sitemap.xml'] as $feedFile) {
+    foreach (['GET', 'HEAD'] as $feedMethod) {
+        $router->add($feedMethod, '/' . $feedFile, static fn () => (new FeedController($config))->serve($request, $feedFile));
+    }
+}
 
 // Eingeplante Artikel erscheinen beim ersten Aufruf ab ihrem Termin (ADR-028).
 ScheduleTrigger::run($config);

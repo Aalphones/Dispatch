@@ -12,6 +12,9 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # OAuth-Discovery liegt an der Wurzel, beantwortet wird sie von der Bruecke (ADR-001).
 RewriteRule ^\.well-known/oauth-(protected-resource|authorization-server)(/.*)?$ dispatch/index.php [L]
 
+# Feed und Sitemap laufen durch die Bruecke: ihr Abruf loest das Erscheinen eingeplanter Artikel aus (ADR-029).
+RewriteRule ^(feed|sitemap)\.xml$ dispatch/index.php [L]
+
 # Blog-Regeln: nie fuer die Nachbarordner.
 <If "%{REQUEST_URI} !~ m#^/(card|api|backend|scanner)(/|$)#">
     ErrorDocument 404 /404.html

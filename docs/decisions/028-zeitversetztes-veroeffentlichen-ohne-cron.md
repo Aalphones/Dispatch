@@ -25,5 +25,5 @@ Der Inhaber will nicht alle freigegebenen Artikel auf einmal online haben: ein V
 
 ## Konsequenzen
 
-- Das Erscheinen hängt am Verkehr: Ohne Anfrage an die Brücke erscheint nichts, auch nicht zum Termin. Feed und Sitemap werden dafür in einer späteren Phase ebenfalls über die Brücke geliefert.
+- Das Erscheinen hängt am Verkehr: Ohne Anfrage an die Brücke erscheint nichts, auch nicht zum Termin. Feed und Sitemap werden dafür ebenfalls über die Brücke geliefert (ADR-029).
 - Termine einer Stunde, die es bei der Zeitumstellung nicht gibt, lassen sich nicht als fester Termin wählen (`invalid_value`).

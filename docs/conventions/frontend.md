@@ -35,5 +35,5 @@
 
 ## Critical Rules
 
-1. **Besucher lösen außer dem Zähl-Aufruf keinen PHP-Aufruf aus** — sonst ist die statische Auslieferung und ihr Tempo dahin.
+1. **Besucher lösen außer dem Zähl-Aufruf keinen PHP-Aufruf aus** — Ausnahme: `/feed.xml` und `/sitemap.xml` laufen durch die Brücke ([ADR-029](../decisions/029-feed-und-sitemap-ueber-die-bruecke.md)); sonst ist die statische Auslieferung und ihr Tempo dahin.
 2. **Kein Inline-Skript** — die CSP blockiert es, und eine Ausnahme dafür würde den Redaktionsmodus angreifbar machen.

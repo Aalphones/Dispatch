@@ -15,6 +15,7 @@ const DIALOGS = {
 	statistik: async () => (await import('./stats.js')).dialogOeffnen(),
 	plan: async () => (await import('./schedule.js')).planOeffnen(),
 	zugaenge: async () => (await import('./token.js')).oeffnen(),
+	anweisungen: async () => (await import('./anweisungen.js')).oeffnen(),
 };
 
 function entries(overview) {
@@ -27,7 +28,8 @@ function entries(overview) {
 		{ action: DIALOGS.einreichen, icon: 'plus', label: 'Thema einreichen', separatorAfter: true },
 		{ action: DIALOGS.interessen, icon: 'herz', label: 'Interessen' },
 		{ action: DIALOGS.statistik, icon: 'chart', label: 'Statistik' },
-		{ action: DIALOGS.zugaenge, icon: 'schluessel', label: 'Zugänge für Agenten', separatorAfter: true },
+		{ action: DIALOGS.zugaenge, icon: 'schluessel', label: 'Zugänge für Agenten' },
+		{ action: DIALOGS.anweisungen, icon: 'ki', label: 'Anweisungen für Agenten', separatorAfter: true },
 		{ action: abmelden, icon: 'tuer', label: 'Abmelden' },
 	];
 }

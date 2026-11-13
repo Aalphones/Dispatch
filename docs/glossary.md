@@ -39,3 +39,7 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Zustimmung | Die Entscheidung des Inhabers auf der Zustimmungsseite, einer App die gewählten `blog:*`-Scopes zu erlauben (`allow`) oder den Zugriff abzulehnen (`deny`); erzeugt den Code. |
 | Rückfall-Client | Von Hand angelegter OAuth-Client (`dcl_…` mit Geheimnis `dcs_…`) für den Notfall, wenn die App kein CIMD nutzt; nur über die Kommandozeile. |
 | Kulanzfenster | 30 Sekunden, in denen ein rotiertes Refresh-Token noch ein neues Access-JWT ergibt (parallele Tabs), ohne neues Cookie. |
+| Anweisungen für Agenten | Dialog im Redaktionsmodus, der zeigt, was ein Agent von DISPATCH an Anweisungen bekommt (Richtlinien, Präferenzen, Werkzeuge, feste Abläufe) und die beiden Dokumente ändern lässt; Daten aus `GET /dispatch/api/instructions`. |
+| Fassung | Eine Revision eines Dokuments (Richtlinien, Präferenzen). Speichern legt eine neue Fassung an, Wiederherstellen ebenfalls; ältere bleiben im Verlauf. |
+| Konflikt beim Speichern | Ein Agent hat das Dokument geändert, seit der Inhaber die Grundlage (`base_revision`) geladen hat; die API antwortet `revision_conflict`, der Inhaber entscheidet, ob er trotzdem speichert. |
+| Bereich | Gruppe der Werkzeuge in der Werkzeugliste, etwa „Artikel“ oder „Medien“ (`Registry::group`). |

@@ -36,7 +36,7 @@ final class TokenIssuer
 
     /**
      * @param array<string, mixed> $form
-     * @return array{access_token: string, token_type: string, expires_in: int, scope: string, refresh_token?: string}
+     * @return array{access_token: string, token_type: string, expires_in: int, scope: string, refresh_token: string}
      * @throws OAuthError
      */
     public function exchangeCode(array $form): array
@@ -69,9 +69,9 @@ final class TokenIssuer
                 throw $this->invalidGrant('Der Code wurde schon eingelöst.');
             }
 
-            $scopes = explode(' ', (string) $row['scope']);
-            $blogScopes = implode(' ', array_values(array_diff($scopes, [self::OFFLINE_SCOPE])));
-            $issued = $this->issuePair($client, $blogScopes, (string) $row['family'], in_array(self::OFFLINE_SCOPE, $scopes, true));
+            // `offline_access` wird angenommen, steuert aber nichts: jede App bekommt ein Refresh-Token (ADR-027).
+            $blogScopes = implode(' ', array_values(array_diff(explode(' ', (string) $row['scope']), [self::OFFLINE_SCOPE])));
+            $issued = $this->issuePair($client, $blogScopes, (string) $row['family']);
             $this->audit->record(Actor::oauth($client['name']), 'oauth.token', 'client:' . $client['client_id'], ['scopes' => explode(' ', $blogScopes)]);
             $this->repository->touchClient($client['client_id']);
 
@@ -83,7 +83,7 @@ final class TokenIssuer
      * Rotation wie bei der Anmeldung des Inhabers (ADR-020), angepasst auf OAuth.
      *
      * @param array<string, mixed> $form
-     * @return array{access_token: string, token_type: string, expires_in: int, scope: string, refresh_token?: string}
+     * @return array{access_token: string, token_type: string, expires_in: int, scope: string, refresh_token: string}
      * @throws OAuthError
      */
     public function refresh(array $form): array
@@ -110,7 +110,7 @@ final class TokenIssuer
         return Transaction::run($this->pdo, function () use ($token, $client, $scope): array {
             // Zwei gleichzeitige Refreshs: nur einer gewinnt die Rotation, der andere fällt ins Kulanzfenster.
             $isRotation = !$token['revoked'] && $this->tokens->revokeOne($token['id'], (int) $this->config['oauth']['grace_seconds']);
-            $issued = $this->issuePair($client, $scope, $token['family'], true);
+            $issued = $this->issuePair($client, $scope, $token['family']);
             if (!$isRotation) {
                 // Kulanzfenster: das Token des ersten Refreshs wird ungültig, es bleibt genau ein Zweig.
                 $this->tokens->revokeOtherRefresh($token['family'], (int) $issued['refresh_id']);
@@ -229,29 +229,26 @@ final class TokenIssuer
 
     /**
      * @param array{client_id: string, name: string} $client
-     * @return array{response: array{access_token: string, token_type: string, expires_in: int, scope: string, refresh_token?: string}, refresh_id: int|null}
+     * @return array{response: array{access_token: string, token_type: string, expires_in: int, scope: string, refresh_token: string}, refresh_id: int}
      */
-    private function issuePair(array $client, string $scope, string $family, bool $withRefresh): array
+    private function issuePair(array $client, string $scope, string $family): array
     {
         $accessSeconds = (int) $this->config['oauth']['access_seconds'];
         $access = self::ACCESS_PREFIX . bin2hex(random_bytes(32));
         $this->tokens->insertOAuth(TokenRepository::KIND_OAUTH_ACCESS, hash('sha256', $access), $client['name'], $client['client_id'], $scope, $family, $accessSeconds);
 
-        $response = ['access_token' => $access, 'token_type' => 'Bearer', 'expires_in' => $accessSeconds, 'scope' => $scope];
-        $refreshId = null;
-        if ($withRefresh) {
-            $refresh = self::REFRESH_PREFIX . bin2hex(random_bytes(32));
-            $refreshId = $this->tokens->insertOAuth(
-                TokenRepository::KIND_OAUTH_REFRESH,
-                hash('sha256', $refresh),
-                $client['name'],
-                $client['client_id'],
-                $scope,
-                $family,
-                (int) $this->config['oauth']['refresh_seconds']
-            );
-            $response['refresh_token'] = $refresh;
-        }
+        $refresh = self::REFRESH_PREFIX . bin2hex(random_bytes(32));
+        $refreshId = $this->tokens->insertOAuth(
+            TokenRepository::KIND_OAUTH_REFRESH,
+            hash('sha256', $refresh),
+            $client['name'],
+            $client['client_id'],
+            $scope,
+            $family,
+            (int) $this->config['oauth']['refresh_seconds']
+        );
+
+        $response = ['access_token' => $access, 'token_type' => 'Bearer', 'expires_in' => $accessSeconds, 'scope' => $scope, 'refresh_token' => $refresh];
 
         return ['response' => $response, 'refresh_id' => $refreshId];
     }

@@ -27,6 +27,7 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 021 | [Redaktions-API](021-redaktions-api.md) | Akzeptiert |
 | 022 | [Zähl-Aufruf der Statistik](022-zaehl-aufruf.md) | Akzeptiert |
 | 023 | [Redaktionsmodus im Browser](023-redaktionsmodus-im-browser.md) | Akzeptiert |
-| 024 | [OAuth 2.1 für die Claude-Apps](024-oauth-fuer-claude-apps.md) | Akzeptiert, Allowlist ersetzt durch 025 |
+| 024 | [OAuth 2.1 für die Claude-Apps](024-oauth-fuer-claude-apps.md) | Akzeptiert, Allowlist ersetzt durch 025, Refresh-Regel durch 027 |
 | 025 | [Jede App per CIMD zulassen](025-jede-app-per-cimd.md) | Akzeptiert |
 | 026 | [Kategorien anlegen und löschen nur durch den Inhaber](026-kategorien-anlegen-loeschen-durch-inhaber.md) | Akzeptiert |
+| 027 | [Refresh-Token für jede App](027-refresh-token-fuer-jede-app.md) | Akzeptiert |

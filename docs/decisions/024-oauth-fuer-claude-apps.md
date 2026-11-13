@@ -1,6 +1,6 @@
 # 024 — OAuth 2.1 für die Claude-Apps
 
-**Status:** Akzeptiert (2026-11-12) · Allowlist `claude.ai` ersetzt durch [ADR-025](025-jede-app-per-cimd.md)
+**Status:** Akzeptiert (2026-11-12) · Allowlist `claude.ai` ersetzt durch [ADR-025](025-jede-app-per-cimd.md) · Refresh-Token nur bei `offline_access` ersetzt durch [ADR-027](027-refresh-token-fuer-jede-app.md)
 
 ## Kontext
 
@@ -15,7 +15,7 @@ Die Claude-App (Android, Web, Desktop) und Claude Code verbinden sich mit einem 
 ## Entscheidung
 
 - **CIMD statt DCR**, mit Allowlist `claude.ai` (exakter Host, `oauth.cimd_hosts`). Der AS-Metadatensatz meldet `client_id_metadata_document_supported` und hat keinen `registration_endpoint`. Das Dokument wird mit eigenem HttpClient (SSRF-Schutz, ADR-011) abgerufen, höchstens 64 KiB, einen Tag zwischengespeichert.
-- **Undurchsichtige Tokens in `tokens`**: Access-Token `doa_` + 64 Hex (1 Stunde), Refresh-Token `dor_` + 64 Hex (60 Tage ab Ausgabe, nur bei `offline_access`), gespeichert als SHA-256 (`kind = oauth_access` / `oauth_refresh`, Spalten von ADR-017). Kein JWT: Widerruf und „Trennen“ wirken sofort, ohne Sperrliste.
+- **Undurchsichtige Tokens in `tokens`**: Access-Token `doa_` + 64 Hex (1 Stunde), Refresh-Token `dor_` + 64 Hex (60 Tage ab Ausgabe; seit ADR-027 für jede App, nicht nur bei `offline_access`), gespeichert als SHA-256 (`kind = oauth_access` / `oauth_refresh`, Spalten von ADR-017). Kein JWT: Widerruf und „Trennen“ wirken sofort, ohne Sperrliste.
 - **Rotation mit Kulanz und Zweig-Regel**: Wie ADR-020. Ein abgelöstes Refresh-Token gilt 30 s weiter; wird es darin erneut vorgelegt, gibt es ein neues Paar und alle anderen offenen Refresh-Tokens der Familie werden widerrufen (es bleibt genau ein gültiger Zweig). Danach widerruft die Wiederverwendung die ganze Familie (Audit `oauth.reuse`).
 - **Zustimmung als statische Seite** `anmelden/zustimmung/` mit JS-Login: Der Builder erzeugt sie wie die übrige Website (ADR-013/015), die Seite holt die Anfrage und entscheidet per Redaktions-API mit dem Login-JWT des Inhabers. `/dispatch/oauth/authorize` legt nur die Anfrage an und leitet weiter; Rückadresse und Client werden vorher geprüft, bei Fehlern wird nie an die Rückadresse weitergeleitet.
 - **Rückfall-Client nur per Kommandozeile** (Entscheidung des Inhabers): `oauth-client:create|list|revoke`, auch `--remote` über das Deploy-Token. Keine Oberfläche, keine Registrierung.

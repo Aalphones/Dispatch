@@ -22,7 +22,7 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Nachbar-Anwendung | Andere Anwendung im selben Webroot: CardMaker (`/card/`, `/api/`, `/backend/`), CamScanner (`/scanner/`). |
 | Reservierter Name | Ordner- oder Dateiname auf oberster Ebene, den der Builder nie belegt. |
 | MCP-Token | Festes Bearer-Token mit Präfix `dmcp_` für Claude Code und geplante Aufgaben. |
-| Scope | Rechtebereich eines Tokens: `blog:read`, `blog:write`, `blog:admin`, `offline_access`. |
+| Scope | Rechtebereich eines Tokens: `blog:read`, `blog:write`, `blog:admin`; `offline_access` wird angenommen, wirkt aber nicht — Refresh-Tokens bekommt jede App (ADR-027). |
 | CIMD | Client ID Metadata Document: Claude weist sich per URL auf ein Metadaten-Dokument aus, statt sich zu registrieren. |
 | Deploy-Token | `DISPATCH_DEPLOY_TOKEN`; erlaubt nur Migration und Rebuild nach dem Deploy. |
 | Akteur | Wer eine Änderung auslöst (`Actor`): `owner`, `cli`, `deploy`, `mcp:<name>`, `oauth:<name>`. Nur `owner` ist der Inhaber; der Name steht im Protokoll. |

@@ -165,7 +165,7 @@ final class PostController
             $text = Diff::html((string) $live['content_html'], (string) $draft['content_html']);
             $sources = $this->sourceChanges((array) $live['sources'], (array) $draft['sources']);
             $media = $this->mediaChanges($pdo, $live, $draft);
-            $html = PreviewLink::protectMedia((new Builder($this->config, $pdo))->previewMain(['content_html' => $text['html']] + $draft), $id);
+            $html = PreviewLink::protectMedia((new Builder($this->config, $pdo))->previewMain(['content_html' => $text['html']] + $draft), $id, FormCheck::mediaUids($draft));
         } catch (DomainError $error) {
             ApiErrors::respond($error);
         }

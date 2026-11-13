@@ -128,7 +128,7 @@ final class PreviewController
                 'sources' => count($post['sources']),
                 'updated_at' => $snapshot['updated_at'],
             ],
-            'html' => PreviewLink::protectMedia((new Builder($this->config, $pdo))->previewMain($snapshot), $id),
+            'html' => PreviewLink::protectMedia((new Builder($this->config, $pdo))->previewMain($snapshot), $id, FormCheck::mediaUids($snapshot)),
             'form' => [
                 'errors' => $this->findings($form->errors),
                 'warnings' => $this->findings($form->warnings),

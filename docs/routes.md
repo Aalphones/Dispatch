@@ -46,6 +46,12 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/changes` | JWT | `Api\ChangeController::list` | 2 |
 | POST | `/dispatch/api/changes/{id}/apply` | JWT | `Api\ChangeController::apply` (+ Neubau) | 2 |
 | POST | `/dispatch/api/changes/{id}/reject` | JWT | `Api\ChangeController::reject` | 2 |
+| GET | `/dispatch/api/instructions` | JWT | `Api\InstructionController::show` (Gesamtansicht: `documents`, `tools`, `prompts`, `texts`, `form_rules`; ADR-031) | AA 2 |
+| POST | `/dispatch/api/instructions/preview` | JWT | `Api\InstructionController::preview` (Body `{"content"}`; Antwort `html`, ohne Datenbankzugriff) | AA 2 |
+| PATCH | `/dispatch/api/instructions/{slug}` | JWT | `Api\InstructionController::save` (Slug `editorial-guidelines` oder `preferences`, sonst 404 `not_found`; Body `content`, `note`, `base_revision`, `force`; 409 `revision_conflict` mit `details`, 400 `invalid_value` mit `details.field`; Antwort `document`) | AA 2 |
+| GET | `/dispatch/api/instructions/{slug}/revisions` | JWT | `Api\InstructionController::history` (Antwort `revisions`, neueste zuerst; 404 bei unbekanntem Slug) | AA 2 |
+| GET | `/dispatch/api/instructions/{slug}/revisions/{id}` | JWT | `Api\InstructionController::revision` (Fassung als `html` samt `diff` zur Fassung davor) | AA 2 |
+| POST | `/dispatch/api/instructions/{slug}/restore` | JWT | `Api\InstructionController::restore` (Body `revision`, `base_revision`, `force`; neue Fassung mit altem Inhalt; 409 `revision_conflict`; Antwort `document`) | AA 2 |
 
 | GET | `/dispatch/api/queue` | JWT | `Api\QueueController::list` (offene Themen, wichtigste und älteste zuerst; Antwort `items`) | 4 |
 | POST | `/dispatch/api/queue` | JWT | `Api\QueueController::add` (multipart, `files[]`; abgelehnte Dateien in `rejected`; zu große Anfrage → 413) | 4 |

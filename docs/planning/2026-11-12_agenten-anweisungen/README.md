@@ -25,7 +25,7 @@ Verworfen: Markdown im Browser rendern (zweiter Umsetzer, der vom Server abweich
 | Phase | Inhalt | Rating | Status |
 |---|---|---|---|
 | 1 | [Fachlogik und Markdown](phase-1-fachlogik-markdown.md): `Util\Markdown` um Code und Tabellen, Konfliktprüfung und Fassungen in `DocumentService`/`DocumentRepository`, Bereiche in der Registry, `McpController::registry` öffentlich, ADR-031 | heikel | complete |
-| 2 | [API](phase-2-api.md): `Api\InstructionController` mit sechs Routen, Routen in `app/index.php`, `docs/routes.md` | standard | pending |
+| 2 | [API](phase-2-api.md): `Api\InstructionController` mit sechs Routen, Routen in `app/index.php`, `docs/routes.md` | standard | complete |
 | 3 | [Oberfläche nach Entwurf](phase-3-oberflaeche.md): `redaktion/anweisungen.js`, Menüeintrag, Symbole `lupe`/`zurueck` in `ui.js`, CSS, Glossar und Code-Map | standard | pending |
 
 Reihenfolge zwingend 1 → 2 → 3. Modell je Phase: 1 auf dem großen Modell (Sperre und Parser), 2 und 3 auf Sonnet.

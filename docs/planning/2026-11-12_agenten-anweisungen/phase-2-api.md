@@ -22,7 +22,7 @@ Ziel: Sechs Routen für den Redaktionsmodus liefern die Gesamtansicht aller Anwe
 
 ## Checkliste
 
-- [ ] Neue Datei `app/src/Api/InstructionController.php` (`final class`, Konstruktor `private readonly array $config`). Klassen-Docblock: „Ansicht „Anweisungen für Agenten“ im Redaktionsmodus: alles, was ein Agent von DISPATCH bekommt, dazu Fassungen der Richtlinien und Präferenzen (ADR-031). Nur der Inhaber.“
+- [x] Neue Datei `app/src/Api/InstructionController.php` (`final class`, Konstruktor `private readonly array $config`). Klassen-Docblock: „Ansicht „Anweisungen für Agenten“ im Redaktionsmodus: alles, was ein Agent von DISPATCH bekommt, dazu Fassungen der Richtlinien und Präferenzen (ADR-031). Nur der Inhaber.“
   - Konstante `KEYS_BY_SLUG = ['editorial-guidelines' => 'editorial_guidelines', 'preferences' => 'preferences']` mit Kommentar „Der Router lässt im Pfad keinen Unterstrich zu.“
   - Konstante `TEXTS` (Reihenfolge verbindlich), je Eintrag `[Titel, wann]`:
     - `'instructions' => ['Server-Anweisung', 'beim Verbinden, an jeden Agenten']`
@@ -45,7 +45,7 @@ Ziel: Sechs Routen für den Redaktionsmodus liefern die Gesamtansicht aller Anwe
   - `public function restore(Request $request, string $slug): never` — wie `save`, aber `revision` statt `content`; `$service->restore($key, $revision, $base, $actor)`; Antwort wie `save`.
   - `private function keyFor(string $slug): string` — unbekannt → `DomainError('not_found', sprintf('„%s“ lässt sich hier nicht ansehen oder ändern. Gültig: %s.', $slug, implode(', ', array_keys(self::KEYS_BY_SLUG))), ['slug' => $slug])`. In jeder Methode mit `{slug}` als Erstes nach der Anmeldung, innerhalb des `try`.
   - Alle `DomainError` → `ApiErrors::respond`, wie in `CategoryController::patch`.
-- [ ] `app/index.php`: `use Dispatch\Api\InstructionController;` und nach den Routen von `changes` in dieser Reihenfolge:
+- [x] `app/index.php`: `use Dispatch\Api\InstructionController;` und nach den Routen von `changes` in dieser Reihenfolge:
   - `GET /dispatch/api/instructions` → `show`
   - `POST /dispatch/api/instructions/preview` → `preview`
   - `PATCH /dispatch/api/instructions/{slug}` → `save($request, (string) $params['slug'])`
@@ -53,8 +53,10 @@ Ziel: Sechs Routen für den Redaktionsmodus liefern die Gesamtansicht aller Anwe
   - `GET /dispatch/api/instructions/{slug}/revisions/{id}` → `revision($request, (string) $params['slug'], (int) $params['id'])`
   - `POST /dispatch/api/instructions/{slug}/restore` → `restore`
   (`POST …/preview` und `PATCH …/{slug}` treffen dasselbe Muster; der Router wählt nach Methode, die Reihenfolge ist egal.)
-- [ ] Lokal prüfen, angemeldet im Browser, in der Konsole: `const { api } = await import(new URL('api.js', performance.getEntriesByType('resource').find((e) => e.name.endsWith('/start.js')).name))`, dann `await api('GET', 'instructions')` gegen den Kontrakt (33 Werkzeuge mit `group`, fünf Texte, drei Prompts, zwei Dokumente). Danach `PATCH` auf `instructions/preferences` mit alter `base_revision` → 409, mit aktueller → 200, `POST instructions/preferences/restore` mit der Fassung davor → 200; `GET instructions/preferences/revisions` zeigt beide neuen Fassungen. Zum Schluss den Ausgangsinhalt per `restore` zurückholen. Nur lokal.
-- [ ] `docs/routes.md`: sechs Zeilen nach der Zeile `changes/{id}/reject`, Auth `JWT`, Controller `Api\InstructionController::<methode>` mit Kurzbeschreibung in Klammern wie bei `categories/{id}` (Fehler 409 `revision_conflict` mit `details`, 404 bei unbekanntem Slug; ADR-031), Spalte Phase `AA 2` (Plan „Anweisungen für Agenten“, Phase 2; Muster wie `M5 4`).
-- [ ] `php -l app/src/Api/InstructionController.php app/index.php`.
+- [x] Lokal prüfen, angemeldet im Browser, in der Konsole: `const { api } = await import(new URL('api.js', performance.getEntriesByType('resource').find((e) => e.name.endsWith('/start.js')).name))`, dann `await api('GET', 'instructions')` gegen den Kontrakt (33 Werkzeuge mit `group`, fünf Texte, drei Prompts, zwei Dokumente). Danach `PATCH` auf `instructions/preferences` mit alter `base_revision` → 409, mit aktueller → 200, `POST instructions/preferences/restore` mit der Fassung davor → 200; `GET instructions/preferences/revisions` zeigt beide neuen Fassungen. Zum Schluss den Ausgangsinhalt per `restore` zurückholen. Nur lokal.
+- [x] `docs/routes.md`: sechs Zeilen nach der Zeile `changes/{id}/reject`, Auth `JWT`, Controller `Api\InstructionController::<methode>` mit Kurzbeschreibung in Klammern wie bei `categories/{id}` (Fehler 409 `revision_conflict` mit `details`, 404 bei unbekanntem Slug; ADR-031), Spalte Phase `AA 2` (Plan „Anweisungen für Agenten“, Phase 2; Muster wie `M5 4`).
+- [x] `php -l app/src/Api/InstructionController.php app/index.php`.
 
 ## Report-Back
+
+Phase 2 fertig: `InstructionController` mit sechs Routen, Routen in `app/index.php`, `docs/routes.md` (Phase `AA 2`). `php -l` fehlerfrei. Der Browser-Lauf gegen die lokale Instanz (Checklistenpunkt 3) ist nicht gelaufen: kein Zugriff auf die angemeldete Sitzung; P2-AK1–AK5 sind am Code abgeglichen, nicht live geprüft.

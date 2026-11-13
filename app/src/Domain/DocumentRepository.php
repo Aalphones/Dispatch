@@ -87,4 +87,48 @@ final class DocumentRepository
 
         return $rows;
     }
+
+    /** @return list<array<string, mixed>> neueste zuerst, ohne Inhalt */
+    public function revisionList(string $key): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT revision, note, actor, created_at FROM document_revisions WHERE doc_key = ? ORDER BY revision DESC'
+        );
+        $statement->execute([$key]);
+        $rows = $statement->fetchAll();
+        foreach ($rows as &$row) {
+            $row['revision'] = (int) $row['revision'];
+        }
+
+        return $rows;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function revision(string $key, int $revision): ?array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT revision, content, note, actor, created_at FROM document_revisions WHERE doc_key = ? AND revision = ?'
+        );
+        $statement->execute([$key, $revision]);
+        $row = $statement->fetch();
+        if ($row === false) {
+            return null;
+        }
+        $row['revision'] = (int) $row['revision'];
+
+        return $row;
+    }
+
+    /** Nur innerhalb einer Transaktion sinnvoll; sperrt das Dokument bis zu deren Ende. */
+    public function lockRevision(string $key): ?int
+    {
+        $statement = $this->pdo->prepare('SELECT revision FROM documents WHERE doc_key = ? FOR UPDATE');
+        $statement->execute([$key]);
+        $revision = $statement->fetchColumn();
+        if ($revision === false) {
+            return null;
+        }
+
+        return (int) $revision;
+    }
 }

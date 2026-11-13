@@ -369,18 +369,28 @@ final class McpController
         return $result + ['ttlMs' => self::CACHE_TTL_MS, 'cacheScope' => 'private'];
     }
 
-    /** @param array<string, mixed> $services */
-    private static function registry(array $services): Registry
+    /**
+     * Alle Werkzeuge; auch Quelle der Ansicht „Anweisungen für Agenten“ (ADR-031).
+     *
+     * @param array<string, mixed> $services
+     */
+    public static function registry(array $services): Registry
     {
         $registry = new Registry();
+        $registry->group('Briefing und Dokumente');
         BriefingTools::register($registry, $services);
         DocumentTools::register($registry, $services);
+        $registry->group('Kategorien und Einstellungen');
         CategoryTools::register($registry, $services);
         SettingTools::register($registry, $services);
         ChangeTools::register($registry, $services);
+        $registry->group('Queue');
         QueueTools::register($registry, $services);
+        $registry->group('Artikel');
         PostTools::register($registry, $services);
+        $registry->group('Medien');
         MediaTools::register($registry, $services);
+        $registry->group('Statistik und Website');
         StatsTools::register($registry, $services);
         SiteTools::register($registry, $services);
 

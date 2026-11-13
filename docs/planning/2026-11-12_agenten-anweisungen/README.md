@@ -16,7 +16,7 @@ Entwurf (verbindlich mit der Freigabe dieses Plans): [`artifacts/entwurf-agenten
 6. **Werkzeuge kommen aus der Registry**, nicht aus einer zweiten Liste: `McpController::registry()` wird öffentlich, die Registry merkt sich je Werkzeug einen **Bereich** (`Registry::group()` vor jedem `register`-Aufruf). Bereiche: „Briefing und Dokumente“ (BriefingTools, DocumentTools), „Kategorien und Einstellungen“ (CategoryTools, SettingTools, ChangeTools), „Queue“ (QueueTools), „Artikel“ (PostTools), „Medien“ (MediaTools), „Statistik und Website“ (StatsTools, SiteTools). Ein neues Werkzeug erscheint damit ohne weiteren Handgriff im Dialog.
 7. **Nur der Inhaber** sieht und ändert (`ApiAuth::owner`); keine neuen MCP-Werkzeuge, kein neues Recht.
 8. **Anzeige der Werkzeuge** (Liste oder Tabelle, Gruppierung) merkt sich der Browser in `localStorage` unter `dispatch.anweisungen.werkzeuge`; Suche und Filter nicht.
-9. **ADR:** `029-anweisungen-fuer-agenten-im-redaktionsmodus.md` (Entscheidungen 2–6) in Phase 1. Nummer geprüft: höchste ADR auf Platte 026; `docs/planning/` reserviert 027 und 028 (`2026-11-12_zeitversetzt-veroeffentlichen`), sonst keine.
+9. **ADR:** `031-anweisungen-fuer-agenten-im-redaktionsmodus.md` (Entscheidungen 2–6) in Phase 1. Nummer beim Umsetzen neu geprüft (2026-11-13): 029 hat `2026-11-12_zeitversetzt-veroeffentlichen` belegt (Feed und Sitemap), 030 reserviert `2026-11-12_gestaltungs-bausteine` (Phase 8) — daher 031 statt der geplanten 029.
 
 Verworfen: Markdown im Browser rendern (zweiter Umsetzer, der vom Server abweicht); eigene Werkzeugliste im Frontend (veraltet beim ersten neuen Werkzeug); Server-Anweisung und Workflows editierbar machen (die Texte sind Teil des Codes und laufen mit Deploy und Versionsverwaltung); Protokoll der Werkzeugaufrufe (vom Inhaber abgewählt).
 
@@ -24,7 +24,7 @@ Verworfen: Markdown im Browser rendern (zweiter Umsetzer, der vom Server abweich
 
 | Phase | Inhalt | Rating | Status |
 |---|---|---|---|
-| 1 | [Fachlogik und Markdown](phase-1-fachlogik-markdown.md): `Util\Markdown` um Code und Tabellen, Konfliktprüfung und Fassungen in `DocumentService`/`DocumentRepository`, Bereiche in der Registry, `McpController::registry` öffentlich, ADR-029 | heikel | pending |
+| 1 | [Fachlogik und Markdown](phase-1-fachlogik-markdown.md): `Util\Markdown` um Code und Tabellen, Konfliktprüfung und Fassungen in `DocumentService`/`DocumentRepository`, Bereiche in der Registry, `McpController::registry` öffentlich, ADR-031 | heikel | complete |
 | 2 | [API](phase-2-api.md): `Api\InstructionController` mit sechs Routen, Routen in `app/index.php`, `docs/routes.md` | standard | pending |
 | 3 | [Oberfläche nach Entwurf](phase-3-oberflaeche.md): `redaktion/anweisungen.js`, Menüeintrag, Symbole `lupe`/`zurueck` in `ui.js`, CSS, Glossar und Code-Map | standard | pending |
 
@@ -88,7 +88,7 @@ Gesamtansicht:
 - AK5: Der Verlauf zeigt jede Fassung mit Zeit, Akteur und Notiz, den Vergleich zur Vorgängerfassung und kann eine Fassung wiederherstellen (als neue Fassung).
 - AK6: Agenten speichern per MCP `update_document` unverändert ohne Konfliktprüfung; die öffentlichen Dokumentseiten sehen für Markdown ohne Code und Tabellen gleich aus wie vorher.
 - AK7: Die Oberfläche entspricht dem Entwurf (Struktur-Punkte in Phase 3); ein Erstnutzer findet ohne Anleitung, was ein Agent bekommt, und kann bearbeiten, vergleichen und wiederherstellen; jede nicht triviale Wahl hat ein i-Symbol.
-- AK8: `php -l` auf alle geänderten PHP-Dateien fehlerfrei (ADR-004: keine automatisierten Tests); `docs/routes.md`, `docs/code-map.md`, `docs/glossary.md`, ADR-029 nachgezogen; `app/theme/style.css` unverändert (Budget 48 000 Byte, nur 8 Byte Luft).
+- AK8: `php -l` auf alle geänderten PHP-Dateien fehlerfrei (ADR-004: keine automatisierten Tests); `docs/routes.md`, `docs/code-map.md`, `docs/glossary.md`, ADR-031 nachgezogen; `app/theme/style.css` unverändert (Budget 48 000 Byte, nur 8 Byte Luft).
 
 ## Konfidenz-Ausweis
 

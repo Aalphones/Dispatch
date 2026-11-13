@@ -14,12 +14,35 @@ final class Registry
     /** @var array<string, Tool> */
     private array $tools = [];
 
+    private string $currentGroup = '';
+
+    /** @var array<string, string> Bereich je Werkzeugname */
+    private array $groups = [];
+
+    /** Bereich für alle folgenden `add`-Aufrufe; nur für die Anzeige im Redaktionsmodus (ADR-031). */
+    public function group(string $name): void
+    {
+        $this->currentGroup = $name;
+    }
+
     public function add(Tool $tool): void
     {
         if (isset($this->tools[$tool->name])) {
             throw new LogicException(sprintf('Tool %s ist schon registriert.', $tool->name));
         }
         $this->tools[$tool->name] = $tool;
+        $this->groups[$tool->name] = $this->currentGroup;
+    }
+
+    /** @return list<Tool> in Registrierungsreihenfolge */
+    public function all(): array
+    {
+        return array_values($this->tools);
+    }
+
+    public function groupOf(string $name): string
+    {
+        return $this->groups[$name] ?? '';
     }
 
     /**

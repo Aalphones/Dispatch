@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Dispatch\Domain;
 
 use Dispatch\Db\Transaction;
+use Dispatch\Util\Diff;
+use Dispatch\Util\Markdown;
 use PDO;
 
 final class DocumentService
@@ -52,14 +54,21 @@ final class DocumentService
     /**
      * Öffentliche Dokumente ändert nur der Inhaber direkt; sonst entsteht ein Vorschlag.
      *
+     * Mit `$baseRevision` prüft es auf der gesperrten Zeile, ob inzwischen jemand gespeichert hat (ADR-031);
+     * `null` speichert ohne Prüfung (Agenten, Vorschläge).
+     *
      * @return array{applied: list<string>, change_id: int|null, revision: int|null}
      */
-    public function update(string $key, string $content, ?string $title, ?string $note, Actor $actor): array
+    public function update(string $key, string $content, ?string $title, ?string $note, Actor $actor, ?int $baseRevision = null): array
     {
         $current = $this->get($key);
         $this->assertValid($content, $title, $note);
 
-        return Transaction::join($this->pdo, function () use ($key, $content, $title, $note, $actor, $current): array {
+        return Transaction::join($this->pdo, function () use ($key, $content, $title, $note, $actor, $current, $baseRevision): array {
+            if ($baseRevision !== null) {
+                $this->assertBase($key, $baseRevision);
+            }
+
             if (!$actor->isOwner() && in_array($key, self::PUBLIC_KEYS, true)) {
                 $changeId = $this->changes->propose('document', $key, [
                     'content' => $content,
@@ -74,6 +83,53 @@ final class DocumentService
 
             return ['applied' => ['content', 'title'], 'change_id' => null, 'revision' => $revision];
         });
+    }
+
+    /**
+     * Legt eine neue Fassung mit dem Inhalt der gewählten an; nichts wird gelöscht (ADR-031).
+     * `$baseRevision` `null` speichert ohne Konfliktprüfung („trotzdem“).
+     *
+     * @return array{applied: list<string>, change_id: int|null, revision: int|null}
+     */
+    public function restore(string $key, int $revision, ?int $baseRevision, Actor $actor): array
+    {
+        $row = $this->revisionOrFail($key, $revision);
+
+        return $this->update($key, (string) $row['content'], null, sprintf('Fassung %d wiederhergestellt.', $revision), $actor, $baseRevision);
+    }
+
+    /** @return list<array<string, mixed>> neueste zuerst, ohne Inhalt */
+    public function history(string $key): array
+    {
+        $this->get($key);
+
+        return $this->documents->revisionList($key);
+    }
+
+    /**
+     * Eine Fassung als HTML und ihr Vergleich zur Fassung davor; bei der ersten ist `diff` `null`.
+     *
+     * @return array{revision: int, created_at: string, actor: string|null, note: string|null, html: string, diff: array{html: string, blocks_changed: int}|null}
+     */
+    public function revisionWithDiff(string $key, int $revision): array
+    {
+        $row = $this->revisionOrFail($key, $revision);
+        $html = Markdown::toHtml((string) $row['content']);
+
+        $previous = $this->documents->revision($key, $revision - 1);
+        $diff = null;
+        if ($previous !== null) {
+            $diff = Diff::html(Markdown::toHtml((string) $previous['content']), $html);
+        }
+
+        return [
+            'revision' => $row['revision'],
+            'created_at' => $row['created_at'],
+            'actor' => $row['actor'],
+            'note' => $row['note'],
+            'html' => $html,
+            'diff' => $diff,
+        ];
     }
 
     /**
@@ -109,6 +165,38 @@ final class DocumentService
         ]);
 
         return $revision;
+    }
+
+    /** @return array<string, mixed> */
+    private function revisionOrFail(string $key, int $revision): array
+    {
+        $row = $this->documents->revision($key, $revision);
+        if ($row === null) {
+            throw new DomainError('not_found', sprintf('Fassung %d von „%s“ gibt es nicht.', $revision, $key), ['revision' => $revision]);
+        }
+
+        return $row;
+    }
+
+    /** Muss in der Transaktion des Schreibens laufen, sonst schützt die Sperre nichts. */
+    private function assertBase(string $key, int $baseRevision): void
+    {
+        $locked = $this->documents->lockRevision($key);
+        if ($locked === $baseRevision) {
+            return;
+        }
+
+        $latest = $this->documents->revision($key, (int) $locked);
+        throw new DomainError(
+            'revision_conflict',
+            sprintf('Inzwischen gibt es Fassung %d. Du hast auf Fassung %d aufgebaut.', $locked, $baseRevision),
+            [
+                'current_revision' => $locked,
+                'actor' => $latest['actor'] ?? null,
+                'created_at' => $latest['created_at'] ?? null,
+                'note' => $latest['note'] ?? null,
+            ]
+        );
     }
 
     private function assertValid(string $content, ?string $title, ?string $note): void

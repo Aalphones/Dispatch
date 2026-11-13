@@ -25,6 +25,27 @@ final class Prompts
     }
 
     /**
+     * Prompts mit ihrem Text für die Ansicht im Redaktionsmodus; das Thema ist ein Platzhalter.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function catalog(): array
+    {
+        return array_map(
+            function (array $prompt): array {
+                $arguments = [];
+                if ($prompt['name'] === 'thema_einreichen') {
+                    $arguments = ['thema' => '‹Thema›'];
+                }
+                $prompt['text'] = $this->get($prompt['name'], $arguments)['messages'][0]['content']['text'];
+
+                return $prompt;
+            },
+            $this->list()
+        );
+    }
+
+    /**
      * @param array<string, mixed> $arguments
      * @return array{description: string, messages: list<array{role: string, content: array{type: string, text: string}}>}
      */

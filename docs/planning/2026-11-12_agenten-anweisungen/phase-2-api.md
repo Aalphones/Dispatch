@@ -22,7 +22,7 @@ Ziel: Sechs Routen für den Redaktionsmodus liefern die Gesamtansicht aller Anwe
 
 ## Checkliste
 
-- [ ] Neue Datei `app/src/Api/InstructionController.php` (`final class`, Konstruktor `private readonly array $config`). Klassen-Docblock: „Ansicht „Anweisungen für Agenten“ im Redaktionsmodus: alles, was ein Agent von DISPATCH bekommt, dazu Fassungen der Richtlinien und Präferenzen (ADR-029). Nur der Inhaber.“
+- [ ] Neue Datei `app/src/Api/InstructionController.php` (`final class`, Konstruktor `private readonly array $config`). Klassen-Docblock: „Ansicht „Anweisungen für Agenten“ im Redaktionsmodus: alles, was ein Agent von DISPATCH bekommt, dazu Fassungen der Richtlinien und Präferenzen (ADR-031). Nur der Inhaber.“
   - Konstante `KEYS_BY_SLUG = ['editorial-guidelines' => 'editorial_guidelines', 'preferences' => 'preferences']` mit Kommentar „Der Router lässt im Pfad keinen Unterstrich zu.“
   - Konstante `TEXTS` (Reihenfolge verbindlich), je Eintrag `[Titel, wann]`:
     - `'instructions' => ['Server-Anweisung', 'beim Verbinden, an jeden Agenten']`
@@ -54,7 +54,7 @@ Ziel: Sechs Routen für den Redaktionsmodus liefern die Gesamtansicht aller Anwe
   - `POST /dispatch/api/instructions/{slug}/restore` → `restore`
   (`POST …/preview` und `PATCH …/{slug}` treffen dasselbe Muster; der Router wählt nach Methode, die Reihenfolge ist egal.)
 - [ ] Lokal prüfen, angemeldet im Browser, in der Konsole: `const { api } = await import(new URL('api.js', performance.getEntriesByType('resource').find((e) => e.name.endsWith('/start.js')).name))`, dann `await api('GET', 'instructions')` gegen den Kontrakt (33 Werkzeuge mit `group`, fünf Texte, drei Prompts, zwei Dokumente). Danach `PATCH` auf `instructions/preferences` mit alter `base_revision` → 409, mit aktueller → 200, `POST instructions/preferences/restore` mit der Fassung davor → 200; `GET instructions/preferences/revisions` zeigt beide neuen Fassungen. Zum Schluss den Ausgangsinhalt per `restore` zurückholen. Nur lokal.
-- [ ] `docs/routes.md`: sechs Zeilen nach der Zeile `changes/{id}/reject`, Auth `JWT`, Controller `Api\InstructionController::<methode>` mit Kurzbeschreibung in Klammern wie bei `categories/{id}` (Fehler 409 `revision_conflict` mit `details`, 404 bei unbekanntem Slug; ADR-029), Spalte Phase `AA 2` (Plan „Anweisungen für Agenten“, Phase 2; Muster wie `M5 4`).
+- [ ] `docs/routes.md`: sechs Zeilen nach der Zeile `changes/{id}/reject`, Auth `JWT`, Controller `Api\InstructionController::<methode>` mit Kurzbeschreibung in Klammern wie bei `categories/{id}` (Fehler 409 `revision_conflict` mit `details`, 404 bei unbekanntem Slug; ADR-031), Spalte Phase `AA 2` (Plan „Anweisungen für Agenten“, Phase 2; Muster wie `M5 4`).
 - [ ] `php -l app/src/Api/InstructionController.php app/index.php`.
 
 ## Report-Back

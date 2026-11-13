@@ -33,3 +33,4 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 027 | [Refresh-Token für jede App](027-refresh-token-fuer-jede-app.md) | Akzeptiert |
 | 028 | [Zeitversetztes Veröffentlichen ohne Cron](028-zeitversetztes-veroeffentlichen-ohne-cron.md) | Akzeptiert |
 | 029 | [Feed und Sitemap über die Brücke](029-feed-und-sitemap-ueber-die-bruecke.md) | Akzeptiert |
+| 031 | [Anweisungen für Agenten im Redaktionsmodus](031-anweisungen-fuer-agenten-im-redaktionsmodus.md) | Akzeptiert |

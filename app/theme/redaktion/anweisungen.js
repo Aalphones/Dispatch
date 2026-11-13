@@ -1,4 +1,4 @@
-// Dialog „Anweisungen für Agenten“ (Entwurf: docs/planning/2026-11-12_agenten-anweisungen/artifacts/entwurf-agenten-anweisungen.html).
+// Dialog „Anweisungen für Agenten“ (Entwurf: docs/archive/2026-11/2026-11-12_agenten-anweisungen/artifacts/entwurf-agenten-anweisungen.html).
 import { api } from './api.js';
 import { dialog, el, icon, info } from './ui.js';
 

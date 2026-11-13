@@ -285,6 +285,7 @@ final class Builder
                 'post' => $post,
                 'krumen' => $this->breadcrumbs($primary, $categories),
                 'scripts' => [$this->assetUrls['artikel']],
+                'styles' => ($this->rendered[$post['id']]['bausteine'] ?? false) ? [$this->assetUrls['bausteinestil']] : [],
             ]);
         }
 

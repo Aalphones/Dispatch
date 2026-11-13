@@ -7,13 +7,16 @@ namespace Dispatch\Site;
 /** Die Theme-Dateien als hash-benannte Assets (`assets/style.<sha1-8>.css`), damit Browser sie unbegrenzt cachen können. */
 final class Assets
 {
+    /** Schlüssel der Adressen → [Dateiname ohne Endung, Endung]. */
     private const THEME_FILES = [
-        'style' => 'css',
-        'site' => 'js',
-        'suche' => 'js',
-        'artikel' => 'js',
-        'zaehler' => 'js',
-        'vorschau' => 'js',
+        'style' => ['style', 'css'],
+        'site' => ['site', 'js'],
+        'suche' => ['suche', 'js'],
+        'artikel' => ['artikel', 'js'],
+        'zaehler' => ['zaehler', 'js'],
+        'vorschau' => ['vorschau', 'js'],
+        'bausteine' => ['bausteine', 'js'],
+        'bausteinestil' => ['bausteine', 'css'],
     ];
 
     private const EDITORIAL_FOLDER = 'redaktion';
@@ -28,13 +31,13 @@ final class Assets
     {
         $files = [];
         $urls = [];
-        foreach (self::THEME_FILES as $name => $extension) {
+        foreach (self::THEME_FILES as $key => [$name, $extension]) {
             $source = (string) $config['app_dir'] . '/theme/' . $name . '.' . $extension;
             $content = is_file($source) ? (string) file_get_contents($source) : '';
 
             $path = self::hashedPath($name, $extension, $content);
             $files[$path] = $content;
-            $urls[$name] = '/' . $path;
+            $urls[$key] = '/' . $path;
         }
 
         $editorial = self::collectEditorialFolder((string) $config['app_dir'] . '/theme/' . self::EDITORIAL_FOLDER);

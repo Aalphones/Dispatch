@@ -156,7 +156,7 @@ return [
             'accent' => null,
             'tags' => ['Klima', 'Forschung', 'Daten'],
             'categories' => [['slug' => 'klima', 'primary' => true]],
-            'bilder' => [false],
+            'bilder' => [false, false, false, false, false, false, false, false, false],
             'sources' => [
                 demoQuelle('s1', 'dataset', 'Massenbilanz ausgewählter Alpengletscher 1960 bis 2025', 'https://daten.example.net/gletscher/massenbilanz', 'Beispiel-Gletscherdienst', '2026-01-15'),
                 demoQuelle('s2', 'study', 'Vergleich von Gletschermodellen mit Feldmessungen', 'https://www.example.org/klima/gletschermodelle', 'Journal für Glaziologie', '2025-10'),

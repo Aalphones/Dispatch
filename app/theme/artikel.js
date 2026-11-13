@@ -1,5 +1,4 @@
-// Artikelseite: Inhaltsverzeichnis-Marker, Fokusmodus, Lightbox, Zwei-Klick-Videos, Seitenspalte neben randlosen Bildern.
-// Ohne IntersectionObserver oder Vollbild fällt die jeweilige Funktion einfach weg.
+// Artikelseite: Inhaltsverzeichnis, Fokusmodus, Bildansicht, Zwei-Klick-Videos, Randnotizen, Baustein-Laden.
 const EMBEDS = {
 	youtube: 'https://www.youtube-nocookie.com/embed/',
 	vimeo: 'https://player.vimeo.com/video/',
@@ -42,7 +41,6 @@ function trackSections() {
 	if (mobile) mobile.addEventListener('click', (event) => { if (event.target.closest('a')) mobile.open = false; });
 }
 
-// Neben randlosen Bildern wäre die Seitenspalte im Weg.
 function hideSideColumnAtFullImages() {
 	const column = document.getElementById('seitenspalte');
 	const images = document.querySelectorAll('.abb[data-layout="full"]');
@@ -55,9 +53,7 @@ function hideSideColumnAtFullImages() {
 	images.forEach((image) => observer.observe(image));
 }
 
-// "Kurz gesagt" und Randnotizen stehen per CSS frei neben ihrer Stelle im Text. Hier nur die
-// Kollisionen: Eine Notiz rückt unter ihre Vorgängerin und unter randlose Bilder. Breite Bilder
-// bleiben per CSS in der Textspalte, solange der Artikel Notizen hat.
+// Randnotizen stehen per CSS neben ihrer Stelle; hier nur die Kollisionen (unter Vorgängerin und randlose Bilder).
 function placeMarginNotes() {
 	const text = document.querySelector('.text');
 	const notes = text ? [...text.querySelectorAll(':scope > .tldr, :scope > .sidenote')] : [];
@@ -109,7 +105,6 @@ function setUpFocusMode() {
 		start.addEventListener('click', () => focus(true));
 	}
 	leave.addEventListener('click', () => focus(false));
-	// Der Browser beendet das Vollbild selbst mit Esc; dann endet auch der Fokusmodus.
 	document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) body.classList.remove('fokus'); });
 	document.addEventListener('keydown', (event) => {
 		const tag = document.activeElement ? document.activeElement.tagName : '';
@@ -146,8 +141,7 @@ function button(className, text, label) {
 	return node;
 }
 
-// Kopf mit Zähler und Schließen, Bild mit Pfeilen, Unterschrift, Vorschaubilder ab zwei Bildern.
-// Tasten: ←/→ blättern, Pos1/Ende springen, Esc schließt (nativ). Ein Dialog für alle Bilder, per Delegation.
+// Ein Dialog für alle Bilder (Delegation): Zähler, Pfeile, Unterschrift, Vorschaubilder; ←/→/Pos1/Ende, Esc.
 function setUpLightbox() {
 	const SELECTOR = '.abb .foto, .galerie .foto';
 	const parts = {};
@@ -231,7 +225,7 @@ function setUpLightbox() {
 		dialog.showModal();
 		show();
 	};
-	// Tastatur-Zugang: jedes vergrößerbare Bild ist ein Knopf; auch für später eingefügten Inhalt (Vorschau).
+	// Jedes vergrößerbare Bild ist ein Knopf, auch später eingefügt (Vorschau).
 	const prepare = () => document.querySelectorAll(SELECTOR).forEach((photo) => {
 		if (photo.tabIndex === 0 || !photo.querySelector('img')) return;
 		const gallery = photo.closest('.galerie');
@@ -269,9 +263,18 @@ function setUpEmbeds() {
 	});
 }
 
+// ---- Gestaltungs-Bausteine: eigene Dateien, nur bei Bedarf ----
+function loadComponents() {
+	const { bausteine, bausteinestil } = document.documentElement.dataset;
+	if (!document.querySelector('.galerie[data-variante], .vergleich, .erklaerbild, .wertung, .zeitstrahl, .akkordeon')) return;
+	if (!document.querySelector('link[href="' + bausteinestil + '"]')) document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: bausteinestil }));
+	if (document.querySelector('.galerie[data-variante="karussell"], .galerie[data-variante="streifen"], .vergleich, .erklaerbild')) import(bausteine).then((module) => module.start());
+}
+
 trackSections();
 hideSideColumnAtFullImages();
 placeMarginNotes();
 setUpFocusMode();
 setUpLightbox();
 setUpEmbeds();
+loadComponents();

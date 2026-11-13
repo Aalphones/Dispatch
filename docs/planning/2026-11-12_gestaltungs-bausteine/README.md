@@ -11,7 +11,7 @@ Entwurf (freigegeben am 2026-11-13): [`artifacts/`](artifacts/README.md). Teil 1
 | 1 | [Agenten-Syntax: Sanitizer, Formprüfung, Style-Guide](phase-1-syntax-sanitizer.md) | standard | complete |
 | 2 | [Renderer: Ausgabe-Markup der Bausteine](phase-2-renderer.md) | standard | complete |
 | 3 | [Theme: bausteine.css, bausteine.js, Bildansicht](phase-3-theme.md) | standard | complete |
-| 4 | [Laden, Demo-Artikel, Doku, ADR-029](phase-4-laden-demo-doku.md) | standard | pending |
+| 4 | [Laden, Demo-Artikel, Doku, ADR-029](phase-4-laden-demo-doku.md) | standard | complete |
 | 5 | [Diagramme: Syntax, Datenlesen, Formprüfung](phase-5-diagramme-syntax.md) | standard | pending |
 | 6 | [Diagramme: statische Typen als Server-SVG, Entwurf, Palette](phase-6-diagramme-statisch.md) | standard | pending |
 | 7 | [Diagramme: Sankey, Baumkarte, Blasen, Karte](phase-7-diagramme-komplex.md) | standard | pending |
@@ -77,11 +77,17 @@ Ausgabe: siehe Phase 6 (Markup) und Phase 7/8 (Zusatzattribute). Interaktion nur
 
 ## Summary
 
+Phasen 1–4: Agenten-Syntax, Renderer, Theme-Dateien, Laden und Doku der Gestaltungs-Bausteine fertig; Diagramme (Phasen 5–8) offen.
+
 ## Files touched
+
+Phase 4: app/src/Site/Assets.php, app/src/Site/Builder.php, app/templates/layout.php, app/theme/artikel.js, bin/demo/demo.php, bin/demo/gletscherschmelze-alpen-messnetz.html, docs/decisions/032-gestaltungs-bausteine.md, docs/decisions/README.md, docs/conventions/frontend.md, docs/code-map.md
 
 ## Commits
 
 ## Deviations from plan
+
+ADR-Nummer 032 statt 029 (029 ist der Feed-ADR); Phase 8 behält 030.
 
 ## Follow-ups
 

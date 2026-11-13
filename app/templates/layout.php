@@ -10,7 +10,7 @@ use function Dispatch\Site\e;
 
 /**
  * @var string $content fertiges HTML der Seitenvorlage
- * @var array<string, mixed> $meta title, description, canonical, robots, bodyPage, activeCategory, scripts
+ * @var array<string, mixed> $meta title, description, canonical, robots, bodyPage, activeCategory, scripts, styles
  * @var SiteData $site
  * @var array<string, string> $assets Name → URL
  * @var string $baseUrl
@@ -43,7 +43,7 @@ $mainCategories = array_slice($mainCategories, 0, 6);
 $topTags = array_slice($site->tags, 0, 10);
 ?>
 <!doctype html>
-<html lang="de" data-suche="<?= e($assets['suche'] ?? '') ?>" data-zaehler="<?= e($assets['zaehler'] ?? '') ?>" data-artikel="<?= e($assets['artikel'] ?? '') ?>" data-redaktion="<?= e($assets['redaktion'] ?? '') ?>"<?php if (isset($assets['suchindex'])) { ?> data-suchindex="<?= e($assets['suchindex']) ?>"<?php } ?>>
+<html lang="de" data-suche="<?= e($assets['suche'] ?? '') ?>" data-zaehler="<?= e($assets['zaehler'] ?? '') ?>" data-artikel="<?= e($assets['artikel'] ?? '') ?>" data-redaktion="<?= e($assets['redaktion'] ?? '') ?>" data-bausteine="<?= e($assets['bausteine'] ?? '') ?>" data-bausteinestil="<?= e($assets['bausteinestil'] ?? '') ?>"<?php if (isset($assets['suchindex'])) { ?> data-suchindex="<?= e($assets['suchindex']) ?>"<?php } ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -59,6 +59,9 @@ $topTags = array_slice($site->tags, 0, 10);
 <<?= $headTag['tag'] ?><?php foreach ($headTag['attributes'] as $attribute => $value) { ?> <?= $attribute ?>="<?= e($value) ?>"<?php } ?>>
 <?php } ?>
 <link rel="stylesheet" href="<?= e($assets['style']) ?>">
+<?php foreach ((array) ($meta['styles'] ?? []) as $style) { ?>
+<link rel="stylesheet" href="<?= e((string) $style) ?>">
+<?php } ?>
 <link rel="alternate" type="application/rss+xml" title="<?= e($siteTitle) ?>" href="/feed.xml">
 <?php foreach (Seo::jsonLd($meta, $site, $baseUrl) as $jsonLd) { ?>
 <script type="application/ld+json"><?= $jsonLd ?></script>

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Dispatch\Util;
 
 /**
- * Kleiner Markdown-Umsetzer für die Dokumentseiten (ADR-014): Überschriften, Absätze, Listen, Zitate,
- * Trennlinie, fett, kursiv, Links. Alles andere bleibt Text.
+ * Kleiner Markdown-Umsetzer für die Dokumentseiten (ADR-014) und die Anweisungen für Agenten (ADR-031):
+ * Überschriften, Absätze, Listen, Zitate, Trennlinie, fett, kursiv, Links, Code (Inline und Block) und
+ * Tabellen. Alles andere bleibt Text.
  *
  * Aller Text wird zuerst maskiert; erst danach entstehen die wenigen erlaubten Tags. Das Ergebnis läuft
  * trotzdem durch den Sanitizer, damit ein Fehler hier nie ungeprüftes HTML ausliefert.
@@ -23,6 +24,10 @@ final class Markdown
     private const QUOTE_PATTERN = '/^>[ \t]?(.*)$/';
     private const LINK_PATTERN = '/\[([^\]\n]+)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/';
     private const COMMENT_PATTERN = '/<!--.*?-->/s';
+    private const FENCE_PATTERN = '/^```/';
+    private const TABLE_ROW_PATTERN = '/^\|.*\|[ \t]*$/';
+    private const TABLE_RULE_PATTERN = '/^\|?[ \t]*:?-{3,}:?[ \t]*(\|[ \t]*:?-{3,}:?[ \t]*)*\|?[ \t]*$/';
+    private const CODE_PATTERN = '/`([^`\n]+)`/';
 
     private const PLACEHOLDER_START = "\x01";
     private const PLACEHOLDER_END = "\x02";
@@ -51,6 +56,24 @@ final class Markdown
             if (trim($line) === '') {
                 $html .= self::paragraph($paragraph);
                 $paragraph = [];
+
+                continue;
+            }
+
+            if (preg_match(self::FENCE_PATTERN, $line) === 1) {
+                $html .= self::paragraph($paragraph);
+                $paragraph = [];
+                [$fenceHtml, $index] = self::fence($lines, $index);
+                $html .= $fenceHtml;
+
+                continue;
+            }
+
+            if (self::startsTable($lines, $index)) {
+                $html .= self::paragraph($paragraph);
+                $paragraph = [];
+                [$tableHtml, $index] = self::table($lines, $index);
+                $html .= $tableHtml;
 
                 continue;
             }
@@ -155,6 +178,97 @@ final class Markdown
         return ['<blockquote>' . self::blocks($quoted) . '</blockquote>', $index - 1];
     }
 
+    /**
+     * Ohne schließende ```-Zeile endet der Block am Textende. Die Sprachangabe hinter ``` zählt nicht.
+     *
+     * @param list<string> $lines
+     * @return array{string, int} das HTML und der Index der letzten verbrauchten Zeile
+     */
+    private static function fence(array $lines, int $start): array
+    {
+        $code = [];
+        $index = $start + 1;
+        $count = count($lines);
+
+        for (; $index < $count; $index++) {
+            $line = rtrim($lines[$index]);
+            if (preg_match(self::FENCE_PATTERN, $line) === 1) {
+                return [self::codeBlock($code), $index];
+            }
+            $code[] = $line;
+        }
+
+        return [self::codeBlock($code), $count - 1];
+    }
+
+    /** @param list<string> $code */
+    private static function codeBlock(array $code): string
+    {
+        return '<pre><code>' . self::escape(implode("\n", $code)) . '</code></pre>';
+    }
+
+    /** @param list<string> $lines */
+    private static function startsTable(array $lines, int $index): bool
+    {
+        if (!isset($lines[$index + 1])) {
+            return false;
+        }
+
+        return preg_match(self::TABLE_ROW_PATTERN, rtrim($lines[$index])) === 1
+            && preg_match(self::TABLE_RULE_PATTERN, rtrim($lines[$index + 1])) === 1;
+    }
+
+    /**
+     * Die Kopfzeile bestimmt die Spaltenzahl: Fehlende Zellen werden leer aufgefüllt, überzählige verworfen.
+     *
+     * @param list<string> $lines
+     * @return array{string, int} das HTML und der Index der letzten verbrauchten Zeile
+     */
+    private static function table(array $lines, int $start): array
+    {
+        $headCells = self::cells($lines[$start]);
+        $columnCount = count($headCells);
+        $head = '';
+        foreach ($headCells as $cell) {
+            $head .= '<th scope="col">' . self::inline($cell) . '</th>';
+        }
+
+        $body = '';
+        $index = $start + 2;
+        $count = count($lines);
+        for (; $index < $count; $index++) {
+            $line = rtrim($lines[$index]);
+            if (preg_match(self::TABLE_ROW_PATTERN, $line) !== 1) {
+                break;
+            }
+            $rowCells = array_pad(array_slice(self::cells($line), 0, $columnCount), $columnCount, '');
+            $body .= '<tr>' . implode('', array_map(
+                static fn (string $cell): string => '<td>' . self::inline($cell) . '</td>',
+                $rowCells
+            )) . '</tr>';
+        }
+
+        return ['<table><thead><tr>' . $head . '</tr></thead><tbody>' . $body . '</tbody></table>', $index - 1];
+    }
+
+    /**
+     * Ein `|` innerhalb einer Zelle trennt immer — auch in Backticks; ein Escape gibt es nicht.
+     *
+     * @return list<string>
+     */
+    private static function cells(string $row): array
+    {
+        $inner = trim($row);
+        if (str_starts_with($inner, '|')) {
+            $inner = substr($inner, 1);
+        }
+        if (str_ends_with($inner, '|')) {
+            $inner = substr($inner, 0, -1);
+        }
+
+        return array_map(trim(...), explode('|', $inner));
+    }
+
     /** @param list<string> $lines */
     private static function paragraph(array $lines): string
     {
@@ -165,32 +279,45 @@ final class Markdown
         return '<p>' . implode('<br>', array_map(self::inline(...), $lines)) . '</p>';
     }
 
+    /**
+     * Code-Spannen und Links werden vor dem Maskieren durch Platzhalter ersetzt, damit Hervorhebung sie nicht
+     * erreicht. Code kommt zuerst, damit ein `[x](y)` in Backticks Text bleibt.
+     */
     private static function inline(string $text): string
     {
-        $links = [];
-        $withPlaceholders = preg_replace_callback(
-            self::LINK_PATTERN,
-            static function (array $match) use (&$links): string {
-                $links[] = self::link($match[1], $match[2]);
+        $parts = [];
+        $placeholder = static function (string $html) use (&$parts): string {
+            $parts[] = $html;
 
-                return self::PLACEHOLDER_START . (count($links) - 1) . self::PLACEHOLDER_END;
-            },
+            return self::PLACEHOLDER_START . (count($parts) - 1) . self::PLACEHOLDER_END;
+        };
+
+        $withCode = (string) preg_replace_callback(
+            self::CODE_PATTERN,
+            static fn (array $match): string => $placeholder('<code>' . self::escape($match[1]) . '</code>'),
             $text
         );
-
-        $html = self::emphasis(self::escape((string) $withPlaceholders));
-
-        return (string) preg_replace_callback(
-            '/' . self::PLACEHOLDER_START . '(\d+)' . self::PLACEHOLDER_END . '/',
-            static fn (array $match): string => $links[(int) $match[1]],
-            $html
+        $withLinks = (string) preg_replace_callback(
+            self::LINK_PATTERN,
+            static fn (array $match): string => $placeholder(self::link($match[1], $match[2])),
+            $withCode
         );
+
+        $html = self::emphasis(self::escape($withLinks));
+
+        // Zweimal: Ein Link-Platzhalter kann einen Code-Platzhalter im Linktext enthalten.
+        $replace = static fn (array $match): string => $parts[(int) $match[1]];
+        $pattern = '/' . self::PLACEHOLDER_START . '(\d+)' . self::PLACEHOLDER_END . '/';
+        $html = (string) preg_replace_callback($pattern, $replace, $html);
+
+        return (string) preg_replace_callback($pattern, $replace, $html);
     }
 
     private static function link(string $label, string $address): string
     {
         $labelHtml = self::emphasis(self::escape($label));
-        if (!self::isAllowedAddress($address)) {
+        // Code in der Adresse ist ein Platzhalter und darf nie ins href-Attribut gelangen.
+        if (str_contains($address, self::PLACEHOLDER_START) || !self::isAllowedAddress($address)) {
             return $labelHtml;
         }
 

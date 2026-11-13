@@ -37,7 +37,7 @@ final class Builder
     /** @var array<string, string> Name → URL der Theme-Dateien, vom laufenden Bau gesetzt */
     private array $assetUrls = [];
 
-    /** @var array<int, array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string}> Post-ID → Ergebnis des ContentRenderer */
+    /** @var array<int, array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool}> Post-ID → Ergebnis des ContentRenderer */
     private array $rendered = [];
 
     /** @param array<string, mixed> $config */
@@ -201,7 +201,7 @@ final class Builder
 
     /**
      * @param array<string, mixed> $post PostView
-     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string}
+     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool}
      */
     private function renderPost(array $post): array
     {

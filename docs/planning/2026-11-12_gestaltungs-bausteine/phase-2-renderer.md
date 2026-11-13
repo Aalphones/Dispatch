@@ -26,17 +26,19 @@ Verstanden, bevor geändert: `renderFigures()` verarbeitet **jede** `figure[data
 
 ## Checkliste
 
-- [ ] Eigenschaft `private bool $hasComponents` (zu Beginn von `render()` auf `false`) und `private int $accordionCount`.
-- [ ] `render()`: Reihenfolge `renderGalleries()` → `renderComparisons()` → `renderHotspots()` → `renderFigures()` → `renderEmbeds()` → `renderRatings()` → `renderTimelines()` → `renderAccordions()` → Rest wie bisher; Rückgabe um `'bausteine' => $this->hasComponents` ergänzen und den `@return`-Typ anpassen.
-- [ ] `buildGallery(array $images, string $variant)`: Variante aus `data-variant` übergeben (Mapping als Konstante `GALLERY_VARIANTS = ['mosaic' => 'mosaik', 'carousel' => 'karussell', 'strips' => 'streifen']`); `data-unterschrift` über neue Methode `photoCaption(array $medium): string`; beim Karussell `div.spur` anlegen und die Fotos dort anhängen.
-- [ ] `renderComparisons()`: `select('figure.before-after[data-media]')`, Labels aus `data-labels` (an `|` teilen, Standard `['Vorher', 'Nachher']`), Ausgabe laut Kontrakt.
-- [ ] `renderHotspots()`: `select('figure.hotspots[data-media]')`, Ausgabe laut Kontrakt.
-- [ ] `renderRatings()`: `select('ul.rating')`, Ausgabe laut Kontrakt; Zahlformat über `formatScore(string $value): string` (`str_replace('.', ',', …)`, `.0` weglassen).
-- [ ] `renderTimelines()`: `select('ol.timeline, ul.timeline')`, Ausgabe laut AK 6 (Element wird `ol`, Klasse `zeitstrahl`).
-- [ ] `renderAccordions()`: `select('div.accordion')`, Ausgabe laut AK 7.
-- [ ] Jede `render…`-Methode setzt bei erzeugtem Block `$this->hasComponents = true`.
-- [ ] Doc-Kommentar von `Builder::$rendered` um `bausteine: bool` ergänzen.
-- [ ] Prüfen: Skript im Scratchpad, das einen Beitrag mit allen Bausteinen (Medien aus der lokalen Datenbank) durch `ContentRenderer` schickt; Ausgabe gegen `artifacts/entwurf-bausteine.html` vergleichen.
-- [ ] `php -l app/src/Site/ContentRenderer.php app/src/Site/Builder.php`.
+- [x] Eigenschaft `private bool $hasComponents` (zu Beginn von `render()` auf `false`) und `private int $accordionCount`.
+- [x] `render()`: Reihenfolge `renderGalleries()` → `renderComparisons()` → `renderHotspots()` → `renderFigures()` → `renderEmbeds()` → `renderRatings()` → `renderTimelines()` → `renderAccordions()` → Rest wie bisher; Rückgabe um `'bausteine' => $this->hasComponents` ergänzen und den `@return`-Typ anpassen.
+- [x] `buildGallery(array $images, string $variant)`: Variante aus `data-variant` übergeben (Mapping als Konstante `GALLERY_VARIANTS = ['mosaic' => 'mosaik', 'carousel' => 'karussell', 'strips' => 'streifen']`); `data-unterschrift` über neue Methode `photoCaption(array $medium): string`; beim Karussell `div.spur` anlegen und die Fotos dort anhängen.
+- [x] `renderComparisons()`: `select('figure.before-after[data-media]')`, Labels aus `data-labels` (an `|` teilen, Standard `['Vorher', 'Nachher']`), Ausgabe laut Kontrakt.
+- [x] `renderHotspots()`: `select('figure.hotspots[data-media]')`, Ausgabe laut Kontrakt.
+- [x] `renderRatings()`: `select('ul.rating')`, Ausgabe laut Kontrakt; Zahlformat über `formatScore(string $value): string` (`str_replace('.', ',', …)`, `.0` weglassen).
+- [x] `renderTimelines()`: `select('ol.timeline, ul.timeline')`, Ausgabe laut AK 6 (Element wird `ol`, Klasse `zeitstrahl`).
+- [x] `renderAccordions()`: `select('div.accordion')`, Ausgabe laut AK 7.
+- [x] Jede `render…`-Methode setzt bei erzeugtem Block `$this->hasComponents = true`.
+- [x] Doc-Kommentar von `Builder::$rendered` um `bausteine: bool` ergänzen.
+- [x] Prüfen: Skript im Scratchpad, das einen Beitrag mit allen Bausteinen (Medien aus der lokalen Datenbank) durch `ContentRenderer` schickt; Ausgabe gegen `artifacts/entwurf-bausteine.html` vergleichen.
+- [x] `php -l app/src/Site/ContentRenderer.php app/src/Site/Builder.php`.
 
 ## Report-Back
+- Renderer: alle sechs Bausteine + Galerie-Varianten wie im Kontrakt; `render()` liefert `bausteine`. Zusätzlich: `data-unterschrift` auch bei Galerien ohne Variante; Vorher/Nachher braucht genau zwei gültige Bilder.
+- Prüfung: Skript mit synthetischen Medien (nicht aus der lokalen Datenbank) deckt alle Bausteine, Fehlfälle und `bausteine` true/false ab; Ausgabe entspricht dem Entwurf. `php -l` grün.

@@ -30,6 +30,23 @@ $check = static function (bool $isOk, string $label) use (&$failures): void {
 $data = SiteData::load(Connection::open(), $config);
 $renderer = new ContentRenderer();
 
+// Der Demo-Artikel mit allen Diagrammformen (Datei, ohne Datenbank): jede Form gezeichnet, nur die erlaubten interaktiv.
+$chartHtml = (string) file_get_contents(__DIR__ . '/energie-in-zahlen-diagramme.html');
+$chartPost = ['slug' => 'energie-in-zahlen-diagramme', 'content_html' => $chartHtml, 'sources' => []];
+$chartResult = $renderer->render($chartPost, $data);
+$chartDocument = Dom\HTMLDocument::createFromString('<!doctype html><body>' . $chartResult['html'], LIBXML_NOERROR, 'UTF-8');
+$expectedTypes = ['balken', 'saeulen', 'linie', 'flaeche', 'balken-gestapelt', 'saeulen-gestapelt', 'kreis', 'ring', 'netz', 'waffel', 'wasserfall', 'heatmap', 'kalender', 'sankey', 'baumkarte', 'blasen', 'karte'];
+foreach ($expectedTypes as $type) {
+    $check($chartDocument->querySelectorAll('figure.diagramm[data-typ="' . $type . '"]')->length >= 1, 'Demo-Diagramme: Typ fehlt: ' . $type);
+}
+$interactiveTypes = ['linie', 'heatmap', 'sankey', 'baumkarte', 'blasen', 'karte'];
+foreach ($chartDocument->querySelectorAll('figure.diagramm[data-interaktiv]') as $figure) {
+    $check(in_array($figure->getAttribute('data-typ'), $interactiveTypes, true), 'Demo-Diagramme: unerwartet interaktiv: ' . $figure->getAttribute('data-typ'));
+}
+$check($chartResult['diagramme'] && $chartResult['diagramme_interaktiv'], 'Demo-Diagramme: Flags diagramme/diagramme_interaktiv fehlen');
+$check($chartDocument->querySelectorAll('figure.chart')->length === 0, 'Demo-Diagramme: figure.chart übrig (nicht gezeichnet)');
+echo sprintf('%-45s diagramme %d · interaktiv %d', 'energie-in-zahlen-diagramme', $chartDocument->querySelectorAll('figure.diagramm')->length, $chartDocument->querySelectorAll('figure.diagramm[data-interaktiv]')->length), PHP_EOL;
+
 foreach ($data->posts as $post) {
     $result = $renderer->render($post, $data);
     $document = Dom\HTMLDocument::createFromString('<!doctype html><body>' . $result['html'], LIBXML_NOERROR, 'UTF-8');

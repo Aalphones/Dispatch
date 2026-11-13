@@ -263,12 +263,19 @@ function setUpEmbeds() {
 	});
 }
 
-// ---- Gestaltungs-Bausteine: eigene Dateien, nur bei Bedarf ----
+// ---- Bausteine und Diagramme: eigene Dateien, nur bei Bedarf (Stil auch in der Vorschau) ----
+const COMPONENTS = [
+	['bausteinestil', '.galerie[data-variante], .vergleich, .erklaerbild, .wertung, .zeitstrahl, .akkordeon', 'bausteine', '.galerie[data-variante="karussell"], .galerie[data-variante="streifen"], .vergleich, .erklaerbild'],
+	['diagrammestil', '.diagramm', 'diagramme', '.diagramm[data-interaktiv]'],
+];
+
 function loadComponents() {
-	const { bausteine, bausteinestil } = document.documentElement.dataset;
-	if (!document.querySelector('.galerie[data-variante], .vergleich, .erklaerbild, .wertung, .zeitstrahl, .akkordeon')) return;
-	if (!document.querySelector('link[href="' + bausteinestil + '"]')) document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: bausteinestil }));
-	if (document.querySelector('.galerie[data-variante="karussell"], .galerie[data-variante="streifen"], .vergleich, .erklaerbild')) import(bausteine).then((module) => module.start());
+	const urls = document.documentElement.dataset;
+	COMPONENTS.forEach(([style, styleSelector, script, scriptSelector]) => {
+		const href = urls[style];
+		if (document.querySelector(styleSelector) && !document.querySelector('link[href="' + href + '"]')) document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href }));
+		if (document.querySelector(scriptSelector)) import(urls[script]).then((module) => module.start());
+	});
 }
 
 trackSections();

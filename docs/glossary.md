@@ -43,3 +43,5 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Fassung | Eine Revision eines Dokuments (Richtlinien, Präferenzen). Speichern legt eine neue Fassung an, Wiederherstellen ebenfalls; ältere bleiben im Verlauf. |
 | Konflikt beim Speichern | Ein Agent hat das Dokument geändert, seit der Inhaber die Grundlage (`base_revision`) geladen hat; die API antwortet `revision_conflict`, der Inhaber entscheidet, ob er trotzdem speichert. |
 | Bereich | Gruppe der Werkzeuge in der Werkzeugliste, etwa „Artikel“ oder „Medien“ (`Registry::group`). |
+| Diagramm | Grafik im Artikel (`figure.chart`): der Agent liefert eine Datentabelle, der Server zeichnet daraus das SVG; 17 Typen, sieben davon auf Wunsch interaktiv (`data-interactive="true"`). |
+| Datentabelle | Die Tabelle in einem Diagramm; Quelle der Zeichnung und zugleich Textalternative ohne Grafik. |

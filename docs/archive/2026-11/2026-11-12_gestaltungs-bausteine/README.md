@@ -15,7 +15,7 @@ Entwurf (freigegeben am 2026-11-13): [`artifacts/`](artifacts/README.md). Teil 1
 | 5 | [Diagramme: Syntax, Datenlesen, Formprüfung](phase-5-diagramme-syntax.md) | standard | complete |
 | 6 | [Diagramme: statische Typen als Server-SVG, Entwurf, Palette](phase-6-diagramme-statisch.md) | standard | complete |
 | 7 | [Diagramme: Sankey, Baumkarte, Blasen, Karte](phase-7-diagramme-komplex.md) | standard | complete |
-| 8 | [Diagramme: Interaktion, Laden, Demo, Doku, ADR-030](phase-8-diagramme-interaktion-laden-doku.md) | standard | pending |
+| 8 | [Diagramme: Interaktion, Laden, Demo, Doku, ADR-030](phase-8-diagramme-interaktion-laden-doku.md) | standard | complete |
 
 Reihenfolge: 1 → 2 → 3 → 4, dann 5 → 6 → 7 → 8. Phase 5 baut auf Phase 1, 6 auf 2 und 5, 8 auf 4 und 7.
 
@@ -61,7 +61,7 @@ Ausgabe: siehe Phase 6 (Markup) und Phase 7/8 (Zusatzattribute). Interaktion nur
 
 ## Größengrenzen (Rohgröße in Byte, entschieden am 2026-11-13)
 
-`bausteine.js` ≤ 8 000 · `bausteine.css` ≤ 16 000 · `artikel.js` ≤ 12 500 (vorher 7 000) · `style.css` ≤ 50 000 (vorher 48 000). Neu für Diagramme (Annahme 2026-11-13, in Phase 6/8 zu messen): `diagramme.js` ≤ 9 000 · `diagramme.css` ≤ 9 000 · Kartendateien je ≤ 60 000. Übrige Grenzen unverändert.
+`bausteine.js` ≤ 8 000 · `bausteine.css` ≤ 16 000 · `artikel.js` ≤ 12 500 (vorher 7 000) · `style.css` ≤ 50 000 (vorher 48 000). Neu für Diagramme (Annahme 2026-11-13, in Phase 6/8 zu messen): `diagramme.js` ≤ 9 000 · `diagramme.css` ≤ 9 000 · Kartendateien je ≤ 60 000. Nach Phase 8 angepasst (ADR-030): `diagramme.js` ≤ 13 500 (gemessen 13 252), `artikel.js` ≤ 13 000 (gemessen 12 736). Übrige Grenzen unverändert.
 
 ## Finale Abnahmekriterien
 
@@ -77,9 +77,11 @@ Ausgabe: siehe Phase 6 (Markup) und Phase 7/8 (Zusatzattribute). Interaktion nur
 
 ## Summary
 
-Phasen 1–4: Agenten-Syntax, Renderer, Theme-Dateien, Laden und Doku der Gestaltungs-Bausteine fertig; Diagramme (Phasen 5–8) offen.
+Phasen 1–4: Agenten-Syntax, Renderer, Theme-Dateien, Laden und Doku der Gestaltungs-Bausteine fertig; Phasen 5–8: Diagramme (17 Typen) als Server-SVG mit Datentabelle; sieben Typen auf Wunsch interaktiv (`diagramme.js`), Laden über Assets/Builder/`artikel.js`, Demo-Artikel mit allen Typen, ADR-030.
 
 ## Files touched
+
+Phase 8: app/src/Site/ChartRenderer.php, ChartComplexPlots.php, ContentRenderer.php, Builder.php, Assets.php, app/src/Util/FormCheck.php, app/templates/layout.php, app/theme/diagramme.js (neu), diagramme.css, artikel.js, bin/demo/energie-in-zahlen-diagramme.html (neu), bin/demo/demo.php, bin/demo/pruefe-inhalt.php, bin/dispatch, docs/decisions/030-diagramme-als-server-svg.md, docs/decisions/README.md, docs/conventions/frontend.md, docs/code-map.md, docs/glossary.md
 
 Phase 4: app/src/Site/Assets.php, app/src/Site/Builder.php, app/templates/layout.php, app/theme/artikel.js, bin/demo/demo.php, bin/demo/gletscherschmelze-alpen-messnetz.html, docs/decisions/032-gestaltungs-bausteine.md, docs/decisions/README.md, docs/conventions/frontend.md, docs/code-map.md
 
@@ -88,6 +90,8 @@ Phase 4: app/src/Site/Assets.php, app/src/Site/Builder.php, app/templates/layout
 ## Deviations from plan
 
 ADR-Nummer 032 statt 029 (029 ist der Feed-ADR); Phase 8 behält 030.
+
+Phase 8: `diagramme.js` 13 252 B statt ≤ 9 000 und `artikel.js` 12 736 B statt ≤ 12 500; Grenzen auf 13 500 bzw. 13 000 angehoben (ADR-030). Legenden-Knöpfe entstehen per JS statt im Renderer-Markup (keine toten Knöpfe ohne Skript). Der Zeitfilter der Blasen entfällt (Spalte `Jahr` gehört nicht zum Kontrakt). Blasen-Beschriftungen stehen in `g.rN`, Linien-Figuren tragen `g.spalten`, Heatmap `data-spalten`. Browser-Prüfung per Chrome-CDP: Tastatur, Zeiger, 390 px, hell/dunkel grün; Druck und Ansicht ohne JavaScript nicht gesondert geprüft; `php bin/dispatch demo` nicht ausgeführt (lokale DB nicht leer).
 
 Phase 7: Sankey-Knoten mit 8 statt 2 Einheiten Abstand (wie im freigegebenen Entwurf, wegen Beschriftungen); Sankey-Kennungen `k1…` statt Namen; Baumkarte höchstens 8 Gruppen (Farbgrenze), Weltkarte in 110m-Auflösung ohne Kleinstaaten; Kopfzellen der Blasen-Tabelle beschriften die Achsen.
 

@@ -37,7 +37,7 @@ final class Builder
     /** @var array<string, string> Name → URL der Theme-Dateien, vom laufenden Bau gesetzt */
     private array $assetUrls = [];
 
-    /** @var array<int, array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool}> Post-ID → Ergebnis des ContentRenderer */
+    /** @var array<int, array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool}> Post-ID → Ergebnis des ContentRenderer */
     private array $rendered = [];
 
     /** @param array<string, mixed> $config */
@@ -201,7 +201,7 @@ final class Builder
 
     /**
      * @param array<string, mixed> $post PostView
-     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool}
+     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool}
      */
     private function renderPost(array $post): array
     {
@@ -285,11 +285,29 @@ final class Builder
                 'post' => $post,
                 'krumen' => $this->breadcrumbs($primary, $categories),
                 'scripts' => [$this->assetUrls['artikel']],
-                'styles' => ($this->rendered[$post['id']]['bausteine'] ?? false) ? [$this->assetUrls['bausteinestil']] : [],
+                'styles' => $this->articleStyles((int) $post['id']),
             ]);
         }
 
         return $files;
+    }
+
+    /**
+     * Stil-Dateien im Kopf der Artikelseite: nur, was der Text braucht. Das Skript der Diagramme lädt artikel.js nach.
+     *
+     * @return list<string>
+     */
+    private function articleStyles(int $postId): array
+    {
+        $styles = [];
+        if ($this->rendered[$postId]['bausteine'] ?? false) {
+            $styles[] = $this->assetUrls['bausteinestil'];
+        }
+        if ($this->rendered[$postId]['diagramme'] ?? false) {
+            $styles[] = $this->assetUrls['diagrammestil'];
+        }
+
+        return $styles;
     }
 
     /** Einzelseiten aller Kategorien (mit Seitenzahlen) und die Übersicht. @return array<string, string> */

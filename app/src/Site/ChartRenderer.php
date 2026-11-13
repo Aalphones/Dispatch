@@ -30,6 +30,8 @@ final class ChartRenderer
     private const MONTH_SHORT = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
     private const MONTH_LONG = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
     private const DEFAULT_TITLE = 'Diagramm';
+    /** Nur diese Typen tragen Interaktion; alle anderen bleiben bewusst statisch, auch wenn der Agent sie anfordert. */
+    public const INTERACTIVE_TYPES = ['line', 'heatmap', 'calendar', 'sankey', 'treemap', 'bubble', 'map'];
     private const TYPE_NAMES = [
         'bar' => 'balken',
         'column' => 'saeulen',
@@ -116,12 +118,13 @@ final class ChartRenderer
      *
      * @param array<string, mixed> $data Ergebnis von {@see ChartData::fromFigure()}
      */
-    public function render(array $data, string $type, string $unit, int $id, ?Element $table, ?Element $caption): ?Element
+    public function render(array $data, string $type, string $unit, int $id, ?Element $table, ?Element $caption, bool $wantsInteraction = false): ?Element
     {
+        $isInteractive = $wantsInteraction && in_array($type, self::INTERACTIVE_TYPES, true);
         $plot = match ($type) {
             'bar' => $this->bars($data, $unit),
             'column' => $this->columns($data, $unit),
-            'line' => $this->lines($data, $unit, false),
+            'line' => $this->lines($data, $unit, false, $isInteractive),
             'area' => $this->lines($data, $unit, true),
             'stacked-bar' => $this->stacked($data, $unit, true),
             'stacked-column' => $this->stacked($data, $unit, false),
@@ -141,6 +144,13 @@ final class ChartRenderer
         if ($plot === null) {
             return null;
         }
+        if ($isInteractive) {
+            $plot['attributes'] = ['data-interaktiv' => ''];
+            if ($type === 'heatmap') {
+                // Pfeil nach unten springt eine Zeile weiter.
+                $plot['attributes']['data-spalten'] = (string) count($data['columns']);
+            }
+        }
 
         return $this->buildFigure(self::TYPE_NAMES[$type], $plot, $id, $table, $caption);
     }
@@ -155,6 +165,9 @@ final class ChartRenderer
         $figure->setAttribute('data-typ', $typeName);
         if ($plot['isWide']) {
             $figure->setAttribute('data-breit', '');
+        }
+        foreach ($plot['attributes'] ?? [] as $name => $value) {
+            $figure->setAttribute($name, $value);
         }
 
         $surface = $this->document->createElement('div');
@@ -618,7 +631,7 @@ final class ChartRenderer
      * @param array<string, mixed> $data
      * @return array<string, mixed>
      */
-    private function lines(array $data, string $unit, bool $isArea): array
+    private function lines(array $data, string $unit, bool $isArea, bool $isInteractive = false): array
     {
         $names = $data['series'];
         $rows = $data['rows'];
@@ -678,8 +691,35 @@ final class ChartRenderer
         foreach ($endLabels as $end) {
             $shapes[] = $this->group('r' . ($end['series'] + 1), [$this->label($end['x'] + 9, $end['y'], ChartFormat::truncate($end['name'], 16), 'wert halo')]);
         }
+        if ($isInteractive) {
+            $shapes[] = $this->pointerColumns($names, $rows, $toX, $decimals, $unit);
+        }
 
         return $this->plot(self::WIDTH, self::COLUMN_HEIGHT, $shapes, $this->summarize($names, $rows, $decimals, $unit), $this->seriesLegend($names));
+    }
+
+    /**
+     * Unsichtbare Ablesepunkte für das Fadenkreuz: je Zeile x-Lage, Beschriftung und fertig formatierte Werte; das Skript rechnet nie.
+     *
+     * @param list<string> $names
+     * @param list<array{label: string, values: list<float>}> $rows
+     */
+    private function pointerColumns(array $names, array $rows, callable $toX, int $decimals, string $unit): Element
+    {
+        $group = $this->group('spalten');
+        $group->setAttribute('data-reihen', json_encode($names, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+        $group->setAttribute('data-oben', $this->coordinate(self::AXIS_TOP));
+        $group->setAttribute('data-unten', $this->coordinate(self::AXIS_BOTTOM));
+        foreach ($rows as $index => $row) {
+            $texts = array_map(fn (float $value): string => ChartFormat::withUnit($value, $decimals, $unit), $row['values']);
+            $column = $this->group('spalte');
+            $column->setAttribute('data-x', $this->coordinate($toX($index)));
+            $column->setAttribute('data-label', $row['label']);
+            $column->setAttribute('data-werte', json_encode($texts, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+            $group->appendChild($column);
+        }
+
+        return $group;
     }
 
     /* ---------------------------------------------- Kreis, Ring und Waffel */

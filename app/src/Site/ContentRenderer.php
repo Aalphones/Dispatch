@@ -56,13 +56,16 @@ final class ContentRenderer
     /** Wird gesetzt, sobald ein Diagramm gezeichnet wurde; der Builder lädt dann diagramme.css. */
     private bool $hasCharts = false;
 
+    /** Wird gesetzt, sobald ein Diagramm mit Interaktion entstand; erst dann lädt die Seite diagramme.js. */
+    private bool $hasInteractiveCharts = false;
+
     private int $chartCount = 0;
 
     private ChartRenderer $charts;
 
     /**
      * @param array<string, mixed> $post PostView
-     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool}
+     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool}
      */
     public function render(array $post, SiteData $data): array
     {
@@ -71,6 +74,7 @@ final class ContentRenderer
         $this->hasComponents = false;
         $this->accordionCount = 0;
         $this->hasCharts = false;
+        $this->hasInteractiveCharts = false;
         $this->chartCount = 0;
         $html = (string) $post['content_html'];
 
@@ -78,7 +82,7 @@ final class ContentRenderer
         $this->charts = new ChartRenderer($this->document);
         $body = $this->document->body;
         if ($body === null) {
-            return ['html' => '', 'toc' => [], 'headings' => [], 'text' => '', 'bausteine' => false, 'diagramme' => false];
+            return ['html' => '', 'toc' => [], 'headings' => [], 'text' => '', 'bausteine' => false, 'diagramme' => false, 'diagramme_interaktiv' => false];
         }
 
         $this->renderCharts();
@@ -102,6 +106,7 @@ final class ContentRenderer
             'text' => Text::plain($html),
             'bausteine' => $this->hasComponents,
             'diagramme' => $this->hasCharts,
+            'diagramme_interaktiv' => $this->hasInteractiveCharts,
         ];
     }
 
@@ -127,6 +132,7 @@ final class ContentRenderer
                 $this->chartCount + 1,
                 $this->firstChildNamed($figure, 'table'),
                 $this->firstChildNamed($figure, 'figcaption'),
+                $figure->getAttribute('data-interactive') === 'true',
             );
             if ($chart === null) {
                 Log::error('Diagramm lässt sich nicht zeichnen und entfällt', ['post' => $this->postSlug, 'type' => $parsed['type']]);
@@ -137,6 +143,7 @@ final class ContentRenderer
 
             $this->chartCount++;
             $this->hasCharts = true;
+            $this->hasInteractiveCharts = $this->hasInteractiveCharts || $chart->hasAttribute('data-interaktiv');
             // Die Druckmuster stehen einmal je Artikel vor dem ersten Diagramm.
             if ($this->chartCount === 1) {
                 $chart->insertBefore($this->charts->patterns(), $chart->firstChild);

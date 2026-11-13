@@ -91,6 +91,23 @@ return [
     // Reihenfolge = Alter: der erste Eintrag ist der neueste Artikel.
     'posts' => [
         [
+            'file' => 'energie-in-zahlen-diagramme',
+            'title' => 'Energie in Zahlen: Alle Diagrammformen im Überblick',
+            'subtitle' => 'Ein Beispielartikel mit erfundenen Daten, an dem sich jede Form ausprobieren lässt',
+            'kicker' => 'Energie',
+            'excerpt' => 'Siebzehn Diagrammformen an einem Thema: vom schlichten Balken bis zur anklickbaren Karte. Alle Zahlen sind erfunden.',
+            'layout' => 'standard',
+            'accent' => null,
+            'tags' => ['Energie', 'Daten', 'Klima'],
+            'categories' => [['slug' => 'energie', 'primary' => true]],
+            'bilder' => [false],
+            'sources' => [
+                demoQuelle('s1', 'dataset', 'Beispielstatistik zur Stromerzeugung', 'https://daten.example.net/energie/stromerzeugung', 'Beispiel-Energieinstitut', '2026-02'),
+                demoQuelle('s2', 'official', 'Netzbericht mit Speicherkapazitäten', 'https://www.example.org/energie/netzbericht', 'Beispiel-Netzagentur', '2026-05'),
+                demoQuelle('s3', 'study', 'Vergleich von Speichertechniken', 'https://www.example.com/studien/speichervergleich', 'Journal für Energiesysteme', '2025-11'),
+            ],
+        ],
+        [
             'file' => 'raumsonde-eismond-bohrung',
             'title' => 'Wie eine Sonde unter das Eis des Jupitermondes Europa kommen soll',
             'subtitle' => 'Zwei Meter Schmelzsonde, ein Jahrzehnt Flugzeit und viele offene Fragen',

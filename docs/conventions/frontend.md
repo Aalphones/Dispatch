@@ -22,7 +22,7 @@
 
 ## Regeln
 
-- Budgets (ADR-015, 023, 032): `style.css` ≤ 50 000 Byte, `site.js` ≤ 5 000, `suche.js` ≤ 9 500, `artikel.js` ≤ 12 500, `zaehler.js` ≤ 2 500, `vorschau.js` ≤ 3 000, `bausteine.js` ≤ 8 000, `bausteine.css` ≤ 16 000. `bausteine.*` laden nur bei Artikeln mit Gestaltungs-Bausteinen (Stylesheet per Seitenkopf, Skript per `artikel.js` bei bedienbaren Bausteinen). Redaktionsmodule: kein Budget.
+- Budgets (ADR-015, 023, 032): `style.css` ≤ 50 000 Byte, `site.js` ≤ 5 000, `suche.js` ≤ 9 500, `artikel.js` ≤ 13 000, `zaehler.js` ≤ 2 500, `vorschau.js` ≤ 3 000, `bausteine.js` ≤ 8 000, `bausteine.css` ≤ 16 000, `diagramme.js` ≤ 13 500, `diagramme.css` ≤ 9 000 (ADR-030). `bausteine.*` laden nur bei Artikeln mit Gestaltungs-Bausteinen (Stylesheet per Seitenkopf, Skript per `artikel.js` bei bedienbaren Bausteinen); `diagramme.css` nur bei Artikeln mit Diagrammen, `diagramme.js` nur bei `.diagramm[data-interaktiv]` (Tabelle `COMPONENTS` in `loadComponents()`). Redaktionsmodule: kein Budget.
 - Kein `style="…"` in von Modulen erzeugtem HTML (`el()` in `redaktion/ui.js` ignoriert es); Maße und Farben über `element.style.…`.
 - Gestaltung: `docs/design/entwurf-website.html` ist verbindlich (ADR-013).
 - Jede Ausgabe in Templates wird escaped (Helfer `e()`); nur Artikel-HTML aus dem Sanitizer geht roh hinaus.

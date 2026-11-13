@@ -351,7 +351,9 @@ final class ChartComplexPlots
             $shapes[] = $this->shapes->group('r' . min(array_search($point['category'], $categories, true) + 1, self::MAX_SERIES_COLORS), [$this->shapes->withTooltip($circle, $tooltip)]);
         }
         foreach (array_slice($points, 0, self::BUBBLE_LABELED) as $point) {
-            $shapes[] = $this->shapes->label($toX($point['x']), $toY($point['y']) + 4, $point['name'], 'wert halo', 'middle');
+            // Die Beschriftung gehört zur Kategorie-Gruppe, damit der Filter sie mit der Blase ausblendet.
+            $label = $this->shapes->label($toX($point['x']), $toY($point['y']) + 4, $point['name'], 'wert halo', 'middle');
+            $shapes[] = $this->shapes->group('r' . min(array_search($point['category'], $categories, true) + 1, self::MAX_SERIES_COLORS), [$label]);
         }
 
         $summary = sprintf('Größte Blase: %s (%s) mit %s %s.', $points[0]['name'], $points[0]['category'], $sizeName, ChartFormat::number($points[0]['size'], $decimals[2]));

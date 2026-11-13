@@ -43,7 +43,7 @@ $mainCategories = array_slice($mainCategories, 0, 6);
 $topTags = array_slice($site->tags, 0, 10);
 ?>
 <!doctype html>
-<html lang="de" data-suche="<?= e($assets['suche'] ?? '') ?>" data-zaehler="<?= e($assets['zaehler'] ?? '') ?>" data-artikel="<?= e($assets['artikel'] ?? '') ?>" data-redaktion="<?= e($assets['redaktion'] ?? '') ?>" data-bausteine="<?= e($assets['bausteine'] ?? '') ?>" data-bausteinestil="<?= e($assets['bausteinestil'] ?? '') ?>"<?php if (isset($assets['suchindex'])) { ?> data-suchindex="<?= e($assets['suchindex']) ?>"<?php } ?>>
+<html lang="de" data-suche="<?= e($assets['suche'] ?? '') ?>" data-zaehler="<?= e($assets['zaehler'] ?? '') ?>" data-artikel="<?= e($assets['artikel'] ?? '') ?>" data-redaktion="<?= e($assets['redaktion'] ?? '') ?>" data-bausteine="<?= e($assets['bausteine'] ?? '') ?>" data-bausteinestil="<?= e($assets['bausteinestil'] ?? '') ?>" data-diagramme="<?= e($assets['diagramme'] ?? '') ?>" data-diagrammestil="<?= e($assets['diagrammestil'] ?? '') ?>"<?php if (isset($assets['suchindex'])) { ?> data-suchindex="<?= e($assets['suchindex']) ?>"<?php } ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -83,14 +83,28 @@
 .diagramm figcaption { margin-top: .6rem; font: .85rem/1.45 var(--sans); color: var(--ink-3); }
 .diagramm figcaption b { color: var(--ink-2); }
 
-/* ---- Baumkarte: Ebene wechseln (Skript in Phase 8) ---- */
-.diagramm svg g[hidden] { display: none; }
+/* ---- Interaktion (diagramme.js): nur Figuren mit data-interaktiv; ohne Skript bleibt alles statisch ---- */
+.diagramm svg [hidden] { display: none; }
 .diagramm[data-typ="baumkarte"] svg .gruppe { cursor: zoom-in; }
+.diagramm-flaeche { position: relative; }
+.diagramm-hinweis { position: absolute; z-index: 2; transform: translateX(-50%); width: max-content; max-width: 16rem; padding: .25rem .55rem; border-radius: .3rem; background: var(--ink); color: var(--paper); font: .8rem/1.3 var(--sans); pointer-events: none; }
+.diagramm-detail { min-height: 1.4em; margin: .5rem 0 0; font: .85rem/1.4 var(--sans); color: var(--ink-2); }
+.diagramm-pfad { display: flex; align-items: center; gap: .7rem; margin-bottom: .4rem; font: .85rem/1.3 var(--sans); color: var(--ink-2); }
+.diagramm :is(.diagramm-pfad, .diagramm-legende) button { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.25rem; padding: .2rem .7rem; border: 1px solid var(--rule); border-radius: 2rem; background: none; color: inherit; font: inherit; cursor: pointer; }
+.diagramm :is(.diagramm-pfad, .diagramm-legende) button:hover { border-color: var(--ink-3); }
+.diagramm .diagramm-legende button[aria-pressed="false"] { opacity: .5; text-decoration: line-through; }
+.diagramm :is(button, svg[tabindex]):focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.diagramm svg [role="button"] { cursor: pointer; }
+.diagramm svg .m:focus-visible, .diagramm svg .m[aria-pressed="true"], .diagramm svg .gewaehlt { outline: none; stroke: var(--ink); stroke-width: 2.5px; }
+.diagramm svg .band:focus-visible, .diagramm svg .band[aria-pressed="true"] { outline: none; stroke-opacity: .85; }
+.diagramm svg .gedimmt { opacity: .2; }
+.diagramm svg .fadenkreuz { stroke: var(--ink-3); stroke-width: 1px; vector-effect: non-scaling-stroke; pointer-events: none; }
 
 /* ---- Druck und erzwungene Farben: Muster tragen die Identität ---- */
 @media print {
   .diagramm { break-inside: avoid; }
-  .diagramm-tabelle { display: none; }
+  .diagramm-tabelle, .diagramm-hinweis, .diagramm-detail, .diagramm-pfad { display: none; }
+  .diagramm-legende button { padding: 0; border: 0; min-height: 0; }
   .diagramm .r1 .m, .diagramm .r1.m { fill: url(#mu1); } .diagramm .r2 .m, .diagramm .r2.m { fill: url(#mu2); }
   .diagramm .r3 .m, .diagramm .r3.m { fill: url(#mu3); } .diagramm .r4 .m, .diagramm .r4.m { fill: url(#mu4); }
   .diagramm .r5 .m, .diagramm .r5.m { fill: url(#mu5); } .diagramm .r6 .m, .diagramm .r6.m { fill: url(#mu6); }

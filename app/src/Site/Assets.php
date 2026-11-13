@@ -17,6 +17,8 @@ final class Assets
         'vorschau' => ['vorschau', 'js'],
         'bausteine' => ['bausteine', 'js'],
         'bausteinestil' => ['bausteine', 'css'],
+        'diagramme' => ['diagramme', 'js'],
+        'diagrammestil' => ['diagramme', 'css'],
     ];
 
     private const EDITORIAL_FOLDER = 'redaktion';

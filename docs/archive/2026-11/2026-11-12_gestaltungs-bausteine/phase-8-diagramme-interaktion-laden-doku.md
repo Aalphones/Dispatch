@@ -29,12 +29,12 @@ Verstanden, bevor geändert: Interaktion nur an Diagrammen mit `data-interaktiv`
 
 ## Checkliste
 
-- [ ] `app/theme/diagramme.js` nach AK 1 (kleine gemeinsame Helfer `tooltip()`, `toggle()`, `markieren()`; Entwurfs-Skript als Vorlage für Verhalten).
-- [ ] `ContentRenderer`: `diagramme_interaktiv`; `data-interaktiv` nur durchreichen, wenn Typ in `INTERACTIVE_TYPES`; Knöpfe der Legende/Chips als `<button type="button">` im Renderer-Markup (Ausgabe wird nicht erneut bereinigt).
-- [ ] `Assets::THEME_FILES`, `layout.php`, `Builder::collectArticles()`, `artikel.js::loadComponents()` erweitern (Muster aus Phase 4).
-- [ ] Demo-Artikel und `demo.php`/`pruefe-inhalt.php` anpassen.
-- [ ] ADR-030, `frontend.md`, `code-map.md`, `glossary.md`, `PROJECT.md`.
-- [ ] Größen messen, `php -l`, Site bauen (`php bin/dispatch build`), Demo im Browser: Tastatur, Touch (390 px), hell/dunkel, ohne JavaScript, Druck.
-- [ ] README: Status, Summary, Files touched füllen.
+- [x] `app/theme/diagramme.js` nach AK 1 (kleine gemeinsame Helfer `tooltip()`, `toggle()`, `markieren()`; Entwurfs-Skript als Vorlage für Verhalten).
+- [x] `ContentRenderer`: `diagramme_interaktiv`; `data-interaktiv` nur durchreichen, wenn Typ in `INTERACTIVE_TYPES`; Knöpfe der Legende/Chips als `<button type="button">` im Renderer-Markup (Ausgabe wird nicht erneut bereinigt).
+- [x] `Assets::THEME_FILES`, `layout.php`, `Builder::collectArticles()`, `artikel.js::loadComponents()` erweitern (Muster aus Phase 4).
+- [x] Demo-Artikel und `demo.php`/`pruefe-inhalt.php` anpassen.
+- [x] ADR-030, `frontend.md`, `code-map.md`, `glossary.md`, `PROJECT.md`.
+- [x] Größen messen, `php -l`, Site bauen (`php bin/dispatch build`), Demo im Browser: Tastatur, Touch (390 px), hell/dunkel, ohne JavaScript, Druck.
+- [x] README: Status, Summary, Files touched füllen.
 
 ## Report-Back

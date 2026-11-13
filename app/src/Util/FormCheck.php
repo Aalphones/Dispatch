@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Dispatch\Util;
 
 use Dispatch\Site\ChartData;
+use Dispatch\Site\ChartRenderer;
 
 /** Reine Formprüfung eines Artikel-Snapshots — keine Datenbank, keine Uhr. */
 final class FormCheck
@@ -20,7 +21,6 @@ final class FormCheck
     private const MAX_HOTSPOTS = 12;
     private const MAX_STRIPS = 8;
     private const DEFAULT_RATING_MAX = 10;
-    private const INTERACTIVE_TYPES = ['line', 'heatmap', 'calendar', 'sankey', 'treemap', 'bubble', 'map'];
     private const WORDS_PER_MINUTE = 200;
     private const KINDS_WITHOUT_URL = ['book', 'interview', 'other'];
     private const REFERENCE_PATTERN = '/data-(media|cite)="([^"]*)"/';
@@ -305,7 +305,7 @@ final class FormCheck
         foreach ($chart['errors'] as $error) {
             $this->componentInvalid(sprintf('Diagramm %s: %s', $label, $error));
         }
-        if ($figure->hasAttribute('data-interactive') && !in_array($chart['type'], self::INTERACTIVE_TYPES, true)) {
+        if ($figure->hasAttribute('data-interactive') && !in_array($chart['type'], ChartRenderer::INTERACTIVE_TYPES, true)) {
             $this->componentInvalid(sprintf('Diagramm %s hat keine Interaktion; entferne data-interactive.', $label));
         }
     }

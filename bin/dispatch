@@ -335,7 +335,7 @@ Befehle:
   hash-password   liest eine Zeile von STDIN und gibt den Passwort-Hash aus
   migrate         wendet neue Migrationen aus app/migrations/ an
   seed            legt fehlende Einstellungen und Startdokumente an (Vorhandenes bleibt)
-  demo            legt Demo-Kategorien und 14 freigegebene Beispielartikel an (nur lokal, nur auf leerer
+  demo            legt Demo-Kategorien und 15 freigegebene Beispielartikel an (nur lokal, nur auf leerer
                   Datenbank; --force legt trotzdem einen weiteren Satz an)
   build           baut die statische Website aus den Live-Ständen in die Webroot (löscht nur, was im Manifest steht)
   token:create <name> [--scopes=blog:read,blog:write] [--days=N] [--remote]

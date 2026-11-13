@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entwurf: Anweisungen für Agenten (DISPATCH)</title>
+<link rel="stylesheet" href="../../../../app/theme/style.css">
+<link rel="stylesheet" href="../../../../app/theme/redaktion/redaktion.css">
+<link rel="stylesheet" href="_entwurf-agenten-anweisungen/dummy.css">
+<script src="_entwurf-agenten-anweisungen/daten.js" defer></script>
+<script src="_entwurf-agenten-anweisungen/dummy.js" defer></script>
+</head>
+<body class="angemeldet">
+
+<div class="dummy" role="region" aria-label="Steuerung des Entwurfs">
+  <b>Entwurf</b>
+  <label>Ansicht
+    <select id="d-ansicht">
+      <option value="menue">Menü mit neuem Eintrag</option>
+      <option value="uebersicht">Dialog: Übersicht</option>
+      <option value="richtlinien">Dialog: Richtlinien</option>
+      <option value="richtlinien/bearbeiten">Dialog: Richtlinien bearbeiten</option>
+      <option value="richtlinien/verlauf">Dialog: Verlauf der Richtlinien</option>
+      <option value="praeferenzen">Dialog: Präferenzen</option>
+      <option value="werkzeuge">Dialog: Werkzeuge</option>
+      <option value="ablaeufe">Dialog: Abläufe</option>
+    </select>
+  </label>
+  <label>Zustand
+    <select id="d-zustand">
+      <option value="normal">Normal</option>
+      <option value="laedt">Lädt</option>
+      <option value="fehler">Ladefehler</option>
+      <option value="konflikt">Speichern: ein Agent war schneller</option>
+      <option value="offline">Speichern: keine Verbindung</option>
+    </select>
+  </label>
+  <label>Thema
+    <select id="d-thema">
+      <option value="">System</option>
+      <option value="hell">Hell</option>
+      <option value="dunkel">Dunkel</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="d-werkzeuge"> Werkzeug je Aktion zeigen</label>
+  <span class="stufe" id="d-stufe"></span>
+</div>
+<p class="dummy-wofuer"><b>Wofür:</b> <span id="d-wofuer"></span> <span>· Werkzeuge, Prompts, Texte und aktuelle Fassungen echt (Stand 12.11.2026); Verlauf, Zeiten und Akteure Beispiel</span></p>
+
+<header>
+  <div class="leiste">
+    <div class="wrap">
+      <span class="klein ausgabe-zeile"><span class="ausgabe">Ausgabe Nr. 2</span><span class="ausgabe-datum"> · 12. November 2026</span></span>
+      <div class="kopf-rechts" id="kopf-rechts"></div>
+    </div>
+  </div>
+</header>
+<nav class="nav" aria-label="Kategorien">
+  <ul>
+    <li><a href="#menue">Disney</a></li>
+    <li><a href="#menue">Netflix</a></li>
+    <li><a href="#menue">Film- und Serienwelten</a></li>
+    <li><a href="#menue">Animation &amp; Gaming</a></li>
+    <li><a class="alle" href="#menue">Alle Kategorien</a></li>
+  </ul>
+</nav>
+<main class="wrap" id="inhalt">
+  <p class="dummy-unveraendert">Startseite unverändert — der Entwurf betrifft nur das Redaktionsmenü und den neuen Dialog.</p>
+</main>
+
+</body>
+</html>

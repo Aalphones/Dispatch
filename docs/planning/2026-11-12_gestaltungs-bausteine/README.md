@@ -1,6 +1,6 @@
 # Gestaltungs-Bausteine für Artikel
 
-Agenten bekommen neue Bausteine für Artikel: drei Galerie-Formen (Mosaik, Karussell, Bildstreifen), eine Bildansicht mit Blättern, Vorschaubildern und Tastatursteuerung für alle Bilder, Vorher/Nachher-Regler, Bild mit Erklärpunkten, Wertungsbalken, einen überarbeiteten Zeitstrahl und aufklappbaren Text. Freies CSS und JS für Agenten bleiben gesperrt: Agenten schreiben nur die Syntax unten, der Server erzeugt das Ausgabe-Markup. Stile und Skripte der Bausteine liegen in eigenen Nachlade-Dateien, die nur Artikel mit Bausteinen laden. Entscheidungen: ADR-029 (Phase 4).
+Agenten bekommen neue Bausteine für Artikel: drei Galerie-Formen (Mosaik, Karussell, Bildstreifen), eine Bildansicht mit Blättern, Vorschaubildern und Tastatursteuerung für alle Bilder, Vorher/Nachher-Regler, Bild mit Erklärpunkten, Wertungsbalken, einen überarbeiteten Zeitstrahl und aufklappbaren Text. Freies CSS und JS für Agenten bleiben gesperrt: Agenten schreiben nur die Syntax unten, der Server erzeugt das Ausgabe-Markup. Stile und Skripte der Bausteine liegen in eigenen Nachlade-Dateien, die nur Artikel mit Bausteinen laden. Entscheidungen: ADR-029 (Phase 4). Dazu kommen Diagramme (Phase 5–8): Agenten schreiben eine Datentabelle, der Server zeichnet das SVG; interaktiv sind nur sieben Typen und nur auf Wunsch des Agenten. Entscheidungen: ADR-030 (Phase 8).
 
 Entwurf (freigegeben am 2026-11-13): [`artifacts/`](artifacts/README.md). Teil 1 von `artifacts/_entwurf-bausteine/bausteine.css` und `bausteine.js` ist die verbindliche Vorlage für die Theme-Dateien.
 
@@ -12,6 +12,12 @@ Entwurf (freigegeben am 2026-11-13): [`artifacts/`](artifacts/README.md). Teil 1
 | 2 | [Renderer: Ausgabe-Markup der Bausteine](phase-2-renderer.md) | standard | pending |
 | 3 | [Theme: bausteine.css, bausteine.js, Bildansicht](phase-3-theme.md) | standard | pending |
 | 4 | [Laden, Demo-Artikel, Doku, ADR-029](phase-4-laden-demo-doku.md) | standard | pending |
+| 5 | [Diagramme: Syntax, Datenlesen, Formprüfung](phase-5-diagramme-syntax.md) | standard | pending |
+| 6 | [Diagramme: statische Typen als Server-SVG, Entwurf, Palette](phase-6-diagramme-statisch.md) | standard | pending |
+| 7 | [Diagramme: Sankey, Baumkarte, Blasen, Karte](phase-7-diagramme-komplex.md) | standard | pending |
+| 8 | [Diagramme: Interaktion, Laden, Demo, Doku, ADR-030](phase-8-diagramme-interaktion-laden-doku.md) | standard | pending |
+
+Reihenfolge: 1 → 2 → 3 → 4, dann 5 → 6 → 7 → 8. Phase 5 baut auf Phase 1, 6 auf 2 und 5, 8 auf 4 und 7.
 
 ## Kontrakt: Agenten-Syntax → Ausgabe
 
@@ -31,9 +37,31 @@ Werte: `data-x`/`data-y` 0 bis 100 mit höchstens einer Nachkommastelle; `data-m
 
 Laden: `ContentRenderer::render()` liefert zusätzlich `bausteine` (bool). Der Builder setzt dann `<link rel="stylesheet">` auf `bausteine.css` im Kopf der Artikelseite. `artikel.js` lädt `bausteine.js` per `import()`, sobald ein Baustein mit Skript im Text steht, und ergänzt die Stil-Datei, falls sie fehlt (Vorschau). Adressen stehen an `<html>` als `data-bausteine` und `data-bausteinestil`.
 
+## Kontrakt Diagramme (Phase 5–8)
+
+Agenten schreiben **nur eine Tabelle** in einer `figure`; SVG und Skript bleiben gesperrt. Der Server zeichnet (`ChartRenderer`), die Tabelle bleibt als „Zahlen als Tabelle“ (`details`) erhalten.
+
+Syntax: `<figure class="chart" data-type="TYP" [data-unit="%"] [data-map="de|welt"] [data-interactive="true"]><table>…</table><figcaption>Beschreibung, Quelle, Stand</figcaption></figure>`. Zahlen als `7.8` oder `7,8`, ohne Tausendertrenner und Einheit in der Zelle. `tr data-sum="true"` markiert Summenzeilen (Wasserfall).
+
+| Typ (`data-type`) | Tabelle: Kopfzeile → Zeilen | Interaktiv möglich |
+|---|---|---|
+| `bar`, `column`, `area`, `radar` | leer/Reihe 1 … Reihe n → Beschriftung, Wert je Reihe (höchstens 8 Reihen, 40 Zeilen; Radar 3 Reihen, 12 Achsen) | nein |
+| `line` | wie oben (höchstens 8 Reihen, 120 Zeilen) | Reihen ein/aus, Fadenkreuz |
+| `stacked-bar`, `stacked-column` | wie oben | nein |
+| `pie`, `donut`, `waffle` | Beschriftung, Wert (nicht negativ, höchstens 6 Teile) | nein |
+| `waterfall` | Beschriftung, Wert (mit Vorzeichen); Summenzeilen `data-sum` | nein |
+| `heatmap` | leer/Spalte 1 … n → Zeilenname, Werte (höchstens 24 × 24) | Werte bei Hover |
+| `calendar` | Datum (`JJJJ-MM-TT`), Wert (ein Kalenderjahr) | Werte bei Hover |
+| `sankey` | Von, Nach, Wert (höchstens 40 Verbindungen, keine Kreisläufe) | Fluss hervorheben |
+| `treemap` | Gruppe, Untergruppe, Wert (höchstens 60 Blätter) | Hineinzoomen |
+| `bubble` | Name, x, y, Größe, Kategorie (höchstens 60 Zeilen, 8 Kategorien) | Kategorie-Filter |
+| `map` | Region (ISO-Code), Wert, Name; `data-map` Pflicht | Region anklicken |
+
+Ausgabe: siehe Phase 6 (Markup) und Phase 7/8 (Zusatzattribute). Interaktion nur, wenn der Agent `data-interactive="true"` setzt **und** der Typ „ja“ trägt; sonst bleibt das Diagramm statisch. Laden: eigene Dateien `diagramme.css`/`diagramme.js`, nur Artikel mit Diagrammen (Stil) bzw. interaktiven Diagrammen (Skript) laden sie.
+
 ## Größengrenzen (Rohgröße in Byte, entschieden am 2026-11-13)
 
-`bausteine.js` ≤ 8 000 · `bausteine.css` ≤ 16 000 · `artikel.js` ≤ 12 500 (vorher 7 000) · `style.css` ≤ 50 000 (vorher 48 000). Übrige Grenzen unverändert.
+`bausteine.js` ≤ 8 000 · `bausteine.css` ≤ 16 000 · `artikel.js` ≤ 12 500 (vorher 7 000) · `style.css` ≤ 50 000 (vorher 48 000). Neu für Diagramme (Annahme 2026-11-13, in Phase 6/8 zu messen): `diagramme.js` ≤ 9 000 · `diagramme.css` ≤ 9 000 · Kartendateien je ≤ 60 000. Übrige Grenzen unverändert.
 
 ## Finale Abnahmekriterien
 
@@ -43,6 +71,9 @@ Laden: `ContentRenderer::render()` liefert zusätzlich `bausteine` (bool). Der B
 4. Artikel ohne Bausteine laden weder `bausteine.css` noch `bausteine.js`.
 5. Die Formprüfung warnt (`component_invalid`) bei falsch befüllten Bausteinen; der Style-Guide beschreibt jede Syntax.
 6. Die Größengrenzen oben halten; `php -l` ist für alle geänderten PHP-Dateien grün.
+7. Alle 17 Diagramm-Typen übersteht das Speichern und erscheinen als Server-SVG mit Tabelle; ohne JavaScript bleiben sie vollständig lesbar; Palette hell und dunkel mit dem Validator geprüft.
+8. Nur Linie, Heatmap, Kalender, Sankey, Baumkarte, Blasen und Karte können interaktiv sein, und nur mit `data-interactive="true"`; Bar-, Säulen-, Flächen-, Kreis-, Netz-, Waffel- und Wasserfall-Diagramme bleiben statisch.
+9. Artikel ohne Diagramme laden weder `diagramme.css` noch `diagramme.js`; Artikel mit rein statischen Diagrammen laden nur die Stil-Datei.
 
 ## Summary
 
@@ -53,3 +84,5 @@ Laden: `ContentRenderer::render()` liefert zusätzlich `bausteine` (bool). Der B
 ## Deviations from plan
 
 ## Follow-ups
+
+- Annahmen zu Diagrammen, bitte bestätigen oder ändern (2026-11-13): Karten nur `de` (Bundesländer) und `welt` (Länder), Quelle Natural Earth; Größengrenzen für `diagramme.*` geschätzt; Entwurf der Diagramme (Artefakt) wird zu Beginn von Phase 6 gebaut und muss freigegeben werden; Wasserfall, Baumkarte und Blasen zusätzlich zur Wunschliste aufgenommen (aus „Favorit“ und Interaktiv-Ideen).

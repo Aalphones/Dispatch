@@ -37,3 +37,4 @@ Nummeriert, chronologisch. Eine akzeptierte ADR wird nicht mehr umgeschrieben �
 | 032 | [Gestaltungs-Bausteine für Artikel](032-gestaltungs-bausteine.md) | Akzeptiert |
 | 031 | [Anweisungen für Agenten im Redaktionsmodus](031-anweisungen-fuer-agenten-im-redaktionsmodus.md) | Akzeptiert |
 | 033 | [Social-Einbettungen ohne Plattform-Skript](033-social-einbettungen.md) | Akzeptiert |
+| 034 | [HTML und CSS für Agenten](034-agenten-css.md) | Akzeptiert |

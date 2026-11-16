@@ -15,6 +15,7 @@ final class FormCheck
     private const EXCERPT_MIN_LENGTH = 70;
     private const EXCERPT_MAX_LENGTH = 180;
     private const BRIEFING_FACTOR = 0.4;
+    private const CSS_WARNING_SHARE = 0.8;
     private const SUBHEADING_WORD_THRESHOLD = 700;
     private const LONGFORM_MIN_WORDS = 1500;
     private const MAX_CATEGORIES = 3;
@@ -76,6 +77,7 @@ final class FormCheck
         $this->checkCitations($sources, $citations);
         $this->checkMedia($snapshot, $html, $mediaByUid, $rules);
         $this->checkComponents($html, $mediaByUid);
+        $this->checkCss($html);
         $this->checkCategories((array) $snapshot['categories']);
         $this->checkDuplicate((string) $snapshot['title'], $otherLiveTitles);
 
@@ -301,6 +303,25 @@ final class FormCheck
             if (isset(SocialEmbed::PROVIDERS[$provider]) && SocialEmbed::parse($provider, (string) $figure->getAttribute('data-url')) === null) {
                 $this->componentInvalid(sprintf('Einbettung %s: Die Adresse passt nicht zur Plattform (https, Beitragsadresse); sie erscheint nur als Link.', SocialEmbed::PROVIDERS[$provider]['label']));
             }
+        }
+    }
+
+    /**
+     * Das gespeicherte HTML trägt das CSS des Artikels in einem `<style>`-Block (Sanitizer). Hier wird es noch einmal
+     * geprüft, falls die Regeln seit dem Speichern strenger wurden, und auf seine Größe angesehen.
+     */
+    private function checkCss(string $html): void
+    {
+        if (preg_match_all('#<style>(.*?)</style>#s', $html, $matches) < 1) {
+            return;
+        }
+
+        $result = (new CssSanitizer())->sanitize(implode("\n", $matches[1]));
+        foreach ($result->removed as $message) {
+            $this->warning('css_removed', 'content_html', 'Eigenes CSS wird so nicht ausgeliefert: ' . $message . '. Speichere den Artikel erneut und prüfe die sanitizer_notes.');
+        }
+        if (strlen($result->css) > CssSanitizer::MAX_BYTES * self::CSS_WARNING_SHARE) {
+            $this->warning('css_large', 'content_html', sprintf('Das eigene CSS ist %d von höchstens %d Bytes groß. Weitere Regeln würden entfernt.', strlen($result->css), CssSanitizer::MAX_BYTES));
         }
     }
 

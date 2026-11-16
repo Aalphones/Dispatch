@@ -58,6 +58,7 @@ $router->add('GET', '/dispatch/api/posts/{id}/preview', static fn (array $params
 $router->add('GET', '/dispatch/api/posts/{id}/diff', static fn (array $params) => (new PostController($config))->diff($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/preview',static fn () => (new PreviewController($config))->bySignature($request));
 $router->add('GET', '/dispatch/api/preview-media', static fn () => (new PreviewController($config))->media($request));
+$router->add('GET', '/dispatch/api/preview-css', static fn () => (new PreviewController($config))->css($request));
 $router->add('POST', '/dispatch/api/posts/{id}/approve', static fn (array $params) => (new PostController($config))->approve($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/posts/{id}/schedule', static fn (array $params) => (new PostController($config))->schedule($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/posts/{id}/unschedule', static fn (array $params) => (new PostController($config))->unschedule($request, (int) $params['id']));

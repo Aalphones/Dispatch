@@ -104,6 +104,32 @@ final class PreviewController
         exit;
     }
 
+    /** CSS eines Arbeitsstands (ADR-034), nur mit gültiger Vorschau-Signatur; dieselbe Prüfung und Begrenzung wie im Bau. */
+    public function css(Request $request): never
+    {
+        $id = $this->intParameter($request, 'id');
+        $expires = $this->intParameter($request, 'exp');
+        if ($id === null || $expires === null || !PreviewLink::verify($id, $expires, $request->query('sig') ?? '')) {
+            Response::error('invalid_signature', 'Der Link ist ungültig oder abgelaufen.', 403);
+        }
+
+        try {
+            $pdo = Connection::open();
+            $snapshot = (new PostService($pdo, $this->config))->previewSnapshot($id);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        $builder = new Builder($this->config, $pdo);
+        $builder->previewMain($snapshot);
+
+        header('Content-Type: text/css; charset=utf-8');
+        header('Cache-Control: private, no-store');
+        header('X-Content-Type-Options: nosniff');
+        echo $builder->lastArticleCss();
+        exit;
+    }
+
     /** @return array<string, mixed> */
     private function payload(int $id): array
     {
@@ -113,6 +139,12 @@ final class PreviewController
         $post = $posts->get($id);
         $form = $posts->validate($id);
         $snapshot = $posts->previewSnapshot($id);
+
+        $builder = new Builder($this->config, $pdo);
+        $html = PreviewLink::protectMedia($builder->previewMain($snapshot), $id, FormCheck::mediaUids($snapshot));
+        if ($builder->lastArticleCss() !== '') {
+            $html = PreviewLink::styleLink($id) . $html;
+        }
 
         return [
             'post' => [
@@ -128,7 +160,7 @@ final class PreviewController
                 'sources' => count($post['sources']),
                 'updated_at' => $snapshot['updated_at'],
             ],
-            'html' => PreviewLink::protectMedia((new Builder($this->config, $pdo))->previewMain($snapshot), $id, FormCheck::mediaUids($snapshot)),
+            'html' => $html,
             'form' => [
                 'errors' => $this->findings($form->errors),
                 'warnings' => $this->findings($form->warnings),

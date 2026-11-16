@@ -16,7 +16,7 @@ final class Text
     ];
 
     /** Elemente, die Wörter trennen — ohne Leerraum würden „</p><p>“ zwei Wörter verschmelzen. */
-    private const BLOCK_TAG_PATTERN = '#</?(?:p|h[1-6]|ul|ol|li|dl|dt|dd|table|caption|thead|tbody|tfoot|tr|th|td|figure|figcaption|aside|section|details|summary|blockquote|div|br|hr)\b[^>]*>#i';
+    private const BLOCK_TAG_PATTERN = '#</?(?:p|h[1-6]|ul|ol|li|dl|dt|dd|table|caption|thead|tbody|tfoot|tr|th|td|figure|figcaption|aside|section|details|summary|blockquote|div|header|footer|hgroup|br|hr)\b[^>]*>#i';
 
     private const WORD_PATTERN = '/[\p{L}\p{N}]+(?:[\'’\-][\p{L}\p{N}]+)*/u';
 
@@ -28,7 +28,9 @@ final class Text
     /** Klartext für Suche und Zählung: Tags entfernt, Entities dekodiert, Leerraum zusammengefasst. */
     public static function plain(string $html): string
     {
-        $separated = (string) preg_replace(self::BLOCK_TAG_PATTERN, ' ', $html);
+        // Der gespeicherte Artikel trägt sein CSS in einem <style>-Block (Sanitizer); das ist kein Text.
+        $withoutStyle = (string) preg_replace('#<style\b[^>]*>.*?</style>#is', ' ', $html);
+        $separated = (string) preg_replace(self::BLOCK_TAG_PATTERN, ' ', $withoutStyle);
         $text = html_entity_decode(strip_tags($separated), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         return trim((string) preg_replace('/\s+/u', ' ', $text));

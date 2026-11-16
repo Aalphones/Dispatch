@@ -53,6 +53,18 @@ final class PreviewLink
         );
     }
 
+    /**
+     * `<link>` auf das CSS eines Arbeitsstands. Die Vorschau lädt es über einen signierten Endpunkt, weil ein
+     * Stylesheet-Link keine Anmeldung mitschickt und die CSP nur Dateien derselben Herkunft erlaubt (ADR-034).
+     */
+    public static function styleLink(int $id): string
+    {
+        $expires = time() + self::MEDIA_LIFETIME_SECONDS;
+        $query = 'id=' . $id . '&amp;exp=' . $expires . '&amp;sig=' . self::sign($id, $expires);
+
+        return '<link rel="stylesheet" href="/dispatch/api/preview-css?' . $query . '">';
+    }
+
     private static function sign(int $id, int $expires): string
     {
         return hash_hmac('sha256', 'preview:' . $id . ':' . $expires, Env::get('DISPATCH_JWT_SECRET'));

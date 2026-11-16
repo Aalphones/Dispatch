@@ -37,8 +37,14 @@ final class Builder
     /** @var array<string, string> Name → URL der Theme-Dateien, vom laufenden Bau gesetzt */
     private array $assetUrls = [];
 
-    /** @var array<int, array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool}> Post-ID → Ergebnis des ContentRenderer */
+    /** @var array<int, array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool, css: string}> Post-ID → Ergebnis des ContentRenderer */
     private array $rendered = [];
+
+    /** @var array<int, string> Post-ID → Adresse der CSS-Datei des Artikels; nur Artikel mit eigenem CSS */
+    private array $articleCssUrls = [];
+
+    /** CSS des Artikels, den `articleMain` zuletzt gerendert hat (für die Vorschau, die keine Datei schreibt). */
+    private string $lastArticleCss = '';
 
     /** @param array<string, mixed> $config */
     public function __construct(
@@ -109,8 +115,10 @@ final class Builder
     {
         $assets = Assets::collect($this->config);
 
+        $this->articleCssUrls = [];
         foreach ($this->site->posts as $post) {
             $this->rendered[$post['id']] = $this->renderPost($post);
+            $this->addArticleCss($assets, $post, $this->rendered[$post['id']]['css']);
         }
 
         $index = SearchIndex::build($this->site, $this->rendered);
@@ -119,6 +127,31 @@ final class Builder
         $assets['urls']['suchindex'] = '/' . $path;
 
         return $assets;
+    }
+
+    /**
+     * Das CSS eines Artikels wird eine eigene Datei, nur von dessen Seite eingebunden. Sie steht im Manifest wie jede
+     * andere Datei und verschwindet mit dem Artikel, weil der nächste Bau sie nicht mehr erzeugt.
+     *
+     * @param array{files: array<string, string>, urls: array<string, string>} $assets
+     * @param array<string, mixed> $post
+     */
+    private function addArticleCss(array &$assets, array $post, string $css): void
+    {
+        if ($css === '') {
+            return;
+        }
+
+        $name = 'artikel-' . preg_replace('/[^a-z0-9-]/', '', (string) $post['slug']);
+        $path = Assets::hashedPath($name, 'css', $css);
+        $assets['files'][$path] = $css;
+        $this->articleCssUrls[(int) $post['id']] = '/' . $path;
+    }
+
+    /** CSS des Artikels, den `articleMain` zuletzt gerendert hat; leer, wenn er keins hat. */
+    public function lastArticleCss(): string
+    {
+        return $this->lastArticleCss;
     }
 
     /**
@@ -201,7 +234,7 @@ final class Builder
 
     /**
      * @param array<string, mixed> $post PostView
-     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool}
+     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool, css: string}
      */
     private function renderPost(array $post): array
     {
@@ -222,10 +255,12 @@ final class Builder
     {
         $position = array_search($post['id'], array_column($this->site->posts, 'id'), true);
         $primary = $post['primary_category'];
+        $rendered = $this->rendered[$post['id']] ?? $this->renderPost($post);
+        $this->lastArticleCss = $rendered['css'];
 
         return $this->render((string) $this->config['app_dir'] . '/templates/article.php', [
             'post' => $post,
-            'rendered' => $this->rendered[$post['id']] ?? $this->renderPost($post),
+            'rendered' => $rendered,
             'krumen' => $this->breadcrumbs($primary, $this->categoriesBySlug()),
             'related' => $this->relatedPosts($post),
             'older' => $position === false ? null : ($this->site->posts[$position + 1] ?? null),
@@ -305,6 +340,10 @@ final class Builder
         }
         if ($this->rendered[$postId]['diagramme'] ?? false) {
             $styles[] = $this->assetUrls['diagrammestil'];
+        }
+        // Zuletzt, damit das CSS des Artikels die Theme-Regeln bei gleicher Spezifität überstimmt.
+        if (isset($this->articleCssUrls[$postId])) {
+            $styles[] = $this->articleCssUrls[$postId];
         }
 
         return $styles;

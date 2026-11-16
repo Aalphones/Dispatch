@@ -19,23 +19,25 @@ final class Sanitizer
 {
     private const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
-    private const ALLOWED_ELEMENTS = [
+    public const ALLOWED_ELEMENTS = [
         'p', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'dl', 'dt', 'dd',
         'table', 'caption', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
         'figure', 'figcaption', 'aside', 'section', 'details', 'summary', 'blockquote', 'div', 'span',
         'a', 'strong', 'em', 'b', 'i', 'u', 's', 'sub', 'sup', 'small', 'mark', 'abbr', 'cite', 'q',
         'code', 'pre', 'kbd', 'br', 'hr', 'time',
+        'header', 'footer', 'hgroup', 'wbr',
     ];
 
+    /** `style` fehlt hier mit Absicht: Der Block geht durch den CssSanitizer (siehe `collectStyleBlock`). */
     private const DROPPED_ELEMENTS = [
-        'script', 'style', 'iframe', 'frame', 'frameset', 'object', 'embed', 'applet',
+        'script', 'iframe', 'frame', 'frameset', 'object', 'embed', 'applet',
         'form', 'input', 'button', 'select', 'option', 'textarea',
         'svg', 'math', 'template', 'noscript',
         'img', 'picture', 'video', 'audio', 'source', 'track', 'canvas',
         'link', 'meta', 'base', 'head', 'title',
     ];
 
-    private const ALLOWED_CLASSES = [
+    public const ALLOWED_CLASSES = [
         'lead', 'tldr', 'callout', 'note', 'warning', 'key', 'factbox', 'pullquote', 'zitat', 'zitat-wer', 'stats', 'stat',
         'timeline', 'steps', 'checklist', 'two-col', 'pros', 'cons', 'compare', 'qa', 'definition',
         'details', 'opinion', 'update', 'sidenote', 'dropcap', 'gallery',
@@ -72,9 +74,32 @@ final class Sanitizer
 
     private const NAME_DISPLAY_LENGTH = 60;
 
+    /** Eigene Klassen des Agenten (ADR-034); die CSS-Regeln dazu stehen in einem `<style>`-Block am Ende. */
+    private const OWN_CLASS_PATTERN = '/^x-[a-z0-9-]{1,40}$/';
+    private const GENERATED_CLASS_PREFIX = 'x-s';
+    private const GENERATED_CLASS_HASH_LENGTH = 8;
+
     /** @var array<string, int> Hinweistext → Anzahl, in Reihenfolge des ersten Auftretens */
     private array $notes = [];
 
+    /** @var array<string, true> bereinigte CSS-Regeln (eine Zeile je Regel), Schlüssel verhindert Doppelte */
+    private array $cssRules = [];
+
+    private int $cssBytes = 0;
+
+    private bool $isCssLimitReported = false;
+
+    private CssSanitizer $cssSanitizer;
+
+    public function __construct()
+    {
+        $this->cssSanitizer = new CssSanitizer();
+    }
+
+    /**
+     * Gespeichert wird bereinigtes HTML samt einem einzigen `<style>`-Block am Ende, den nur der Builder liest und
+     * nie ausliefert (`ContentRenderer`). So braucht das CSS keine eigene Spalte und keine eigene Revision.
+     */
     public function sanitize(string $html): SanitizeResult
     {
         if ($html === '') {
@@ -82,6 +107,9 @@ final class Sanitizer
         }
 
         $this->notes = [];
+        $this->cssRules = [];
+        $this->cssBytes = 0;
+        $this->isCssLimitReported = false;
         $document = HTMLDocument::createFromString(
             '<!DOCTYPE html><html><body>' . $html . '</body></html>',
             LIBXML_NOERROR,
@@ -97,6 +125,7 @@ final class Sanitizer
         }
 
         $this->sanitizeChildren($document, $body);
+        $this->appendStyleBlock($document, $body);
 
         $output = '';
         foreach ($body->childNodes as $child) {
@@ -140,6 +169,12 @@ final class Sanitizer
         if ($name === 'h1') {
             $element = $this->renameToHeading2($document, $parent, $element);
             $name = 'h2';
+        }
+
+        if ($name === 'style') {
+            $this->collectStyleBlock($parent, $element);
+
+            return;
         }
 
         if (in_array($name, self::DROPPED_ELEMENTS, true)) {
@@ -200,6 +235,12 @@ final class Sanitizer
         $classes = $this->filterClasses($element, $attributes['class'] ?? null);
         unset($attributes['class']);
 
+        if (isset($attributes['style'])) {
+            $classes = $this->moveStyleToClass($element, $attributes['style'], $classes);
+        }
+        unset($attributes['style']);
+        $element->removeAttribute('style');
+
         foreach ($attributes as $attributeName => $value) {
             $keptValue = $this->keptAttributeValue($name, $attributeName, $value, $classes);
             if ($keptValue === null) {
@@ -214,6 +255,88 @@ final class Sanitizer
         }
 
         $this->checkSocialAddress($element, $name);
+    }
+
+    /**
+     * Die CSP erlaubt kein `style=""` (`style-src 'self'`). Der Wert wird deshalb geprüft und als Regel einer erzeugten
+     * Klasse in den CSS-Block gelegt; das Attribut selbst entfällt immer.
+     *
+     * @param list<string> $classes
+     *
+     * @return list<string> die Klassen einschließlich der erzeugten
+     */
+    private function moveStyleToClass(Element $element, string $value, array $classes): array
+    {
+        $result = $this->cssSanitizer->sanitizeDeclarations($value);
+        $this->noteCss($result);
+        if ($result->css === '') {
+            return $classes;
+        }
+
+        $class = self::GENERATED_CLASS_PREFIX . substr(sha1($result->css), 0, self::GENERATED_CLASS_HASH_LENGTH);
+        $this->addCssRules('.' . $class . '{' . $result->css . '}');
+        if (!in_array($class, $classes, true)) {
+            $classes[] = $class;
+        }
+        $element->setAttribute('class', implode(' ', $classes));
+
+        return $classes;
+    }
+
+    /** Ein `<style>`-Block des Agenten: geprüft in den gemeinsamen CSS-Block übernommen, das Element selbst entfällt. */
+    private function collectStyleBlock(Node $parent, Element $element): void
+    {
+        $result = $this->cssSanitizer->sanitize($element->textContent ?? '');
+        $this->noteCss($result);
+        $this->addCssRules($result->css);
+        $parent->removeChild($element);
+    }
+
+    private function noteCss(CssResult $result): void
+    {
+        foreach ($result->removed as $message) {
+            $this->note($message);
+        }
+    }
+
+    /** @param string $rules eine Regel je Zeile */
+    private function addCssRules(string $rules): void
+    {
+        foreach (explode("\n", $rules) as $rule) {
+            if ($rule === '' || isset($this->cssRules[$rule])) {
+                continue;
+            }
+            if ($this->cssBytes + strlen($rule) + 1 > CssSanitizer::MAX_BYTES) {
+                if (!$this->isCssLimitReported) {
+                    $this->note('CSS über ' . intdiv(CssSanitizer::MAX_BYTES, 1024) . ' KB je Artikel: weitere Regeln entfernt');
+                    $this->isCssLimitReported = true;
+                }
+
+                return;
+            }
+            $this->cssRules[$rule] = true;
+            $this->cssBytes += strlen($rule) + 1;
+        }
+    }
+
+    /** Der einzige `<style>`-Block der gespeicherten Fassung; ausgeliefert wird er nie, nur der Builder schreibt ihn in eine Datei. */
+    private function appendStyleBlock(HTMLDocument $document, Element $body): void
+    {
+        if ($this->cssRules === []) {
+            return;
+        }
+
+        $css = implode("\n", array_map('strval', array_keys($this->cssRules)));
+        // Der Inhalt eines <style> ist Rohtext: ein "<" könnte ihn verlassen. Der CssSanitizer lässt es nie durch.
+        if (str_contains($css, '<')) {
+            $this->note('CSS entfernt (unzulässiges Zeichen)');
+
+            return;
+        }
+
+        $style = $document->createElement('style');
+        $style->appendChild($document->createTextNode($css));
+        $body->appendChild($style);
     }
 
     /** `data-url` gehört nur zu Social-Einbettungen; passt die Adresse nicht zur Plattform, wird daraus später nur ein Link. */
@@ -245,7 +368,7 @@ final class Sanitizer
 
         $kept = [];
         foreach (preg_split('/\s+/', trim($classAttribute), -1, PREG_SPLIT_NO_EMPTY) as $class) {
-            if (in_array($class, self::ALLOWED_CLASSES, true)) {
+            if (in_array($class, self::ALLOWED_CLASSES, true) || preg_match(self::OWN_CLASS_PATTERN, $class) === 1) {
                 if (!in_array($class, $kept, true)) {
                     $kept[] = $class;
                 }

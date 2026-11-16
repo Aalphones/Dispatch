@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dispatch\Site;
 
+use Dispatch\Util\CssSanitizer;
 use Dispatch\Util\Log;
 use Dispatch\Util\Text;
 use Dom\Element;
@@ -29,6 +30,7 @@ final class ContentRenderer
         'full' => '100vw',
     ];
     private const DEFAULT_LAYOUT = 'inline';
+    private const SLUG_PATTERN = '/^[a-z0-9-]{1,100}\z/';
     private const GALLERY_SIZES = '(max-width: 46rem) 50vw, 26rem';
     private const GALLERY_FIRST_SIZES = '(max-width: 46rem) 100vw, 34rem';
 
@@ -65,7 +67,7 @@ final class ContentRenderer
 
     /**
      * @param array<string, mixed> $post PostView
-     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool}
+     * @return array{html: string, toc: list<array{id: string, text: string}>, headings: list<string>, text: string, bausteine: bool, diagramme: bool, diagramme_interaktiv: bool, css: string}
      */
     public function render(array $post, SiteData $data): array
     {
@@ -82,9 +84,10 @@ final class ContentRenderer
         $this->charts = new ChartRenderer($this->document);
         $body = $this->document->body;
         if ($body === null) {
-            return ['html' => '', 'toc' => [], 'headings' => [], 'text' => '', 'bausteine' => false, 'diagramme' => false, 'diagramme_interaktiv' => false];
+            return ['html' => '', 'toc' => [], 'headings' => [], 'text' => '', 'bausteine' => false, 'diagramme' => false, 'diagramme_interaktiv' => false, 'css' => ''];
         }
 
+        $css = $this->extractCss($body);
         $this->renderCharts();
         $this->renderGalleries();
         // Vorher/Nachher und Erklärpunkte tragen ebenfalls data-media und müssen vor renderFigures() ersetzt sein.
@@ -108,7 +111,34 @@ final class ContentRenderer
             'bausteine' => $this->hasComponents,
             'diagramme' => $this->hasCharts,
             'diagramme_interaktiv' => $this->hasInteractiveCharts,
+            'css' => $css,
         ];
+    }
+
+    /**
+     * Nimmt das CSS des Artikels aus dem Text (der Sanitizer legt es in einen `<style>`-Block am Ende) und liefert es
+     * erneut geprüft und auf den Artikel begrenzt. Das ausgelieferte HTML enthält nie ein `<style>`: die CSP erlaubt
+     * nur Dateien, der Builder schreibt diese (ADR-034).
+     *
+     * `.text` statt `<article>`: Quellenblock, Kasten „Wie der Artikel entstand“ und Seitenleiste liegen außerhalb des
+     * Artikeltexts oder im Text als Geschwister, die der CssSanitizer nie erreichen lässt.
+     */
+    private function extractCss(Node $body): string
+    {
+        $blocks = [];
+        foreach (iterator_to_array($body->querySelectorAll('style'), false) as $style) {
+            $blocks[] = $style->textContent;
+            $style->remove();
+        }
+        $stored = implode("\n", $blocks);
+        // Ein Slug außerhalb von [a-z0-9-] hat der Artikel nie; ohne sicheren Anker gibt es kein CSS.
+        if ($stored === '' || preg_match(self::SLUG_PATTERN, $this->postSlug) !== 1) {
+            return '';
+        }
+
+        $scope = '[data-post-slug="' . $this->postSlug . '"] .text';
+
+        return (new CssSanitizer())->sanitize($stored, $scope)->css;
     }
 
     private function renderCharts(): void

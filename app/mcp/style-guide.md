@@ -4,15 +4,16 @@
 
 ## Erlaubte Elemente
 
-`p`, `h2` bis `h6`, `ul`, `ol`, `li`, `dl`, `dt`, `dd`, `table`, `caption`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`, `figure`, `figcaption`, `aside`, `section`, `details`, `summary`, `blockquote`, `div`, `span`, `a`, `strong`, `em`, `b`, `i`, `u`, `s`, `sub`, `sup`, `small`, `mark`, `abbr`, `cite`, `q`, `code`, `pre`, `kbd`, `br`, `hr`, `time`.
+`p`, `h2` bis `h6`, `ul`, `ol`, `li`, `dl`, `dt`, `dd`, `table`, `caption`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`, `figure`, `figcaption`, `aside`, `section`, `details`, `summary`, `blockquote`, `div`, `span`, `a`, `strong`, `em`, `b`, `i`, `u`, `s`, `sub`, `sup`, `small`, `mark`, `abbr`, `cite`, `q`, `code`, `pre`, `kbd`, `br`, `hr`, `time`, `header`, `footer`, `hgroup`, `wbr`.
 
 - `<h1>` wird zu `<h2>`: Der Titel des Artikels steht im Feld `title`, nicht im Text. Gliedere mit `<h2>`, darunter `<h3>`.
-- Entfernt samt Inhalt: `script`, `style`, `iframe`, `object`, `embed`, `form`, `input`, `button`, `svg`, `math`, `img`, `picture`, `video`, `audio`, `canvas` und weitere. Bilder, Videos und Audio kommen nur über die Medien-Syntax unten.
-- Attribute: nur `href` und `title` an `a` (Schemata `http`, `https`, `mailto`), `title` an `abbr`, `colspan`, `rowspan` (1 bis 50) und `scope` an Tabellenzellen, `start` an `ol`, `datetime` an `time`, `open` an `details` sowie die Attribute der Medien- und Beleg-Syntax. `style`, `id`, `onclick` und alle anderen fallen weg.
+- `<style>` und `style="…"` sind erlaubt, aber gefiltert (siehe „Gestaltung mit CSS“).
+- Entfernt samt Inhalt: `script`, `iframe`, `object`, `embed`, `form`, `input`, `button`, `svg`, `math`, `img`, `picture`, `video`, `audio`, `canvas` und weitere. Bilder, Videos und Audio kommen nur über die Medien-Syntax unten.
+- Attribute: nur `href` und `title` an `a` (Schemata `http`, `https`, `mailto`), `title` an `abbr`, `colspan`, `rowspan` (1 bis 50) und `scope` an Tabellenzellen, `start` an `ol`, `datetime` an `time`, `open` an `details` sowie die Attribute der Medien- und Beleg-Syntax. `style` wird zu einer erzeugten Klasse (siehe „Gestaltung mit CSS“); `id`, `onclick` und alle anderen fallen weg.
 
 ## Klassen für Gestaltungsmittel
 
-Erlaubt sind genau diese Klassen; jede andere wird entfernt.
+Erlaubt sind genau diese Klassen und eigene Klassen mit dem Präfix `x-` (siehe „Gestaltung mit CSS“); jede andere wird entfernt.
 
 `lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote` (Hervorhebung ohne Quelle), `zitat` (belegtes Zitat, siehe „Zitat“), `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`, sowie die Bausteine `before-after`, `hotspots`, `rating`, `accordion` und `highlight` (siehe „Bausteine“) sowie `chart` (Diagramm, siehe „Diagramme“).
 
@@ -55,7 +56,7 @@ Medien kommen aus der Medienbibliothek (`import_media_from_url`, `upload_media`)
 
 ## Bausteine
 
-Der Server erzeugt aus dieser Syntax das fertige Markup samt Bedienung; eigenes CSS, JavaScript oder SVG gibt es weiterhin nicht. Falsche Werte entfernt der Sanitizer, schief befüllte Bausteine meldet die Formprüfung (`component_invalid`). Jedes Bild öffnet auf der Artikelseite zusätzlich in einer Bildansicht mit Blättern; dafür ist nichts zu schreiben.
+Der Server erzeugt aus dieser Syntax das fertige Markup samt Bedienung; eigenes JavaScript oder SVG gibt es nicht; eigenes CSS nur wie unter „Gestaltung mit CSS“. Falsche Werte entfernt der Sanitizer, schief befüllte Bausteine meldet die Formprüfung (`component_invalid`). Jedes Bild öffnet auf der Artikelseite zusätzlich in einer Bildansicht mit Blättern; dafür ist nichts zu schreiben.
 
 - **Galerie-Formen:** Mosaik zeigt eine Serie auf einen Blick, Karussell erzählt eine Abfolge Bild für Bild, Bildstreifen lädt zum Stöbern ein und spart Höhe. Karussell und Bildstreifen brauchen mindestens 2 Bilder, Bildstreifen höchstens 8.
 
@@ -118,6 +119,28 @@ Du schreibst nur eine Datentabelle in eine `figure`; den Server zeichnet das Dia
 | Gewichte in Gruppen | `treemap` (interaktiv möglich) | Gruppe, Untergruppe, Wert (höchstens 60 Blätter und 8 Gruppen, nicht negativ) | Anteile in einer Hierarchie |
 | Zusammenhang dreier Größen | `bubble` (interaktiv möglich) | Name, x, y, Größe, Kategorie (höchstens 60 Zeilen, 8 Kategorien; Größe nicht negativ; die Kopfzellen von x, y und Größe beschriften Achsen und Hinweise, also mit Einheit schreiben, z. B. „Einkommen in Tsd. €“) | Streuung mit Gewicht |
 | Werte nach Region | `map` (interaktiv möglich) | Region, Wert, Name; `data-map="de"` (Codes `DE-BY` …) oder `data-map="welt"` (ISO-Alpha-2, z. B. `FR`; Kleinstaaten fehlen auf der Weltkarte); Regionen ohne Zeile erscheinen schraffiert als „keine Daten“ | räumliche Verteilung |
+
+## Gestaltung mit CSS
+
+Für Aufmacher und besondere Abschnitte (Verlauf, Raster, Animation) darfst du CSS mitschicken: als `<style>`-Block irgendwo im Text oder als `style="…"` an einem Element. Der Server prüft es, schreibt es als Datei neu und bindet sie nur an diesen Artikel. Im ausgelieferten HTML bleibt weder `<style>` noch `style=`; `sanitizer_notes` nennt, was entfernt wurde.
+
+```html
+<style>
+.x-hero { display: grid; gap: 1rem; padding: 3rem 1.5rem; border-radius: 16px; color: #fff;
+  background: linear-gradient(135deg, #256e64, #45a595); animation: x-rein .8s ease-out both; }
+.x-hero h2 { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 3rem); margin: 0; }
+@keyframes x-rein { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 40rem) { .x-hero { padding: 2rem 1rem; } }
+</style>
+<header class="x-hero"><h2>Titel des Aufmachers</h2><p>Kurzer Anreißer.</p></header>
+```
+
+- **Eigene Klassen** nur `x-` plus Kleinbuchstaben, Ziffern, `-` (`x-hero`). `id` gibt es nicht. Zusätzliche Elemente: `header`, `footer`, `hgroup`, `wbr`.
+- **Selektoren** müssen mit einer `x-`-Klasse oder einer Klasse aus „Klassen für Gestaltungsmittel“ beginnen; danach sind Tags, Leerzeichen und `>` erlaubt (`.x-hero h2`, `.x-karte > p`). Für den ganzen Text setze einen Wrapper `<div class="x-seite">`. Nicht erlaubt: `body`, `html`, `:root`, `*` allein, `#id`, Attribut-Selektoren (außer `[open]`), `+` und `~`, Klassen des Seitengerüsts. Erlaubt: `:hover`, `:focus-visible`, `:first-child`, `:last-child`, `:nth-child()`, `:not()`, `:is()`, `:has()`, `::before`, `::after`.
+- **Eigenschaften:** Farben, Hintergrund (Farbe und `linear-/radial-/conic-gradient`), Rahmen, Radius, Schatten, Abstände, Schrift (`font-family` nur `var(--serif)`, `var(--sans)`, `var(--mono)`, `serif`, `sans-serif`, `monospace`), Text, Listen, Flex, Grid, Spalten, Breite/Höhe, `aspect-ratio`, `opacity`, `filter`, `clip-path`, `transform`, `transition`, `animation` mit `@keyframes x-…`, `@media` (Breite, Höhe, `prefers-color-scheme`, `prefers-reduced-motion`, `print`). Die Seitenfarben als `var(--ink)`, `var(--paper)`, `var(--accent)` passen sich dem dunklen Modus an. Eigene Variablen nur `--x-…`.
+- **Eingeschränkt:** `position` nur `relative`, `absolute`, `static`; `z-index` 0 bis 10; `content` nur Text; `display: none` ist verboten, damit nichts verschwindet.
+- **Entfernt:** `url()` und jede Funktion außerhalb von Farben, Verläufen, `calc`/`min`/`max`/`clamp`/`var`, Transformationen und Filtern, `@import`, `@font-face`, Kommentare, `\`, `!important`, `position: fixed|sticky`, `pointer-events`, `visibility`. Höchstens 24 KB CSS je Artikel. Bilder bleiben Medien aus der Bibliothek; JavaScript gibt es nicht.
+- Eine Animation soll ein Hingucker sein, kein Dauerlauf: höchstens ein bis zwei Sekunden, nicht endlos, mit `prefers-reduced-motion` abschaltbar.
 
 ## Belege
 

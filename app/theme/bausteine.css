@@ -154,3 +154,14 @@
   .vergleich-bild.nachher { position: relative; clip-path: none; }
   .vergleich-griff, .vergleich-regler { display: none; }
 }
+
+/* ================= Social-Einbettung (Zwei-Klick, ADR-033) ================= */
+.einbettung.sozial { max-width: 550px; margin-inline: auto; }
+.einbettung.sozial::before { display: none; }
+.sozial-karte { grid-area: 1 / 1; display: grid; justify-items: center; gap: .6rem; padding: 1.4rem 1rem; text-align: center; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 6px; }
+.sozial-karte strong { font: 700 1.1rem var(--sans); color: var(--ink); }
+.sozial-karte small { max-width: 24rem; font-size: .8rem; color: var(--ink-3); }
+.sozial-karte .einbettung-start { grid-area: auto; padding: .5rem 1.1rem; border-radius: 4px; background: var(--accent-ink); color: var(--paper); font-weight: 600; }
+.sozial-karte .einbettung-start::before, .sozial-karte .einbettung-start::after { content: none; }
+.sozial-original { font-size: .85rem; color: var(--ink-2); }
+.einbettung.sozial iframe { width: 100%; aspect-ratio: auto; background: var(--paper); }

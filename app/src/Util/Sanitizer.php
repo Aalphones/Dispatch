@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dispatch\Util;
 
+use Dispatch\Site\SocialEmbed;
 use Dom\Element;
 use Dom\HTMLDocument;
 use Dom\Node;
@@ -52,7 +53,7 @@ final class Sanitizer
     private const RATING_MAXIMA = ['5', '10', '100'];
 
     private const ALLOWED_LAYOUTS = ['inline', 'wide', 'full', 'left', 'right'];
-    private const ALLOWED_EMBEDS = ['youtube', 'vimeo'];
+    private const ALLOWED_EMBEDS = ['youtube', 'vimeo', 'x', 'instagram', 'facebook', 'tiktok'];
     private const ALLOWED_SCOPES = ['row', 'col', 'rowgroup', 'colgroup'];
     private const ALLOWED_LINK_SCHEMES = ['http', 'https', 'mailto'];
 
@@ -211,6 +212,26 @@ final class Sanitizer
                 $element->setAttribute($attributeName, $keptValue);
             }
         }
+
+        $this->checkSocialAddress($element, $name);
+    }
+
+    /** `data-url` gehört nur zu Social-Einbettungen; passt die Adresse nicht zur Plattform, wird daraus später nur ein Link. */
+    private function checkSocialAddress(Element $element, string $name): void
+    {
+        if ($name !== 'figure' || !$element->hasAttribute('data-url')) {
+            return;
+        }
+        $provider = (string) $element->getAttribute('data-embed');
+        if (!isset(SocialEmbed::PROVIDERS[$provider])) {
+            $element->removeAttribute('data-url');
+            $this->noteRemovedAttribute($name, 'data-url');
+
+            return;
+        }
+        if (SocialEmbed::parse($provider, (string) $element->getAttribute('data-url')) === null) {
+            $this->note('Adresse der Einbettung ' . $provider . ' passt nicht zur Plattform; es erscheint nur ein Link');
+        }
     }
 
     /**
@@ -288,6 +309,7 @@ final class Sanitizer
             'figure data-layout', 'div data-layout' => $this->oneOf(self::ALLOWED_LAYOUTS, $value),
             'figure data-embed' => $this->oneOf(self::ALLOWED_EMBEDS, $value),
             'figure data-id' => $this->matching(self::EMBED_ID_PATTERN, $value),
+            'figure data-url' => $this->webAddress($value),
             'div data-media' => in_array('gallery', $classes, true)
                 ? $this->matching(self::GALLERY_MEDIA_PATTERN, $value)
                 : null,

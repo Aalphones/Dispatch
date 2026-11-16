@@ -6,6 +6,7 @@ namespace Dispatch\Util;
 
 use Dispatch\Site\ChartData;
 use Dispatch\Site\ChartRenderer;
+use Dispatch\Site\SocialEmbed;
 
 /** Reine Formprüfung eines Artikel-Snapshots — keine Datenbank, keine Uhr. */
 final class FormCheck
@@ -294,6 +295,12 @@ final class FormCheck
         }
         foreach ($document->querySelectorAll('figure.chart') as $figure) {
             $this->checkChart($figure);
+        }
+        foreach ($document->querySelectorAll('figure[data-embed][data-url]') as $figure) {
+            $provider = (string) $figure->getAttribute('data-embed');
+            if (isset(SocialEmbed::PROVIDERS[$provider]) && SocialEmbed::parse($provider, (string) $figure->getAttribute('data-url')) === null) {
+                $this->componentInvalid(sprintf('Einbettung %s: Die Adresse passt nicht zur Plattform (https, Beitragsadresse); sie erscheint nur als Link.', SocialEmbed::PROVIDERS[$provider]['label']));
+            }
         }
     }
 

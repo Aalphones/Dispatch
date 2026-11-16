@@ -14,15 +14,19 @@
 1. Je Plattform ein URL-Beispiel (Text, Bild, Video) wird gebaut. 2. Vor dem Klick lädt der Browser nichts von der Plattform. 3. Fremde Host-URL wird nicht zum iframe. 4. Ohne Skript: Link „Original öffnen“. 5. CSP-Header enthält genau die vier neuen Hosts.
 
 ## Checkliste
-- [ ] `Site/SocialEmbed.php`
-- [ ] Sanitizer (Provider, `data-url`)
-- [ ] ContentRenderer
-- [ ] artikel.js
-- [ ] bausteine.css
-- [ ] `.htaccess` CSP
-- [ ] FormCheck-Meldung
-- [ ] ADR-033
-- [ ] style-guide.md
-- [ ] code-map
+- [x] `Site/SocialEmbed.php`
+- [x] Sanitizer (Provider, `data-url`)
+- [x] ContentRenderer
+- [x] artikel.js
+- [x] bausteine.css
+- [x] `.htaccess` CSP
+- [x] FormCheck-Meldung
+- [x] ADR-033
+- [x] style-guide.md
+- [x] code-map
 
 ## Report-Back
+- Fertig: `Site/SocialEmbed` (strenge Adressprüfung je Plattform, iframe-Adresse, Standardhöhe), Sanitizer (Provider, `data-url`, Hinweis bei unpassender Adresse), ContentRenderer (Vorschau-Karte, Klartext-Link als Rückfall), `artikel.js` (iframe erst nach Klick, `sandbox`), `bausteine.css`, `.htaccess`-CSP, FormCheck-Warnung, ADR-033, Style-Guide, Code-Map.
+- AK 1: je Plattform Beispiel gebaut (X Text/Foto, Instagram p/reel/tv, Facebook posts/videos/watch, TikTok video) — per Skript gegen die Klasse geprüft. AK 2: iframe-Adresse nur in `data-src`, kein `<iframe>` im Ausgabe-HTML. AK 3: fremde Host, http, Benutzer@Host, Subdomain-Tricks, Kurzlinks ergeben null. AK 4: Link „Original öffnen“ im Markup. AK 5: Header enthält die vier Hosts im Nachbar-Ausnahme-Block.
+- Abweichung: Karten-CSS liegt in `bausteine.css` (wie geplant), nicht in `style.css`; Obergrenzen in ADR-033 angehoben (bausteine.css 17 000, artikel.js 13 500; artikel.js lag schon vorher über 12 500).
+- Offen: 🟡 `.htaccess` wirkt erst nach Deploy — erst dann laden die iframes im Browser. Sichtprüfung der echten Plattform-Einbettungen im Browser steht aus (kein Netz/Browser-Lauf in dieser Station).

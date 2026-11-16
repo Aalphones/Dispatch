@@ -251,21 +251,26 @@ function setUpEmbeds() {
 	document.addEventListener('click', (event) => {
 		const start = event.target.closest('.einbettung-start');
 		const figure = start && start.closest('.einbettung');
-		const base = figure && EMBEDS[figure.dataset.embed];
+		const social = figure && figure.dataset.src;
+		const base = social || (figure && EMBEDS[figure.dataset.embed]);
 		if (!base) return;
 		const caption = figure.querySelector('figcaption');
 		const frame = document.createElement('iframe');
-		frame.src = base + encodeURIComponent(figure.dataset.id) + '?autoplay=1';
+		frame.src = social || base + encodeURIComponent(figure.dataset.id) + '?autoplay=1';
 		frame.allow = 'autoplay; fullscreen; picture-in-picture';
 		frame.allowFullscreen = true;
-		frame.title = caption && caption.textContent.trim() ? caption.textContent.trim() : 'Video';
-		start.replaceWith(frame);
+		frame.title = caption && caption.textContent.trim() ? caption.textContent.trim() : social ? 'Beitrag' : 'Video';
+		if (social) {
+			frame.height = figure.dataset.hoehe;
+			frame.sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox';
+		}
+		(social ? start.closest('.sozial-karte') : start).replaceWith(frame);
 	});
 }
 
 // ---- Bausteine und Diagramme: eigene Dateien, nur bei Bedarf (Stil auch in der Vorschau) ----
 const COMPONENTS = [
-	['bausteinestil', '.galerie[data-variante], .vergleich, .erklaerbild, .wertung, .zeitstrahl, .akkordeon', 'bausteine', '.galerie[data-variante="karussell"], .galerie[data-variante="streifen"], .vergleich, .erklaerbild'],
+	['bausteinestil', '.galerie[data-variante], .vergleich, .erklaerbild, .wertung, .zeitstrahl, .akkordeon, .sozial', 'bausteine', '.galerie[data-variante="karussell"], .galerie[data-variante="streifen"], .vergleich, .erklaerbild'],
 	['diagrammestil', '.diagramm', 'diagramme', '.diagramm[data-interaktiv]'],
 ];
 

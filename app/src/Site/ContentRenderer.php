@@ -641,8 +641,75 @@ final class ContentRenderer
         }
     }
 
+    /**
+     * Social-Beitrag als Vorschau-Karte: Der iframe-Link steht nur in `data-src` (kein Abruf, bevor jemand klickt);
+     * der Link zum Original funktioniert auch ohne Skript. Passt die Adresse nicht, bleibt ein Klartext-Link.
+     */
+    private function renderSocialEmbeds(): void
+    {
+        foreach ($this->select('figure[data-embed][data-url]') as $figure) {
+            $provider = (string) $figure->getAttribute('data-embed');
+            $address = (string) $figure->getAttribute('data-url');
+            $parsed = SocialEmbed::parse($provider, $address);
+            $caption = $this->firstChildNamed($figure, 'figcaption');
+
+            if ($parsed === null) {
+                if (!$this->isWebAddress($address)) {
+                    $figure->remove();
+
+                    continue;
+                }
+                $paragraph = $this->document->createElement('p');
+                $link = $this->document->createElement('a');
+                $link->setAttribute('href', $address);
+                $link->setAttribute('rel', 'noopener noreferrer');
+                $link->textContent = $caption !== null && trim($caption->textContent) !== '' ? trim($caption->textContent) : $address;
+                $paragraph->appendChild($link);
+                $figure->replaceWith($paragraph);
+
+                continue;
+            }
+
+            $embed = $this->document->createElement('figure');
+            $embed->setAttribute('class', 'einbettung sozial');
+            $embed->setAttribute('data-embed', $provider);
+            $embed->setAttribute('data-src', $parsed['src']);
+            $embed->setAttribute('data-hoehe', (string) $parsed['height']);
+
+            $card = $this->document->createElement('div');
+            $card->setAttribute('class', 'sozial-karte');
+            $name = $this->document->createElement('strong');
+            $name->textContent = $parsed['label'];
+            $card->appendChild($name);
+            $note = $this->document->createElement('small');
+            $note->textContent = 'Lädt Inhalte von ' . $parsed['label'] . ' – erst nach Klick werden Daten übertragen.';
+            $card->appendChild($note);
+            $button = $this->document->createElement('button');
+            $button->setAttribute('type', 'button');
+            $button->setAttribute('class', 'einbettung-start');
+            $button->textContent = 'Beitrag laden';
+            $card->appendChild($button);
+            $original = $this->document->createElement('a');
+            $original->setAttribute('class', 'sozial-original');
+            $original->setAttribute('href', $parsed['url']);
+            $original->setAttribute('rel', 'noopener noreferrer');
+            $original->textContent = 'Original öffnen';
+            $card->appendChild($original);
+            $embed->appendChild($card);
+
+            if ($caption !== null) {
+                $embed->appendChild($caption);
+            }
+
+            $figure->replaceWith($embed);
+            $this->hasComponents = true;
+        }
+    }
+
     private function renderEmbeds(): void
     {
+        $this->renderSocialEmbeds();
+
         foreach ($this->select('figure[data-embed][data-id]') as $figure) {
             $provider = (string) $figure->getAttribute('data-embed');
             $label = self::EMBED_LABELS[$provider] ?? null;

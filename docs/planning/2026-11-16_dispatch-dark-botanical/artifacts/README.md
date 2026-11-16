@@ -4,6 +4,8 @@ Diese Quellen gehören zum Plan und nicht direkt zum Theme. Die Produktionskopie
 
 | Datei | Zweck | Phase | Status |
 |---|---|---:|---|
+| `handover-readme.md` | Unveränderte README des gelieferten Handover-Ordners | alle | Quelle |
+| `handover.md` | Unveränderte Designvorgaben und Abnahmekriterien des gelieferten Handover | alle | Quelle |
 | `logo-primary.svg` | Desktop-Header: Signet, Wortmarke, Claim | 1–2 | freigegeben |
 | `logo-icon.svg` | Mobil-Header und minimaler Footer | 1–2 | freigegeben |
 | `logo-wordmark.svg` | Reserve für kompakte UI; keine Pflichtausgabe | 1 | freigegeben |

@@ -14,7 +14,17 @@
 
 Erlaubt sind genau diese Klassen; jede andere wird entfernt.
 
-`lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote`, `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`, sowie die Bausteine `before-after`, `hotspots`, `rating`, `accordion` und `highlight` (siehe „Bausteine“) sowie `chart` (Diagramm, siehe „Diagramme“).
+`lead` (Einleitungsabsatz), `tldr` (Kasten „Kurz gesagt“ — der Titel kommt automatisch, `aside` oder `div`), `callout` mit `note`, `warning` oder `key`, `factbox`, `pullquote` (Hervorhebung ohne Quelle), `zitat` (belegtes Zitat, siehe „Zitat“), `stats` mit `stat`, `timeline`, `steps`, `checklist`, `two-col` mit `pros` und `cons`, `compare` (Tabelle), `qa` (Fragen und Antworten, als `dl` mit `dt`/`dd`), `definition`, `details`, `opinion` (Meinung, wird automatisch gekennzeichnet), `update` (Korrektur, wird automatisch gekennzeichnet), `sidenote` (Randnotiz, der Titel kommt automatisch), `dropcap` (Initiale), `gallery`, sowie die Bausteine `before-after`, `hotspots`, `rating`, `accordion` und `highlight` (siehe „Bausteine“) sowie `chart` (Diagramm, siehe „Diagramme“).
+
+## Zitat
+
+Wörtliche Zitate mit Quelle als `figure` mit Klasse `zitat`. Der Text steht in `blockquote` (Attribut `cite` = Adresse der Quelle, nur `http`/`https`), die Quelle in `figcaption`: Person oder Institution in `<span class="zitat-wer">`, das Werk in `<cite>`, die Fundstelle als Text. Anführungszeichen setzt die Seite, nicht im Text schreiben; Auslassungen als `[…]`. Aus `cite` entsteht automatisch der Link „Quelle ansehen“.
+
+```html
+<figure class="zitat"><blockquote cite="https://www.gesetze-im-internet.de/bgb/__327e.html"><p>Die Ware ist frei von Sachmängeln, wenn sie […] den subjektiven Anforderungen entspricht.</p></blockquote><figcaption><span class="zitat-wer">Gesetzgeber</span>, <cite>Bürgerliches Gesetzbuch</cite>, § 327e Abs. 3 BGB</figcaption></figure>
+```
+
+Zitat ohne Quelle zum bloßen Hervorheben: `pullquote`.
 
 Pflicht in jedem Artikel: ein `tldr` direkt nach dem Einstieg (Gesamt-Kasten) und eines am Ende jedes `<h2>`-Abschnitts, jeweils direkt im Text, nicht in `section` oder `div` verschachtelt. Fehlt eines, warnt die Formprüfung (`tldr_missing`).
 

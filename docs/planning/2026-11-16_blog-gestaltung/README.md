@@ -5,7 +5,7 @@ Auftrag des Inhabers (2026-11-16). Ziel: Artikel sehen nicht mehr nach Standard-
 | Phase | Inhalt | Rating | Status |
 |---|---|---|---|
 | 1 | Teal als Primärfarbe, Diagramm-Palette, mehrfarbige Diagramme | standard | complete |
-| 2 | Zitat-Kasten (`figure.zitat`, formal korrektes `blockquote`/`cite`) | standard | pending |
+| 2 | Zitat-Kasten (`figure.zitat`, formal korrektes `blockquote`/`cite`) | standard | complete |
 | 3 | Social-Einbettungen X, Instagram, Facebook, TikTok (Zwei-Klick, iframe) | heikel | pending |
 | 4 | HTML + CSS für Agenten (CSS-Filter, Builder schreibt Artikel-CSS) | heikel | pending |
 | 5 | Demo-Artikel, Style-Guide, Docs-Abgleich | mechanisch | pending |

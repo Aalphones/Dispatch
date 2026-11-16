@@ -35,7 +35,7 @@ final class Sanitizer
     ];
 
     private const ALLOWED_CLASSES = [
-        'lead', 'tldr', 'callout', 'note', 'warning', 'key', 'factbox', 'pullquote', 'stats', 'stat',
+        'lead', 'tldr', 'callout', 'note', 'warning', 'key', 'factbox', 'pullquote', 'zitat', 'zitat-wer', 'stats', 'stat',
         'timeline', 'steps', 'checklist', 'two-col', 'pros', 'cons', 'compare', 'qa', 'definition',
         'details', 'opinion', 'update', 'sidenote', 'dropcap', 'gallery',
         'before-after', 'hotspots', 'rating', 'accordion', 'highlight', 'chart',
@@ -252,6 +252,7 @@ final class Sanitizer
         return match ($element . ' ' . $attribute) {
             'a href' => $this->safeHref($value),
             'a title', 'abbr title' => $value,
+            'blockquote cite' => $this->webAddress($value),
             'a data-cite' => $this->matching(self::CITE_PATTERN, $value),
             'figure data-media' => $this->matching(
                 in_array('before-after', $classes, true) ? self::PAIR_MEDIA_PATTERN : self::MEDIA_PATTERN,
@@ -350,6 +351,19 @@ final class Sanitizer
 
                 return null;
             }
+        }
+
+        return $trimmed;
+    }
+
+    /**
+     * Quellenangabe eines Zitats: nur absolute http(s)-Adressen, kein mailto, keine relativen Pfade.
+     */
+    private function webAddress(string $value): ?string
+    {
+        $trimmed = trim($value, " \t\n\r\f\v\0");
+        if (preg_match('/^https?:\/\/[^\s<>"\x00-\x1F\x7F]+\z/i', $trimmed) !== 1) {
+            return null;
         }
 
         return $trimmed;

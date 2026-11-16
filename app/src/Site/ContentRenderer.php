@@ -92,6 +92,7 @@ final class ContentRenderer
         $this->renderHotspots();
         $this->renderFigures();
         $this->renderEmbeds();
+        $this->renderQuotes();
         $this->renderRatings();
         $this->renderTimelines();
         $this->renderAccordions();
@@ -671,6 +672,34 @@ final class ContentRenderer
             }
 
             $figure->replaceWith($embed);
+        }
+    }
+
+    /** Setzt aus `cite` des Zitats einen Quellenlink in die Bildunterschrift; ohne gültige Adresse bleibt das Zitat unverändert. */
+    private function renderQuotes(): void
+    {
+        foreach ($this->select('figure.zitat') as $figure) {
+            $quote = $this->firstChildNamed($figure, 'blockquote');
+            $address = $quote === null ? '' : trim((string) $quote->getAttribute('cite'));
+            if (!$this->isWebAddress($address)) {
+                continue;
+            }
+
+            $caption = $this->firstChildNamed($figure, 'figcaption');
+            if ($caption === null) {
+                $caption = $this->document->createElement('figcaption');
+                $figure->appendChild($caption);
+            }
+
+            $link = $this->document->createElement('a');
+            $link->setAttribute('href', $address);
+            $link->setAttribute('rel', 'noopener nofollow');
+            $link->setAttribute('class', 'zitat-quelle');
+            $link->textContent = 'Quelle ansehen';
+            if ($caption->hasChildNodes()) {
+                $caption->appendChild($this->document->createTextNode(' '));
+            }
+            $caption->appendChild($link);
         }
     }
 

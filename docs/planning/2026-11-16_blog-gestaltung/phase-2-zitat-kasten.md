@@ -13,10 +13,13 @@
 1. `blockquote[cite]` überlebt den Sanitizer; `cite="javascript:…"` wird entfernt und gemeldet. 2. Ohne Skript und im Druck lesbar. 3. Hell/Dunkel Kontrast ≥ 4,5:1. 4. Style-Guide nennt die Syntax mit Beispiel inkl. Rechtszitat.
 
 ## Checkliste
-- [ ] Sanitizer (Klasse, cite-Attribut)
-- [ ] ContentRenderer (Quellenlink)
-- [ ] bausteine.css
-- [ ] style-guide.md
-- [ ] code-map: Zeile „Gestaltungs-Bausteine“ ergänzen
+- [x] Sanitizer (Klasse, cite-Attribut)
+- [x] ContentRenderer (Quellenlink)
+- [x] CSS (in `style.css`, siehe Abweichung)
+- [x] style-guide.md
+- [x] code-map: Zeile „Gestaltungs-Bausteine“ ergänzen
 
 ## Report-Back
+Status: complete. Geändert: `Sanitizer.php` (Klassen `zitat`, `zitat-wer`; `blockquote cite` nur http/https via `webAddress`), `ContentRenderer.php` (`renderQuotes`: Link „Quelle ansehen“ mit `rel="noopener nofollow"`, ohne gültiges `cite` kein Link), `style.css` (Kasten, Teal-Balken, `quotes`-Anführungszeichen, Druck: Rand statt Fläche), `style-guide.md` (Abschnitt „Zitat“ mit Rechtszitat), `code-map.md`.
+Abweichung: CSS in `style.css` statt `bausteine.css` — `bausteine.css` lädt nur bei Skript-Bausteinen, der Kasten muss immer gestaltet sein. Zusätzliche Klasse `zitat-wer` nötig, sonst entfernt der Sanitizer sie.
+Geprüft: PHP-Lint ok; Sanitizer-Lauf: `cite="https://…"` bleibt, `cite="javascript:…"` entfernt (Hinweis „Attribut cite an <blockquote> entfernt“). Kontrast Teal auf `--paper-2` ca. 5:1 hell / ca. 5,7:1 dunkel (gerechnet, nicht gemessen). Render-Lauf des ContentRenderer nicht ausgeführt.

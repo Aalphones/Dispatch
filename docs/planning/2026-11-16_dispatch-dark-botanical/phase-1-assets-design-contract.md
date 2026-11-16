@@ -8,7 +8,7 @@
 - `docs/conventions/frontend.md`, `docs/decisions/013-website-aufbau-und-entwurf.md`, `docs/decisions/015-theme-budgets-skriptmodule.md`.
 - `artifacts/README.md` sowie die drei Logo-SVGs und das freigegebene Maskottchen-PNG in diesem Plan.
 
-Fehlerklassen: PHP-/CSS-/HTML-Vault-Abschnitte waren in dieser Planungssitzung nicht lesbar (Zugriff auf `C:\Users\sasch\.codex\knowledge` verweigert). Für diese Phase gelten daher zusätzlich die direkten Fehlergrenzen unten: kein unmanifestiertes Asset, kein unescaped URL-Ausgabeweg und keine Cache-Datei ohne Inhalts-Hash.
+Fehlerklassen: PHP-/CSS-/HTML-Vault-Abschnitte standen in dieser Planungssitzung nicht zur Verfügung. Für diese Phase gelten daher zusätzlich die direkten Fehlergrenzen unten: kein unmanifestiertes Asset, kein unescaped URL-Ausgabeweg und keine Cache-Datei ohne Inhalts-Hash.
 
 ## AK
 

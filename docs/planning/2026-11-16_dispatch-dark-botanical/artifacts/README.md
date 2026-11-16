@@ -11,4 +11,4 @@ Diese Quellen gehören zum Plan und nicht direkt zum Theme. Die Produktionskopie
 
 Das PNG ist das verbindliche Produktionsasset. Nicht automatisch tracen: Die weichen Verläufe und Konturen blieben nicht sauber und ein Vektorexport wäre größer, nicht besser. Die drei Logo-SVGs bleiben lokal, skalierbar und ohne Artefaktbereinigung verwendbar.
 
-Offline ansehen: SVG/PNG direkt im Explorer oder in einem Browser öffnen. Die lesbare Planansicht liegt zusätzlich unter `C:\Users\sasch\.verwalter\workspaces\934add5d\.artefakte\plan-dispatch-dark-botanical.html`.
+Offline ansehen: SVG/PNG direkt im Explorer oder in einem Browser öffnen. Die Umsetzungskontrakte und Phasen stehen in der [Plan-README](../README.md).

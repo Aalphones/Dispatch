@@ -105,7 +105,7 @@ function confirmDiscard(id) {
 	});
 	dialog('verwerfen', [
 		el('div', { class: 'dlg-kopf' }, el('h2', { text: 'Entwurf verwerfen' })),
-		el('div', { class: 'dlg-rumpf' }, el('p', { text: 'Entwurf endgültig löschen? Das lässt sich nicht rückgängig machen.' })),
+		el('div', { class: 'dlg-rumpf' }, el('p', { text: 'Entwurf endgültig löschen? Ein zugehöriger Auftrag wird mit beendet und nicht neu vergeben. Das lässt sich nicht rückgängig machen.' })),
 		el('div', { class: 'dlg-fuss' }, [
 			el('button', { type: 'button', class: 'knopf leise', 'data-close': true, text: 'Abbrechen' }),
 			confirmButton,

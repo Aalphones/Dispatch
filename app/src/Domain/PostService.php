@@ -628,7 +628,7 @@ final class PostService
             }
 
             $this->posts->delete($id);
-            $this->queueAfter($post, 'reopen');
+            $this->queueAfter($post, $actor->isOwner() ? 'cancelForDiscardedPost' : 'detachPost');
             $this->audit->record($actor, 'post.discard', 'post:' . $id, ['title' => $post['title'], 'slug' => $post['slug']]);
         });
 
@@ -662,7 +662,7 @@ final class PostService
      * Zieht den verknüpften Queue-Auftrag in derselben Transaktion nach.
      *
      * @param array<string, mixed> $post
-     * @param 'markReview'|'markDone'|'reopen'|'backToClaimed' $transition
+     * @param 'markReview'|'markDone'|'cancelForDiscardedPost'|'detachPost'|'backToClaimed' $transition
      */
     private function queueAfter(array $post, string $transition): void
     {

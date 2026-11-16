@@ -238,13 +238,29 @@ final class QueueService
         }
     }
 
-    /** Der Artikel ist weg: der Auftrag steht wieder zur Vergabe. */
-    public function reopen(int $id): void
+    /**
+     * Der Inhaber hat den Artikel verworfen: Damit ist auch der Auftrag erledigt.
+     * Wieder freigegeben würde ihn der nächste Agent reservieren und denselben Artikel neu schreiben.
+     */
+    public function cancelForDiscardedPost(int $id): void
     {
         $item = $this->lockedItem($id);
-        if (in_array($item['status'], ['claimed', 'review'], true)) {
-            $this->queue->update($id, ['status' => 'open', 'post_id' => null, 'claimed_by' => null, 'claim_expires' => null]);
+        if (in_array($item['status'], ['claimed', 'review', 'done'], true)) {
+            $this->queue->update($id, [
+                'status' => 'cancelled',
+                'post_id' => null,
+                'claimed_by' => null,
+                'claim_expires' => null,
+                'result_note' => 'Artikel vom Inhaber verworfen.',
+            ]);
         }
+    }
+
+    /** Der Agent hat seinen Entwurf verworfen: Er hält den Auftrag weiter und gibt ihn mit release_queue_item zurück. */
+    public function detachPost(int $id): void
+    {
+        $this->lockedItem($id);
+        $this->queue->update($id, ['post_id' => null]);
     }
 
     private function tryClaim(int $id, Actor $actor, int $minutes): bool

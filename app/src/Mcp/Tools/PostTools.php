@@ -185,7 +185,7 @@ final class PostTools
         $registry->add(new Tool(
             'delete_post',
             'Entwurf löschen',
-            'Löscht einen nie veröffentlichten Entwurf samt Revisionen endgültig; ein verknüpfter Queue-Auftrag wird wieder frei. Eingereichtes zuerst mit withdraw_post zurückziehen, Veröffentlichtes lässt sich nicht löschen. Beispiel: {"id": 12, "confirm": true}; ohne confirm: true passiert nichts.',
+            'Löscht einen nie veröffentlichten Entwurf samt Revisionen endgültig; einen verknüpften Queue-Auftrag behältst du und gibst ihn danach mit release_queue_item zurück.Eingereichtes zuerst mit withdraw_post zurückziehen, Veröffentlichtes lässt sich nicht löschen. Beispiel: {"id": 12, "confirm": true}; ohne confirm: true passiert nichts.',
             Schema::object([
                 'id' => Schema::integer('Artikel-ID'),
                 'confirm' => Schema::boolean('Muss true sein, sonst wird nichts gelöscht'),

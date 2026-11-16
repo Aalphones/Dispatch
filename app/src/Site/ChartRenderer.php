@@ -450,7 +450,7 @@ final class ChartRenderer
                     $centerX = min($x + $barWidth / 2, self::WIDTH - 4 - ChartFormat::textWidth($text) / 2);
                     $children[] = $this->label($centerX, $value >= 0 ? $toY($value) - 5 : $toY($value) + 15, $text, 'wert', 'middle');
                 }
-                $shapes[] = $this->group('r' . ($seriesIndex + 1), $children);
+                $shapes[] = $this->group($this->markColor($count, $seriesIndex, $index), $children);
             }
         }
         foreach ($this->categoryLabels(array_column($rows, 'label'), $left, $band, self::AXIS_BOTTOM) as $label) {
@@ -522,11 +522,23 @@ final class ChartRenderer
                 }
                 $labelX = $value >= 0 ? $barEnd + 6 : $zeroX + 6;
                 $children[] = $this->label($labelX, $barTop + $barHeight / 2 + 4, ChartFormat::withUnit($value, $decimals, $unit), 'wert');
-                $shapes[] = $this->group('r' . ($seriesIndex + 1), $children);
+                $shapes[] = $this->group($this->markColor($count, $seriesIndex, $index), $children);
             }
         }
 
         return $this->plot(self::WIDTH, $height, $shapes, $this->summarize($names, $rows, $decimals, $unit), $this->seriesLegend($names));
+    }
+
+    /**
+     * Eine einzelne Reihe färbt jede Kategorie eigen ein (Beschriftung trägt die Identität, es gibt keine Legende); mehrere Reihen bleiben je Reihe eine Farbe.
+     */
+    private function markColor(int $seriesCount, int $seriesIndex, int $categoryIndex): string
+    {
+        if ($seriesCount === 1) {
+            return 'r' . (($categoryIndex % 8) + 1);
+        }
+
+        return 'r' . ($seriesIndex + 1);
     }
 
     /**

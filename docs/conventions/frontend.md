@@ -27,6 +27,7 @@
 - Gestaltung: `docs/design/entwurf-website.html` ist verbindlich (ADR-013).
 - Jede Ausgabe in Templates wird escaped (Helfer `e()`); nur Artikel-HTML aus dem Sanitizer geht roh hinaus.
 - Ohne JavaScript funktioniert alles außer Suche, Videos und Login.
+- Farbwelt: Primärfarbe gedecktes Teal (`--accent` `#256e64` hell, `--accent-ink` `#45a595` dunkel), Grün als Zweitfarbe, kein Neon. Rot nur für `--bad`/`--minus` und Diagramm-`c6`; Diagramm-Palette `--c1…--c8` in `diagramme.css`, keine harten Farbwerte außerhalb der Tokens.
 - Dark Mode über `prefers-color-scheme`, `prefers-reduced-motion` beachten, Druck-Stylesheet mit ausgeschriebenen Quell-URLs.
 - Sprunglink zum Inhalt, sichtbare Fokusrahmen, Kontrast mindestens WCAG AA, jedes Bild mit Alt-Text, genau eine `h1` pro Seite.
 - Bilder als `<picture>` mit WebP und JPEG, feste `width`/`height`, `loading="lazy"` außer beim Titelbild.

@@ -14,11 +14,20 @@
 1. Kein `#b3261e` mehr im Theme. 2. Hell/Dunkel/Druck: Links, Fokusring, Buttons Teal. 3. Einserien-Balken zeigen ≥ 3 Farben, erste Teal. 4. Baumkarte Ebene 1: jede Gruppe eigene Farbe. 5. Druckmuster `mu1…mu8` unverändert gültig.
 
 ## Checkliste
-- [ ] style.css Variablen (hell + beide Dark-Blöcke)
-- [ ] diagramme.css Palette + Rampen (hell, dark, `.dunkel`)
-- [ ] ChartRenderer: Einserien → Kategorie-Farbe
-- [ ] Baumkarte reproduzieren, ggf. fixen
-- [ ] redaktion.css + bausteine.css: harte Rot-Werte auf Variablen
-- [ ] Doc: `docs/conventions/frontend.md` Farbwerte, ADR-030 Palette-Satz
+- [x] style.css Variablen (hell + beide Dark-Blöcke)
+- [x] diagramme.css Palette + Rampen (hell, dark, `.dunkel`)
+- [x] ChartRenderer: Einserien → Kategorie-Farbe
+- [x] Baumkarte reproduzieren, ggf. fixen
+- [x] redaktion.css + bausteine.css: harte Rot-Werte auf Variablen
+- [x] Doc: `docs/conventions/frontend.md` Farbwerte, ADR-030 Palette-Satz
 
 ## Report-Back
+Status: complete (nicht committet).
+- `--accent` `#256e64` (5,34:1 auf Papier, 4,89:1 auf paper-2); dunkel `--accent-ink` `#45a595` (6,14:1 auf `#17150f`), fest statt `color-mix`. Der Richtwert `#2b7a6f` erreicht nur 4,53:1 auf Papier und 4,15:1 auf paper-2, deshalb dunkler. `--bad` bleibt `#a3261e`.
+- Palette hell `#2b7a6f #7aa84f #8ccbb9 #2c5f4f #c0a96c #c8353a #7c9ab8 #7f7f2e`; dunkel `#4aa595 #86b86a #2f6f62 #a6d6c6 #b59f66 #e06a6e #7f9fbd #b0b04e`; Rampen `--s1…--s5` und `--plus` Teal; `--t1…--t8` für beide Modi neu gesetzt. Nachbarn mit Helligkeitsverhältnis ≥ 1,15 gerechnet (kleinster Wert 1,18, c6/c7 dunkel).
+- `ChartRenderer::markColor`: Einserien-Balken/-Säulen `r(Kategorie+1)`, Zyklus nach 8; Mehrserien unverändert. Geprüft per PHP-Render: `r1…r4`.
+- Baumkarte Ebene 1: Der Render liefert je Gruppe `gruppe r1…rN`, CSS und JS setzen `--f` nicht um. Die Mehrfarbigkeit war im Markup schon vorhanden; im Browser nicht gegengeprüft (kein Browserlauf).
+- Mitgezogen: Standardwert `accent` in `SettingService.php` und `docs/models.md`. Bestehende Datenbankwerte bleiben unverändert (der Standard greift nur für neue Installationen).
+- `redaktion.css`/`bausteine.css`: keine harten Rottöne gefunden, nur Variablen; keine Änderung nötig.
+- Druckmuster `mu1…mu8` unverändert; sie hängen an `.rN`.
+- Nicht geprüft: Datenbankwert `accent` auf der laufenden Seite (🟡 falls dort noch `#b3261e` steht, bleibt der Artikel-Akzent rot).

@@ -61,7 +61,7 @@ Werte stehen als JSON in `settings.value`; fehlt eine Zeile, gilt der Startwert.
 | `site_description` | öffentlich | `` | Text, ≤ 300 |
 | `author_name` | öffentlich | `` | Text, ≤ 120 |
 | `author_url` | öffentlich | `` | leer oder `http(s)://…`, ≤ 300 |
-| `accent` | öffentlich | `#b3261e` | `#rrggbb` |
+| `accent` | öffentlich | `#256e64` | `#rrggbb` |
 | `ai_disclosure` | öffentlich | `true` | bool |
 | `ai_disclosure_text` | öffentlich | Transparenztext (Wortlaut offen, jederzeit änderbar) | Text, ≤ 500 |
 | `language` | intern | `de` | `de` \| `en` |

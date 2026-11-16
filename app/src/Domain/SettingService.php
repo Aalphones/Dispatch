@@ -22,7 +22,7 @@ final class SettingService
         'site_description' => '',
         'author_name' => '',
         'author_url' => '',
-        'accent' => '#b3261e',
+        'accent' => '#256e64',
         'ai_disclosure' => true,
         'ai_disclosure_text' => 'Dieser Artikel wurde mit KI-Unterstützung recherchiert und geschrieben und vor der Veröffentlichung vom Herausgeber geprüft und freigegeben.',
         'language' => 'de',
@@ -195,7 +195,7 @@ final class SettingService
 
             case 'accent':
                 if (preg_match('/^#[0-9a-fA-F]{6}$/', $text) !== 1) {
-                    throw $this->invalid($name, 'muss eine Farbe im Format #rrggbb sein, z. B. #b3261e');
+                    throw $this->invalid($name, 'muss eine Farbe im Format #rrggbb sein, z. B. #256e64');
                 }
 
                 return $text;

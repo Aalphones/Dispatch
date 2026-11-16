@@ -3,7 +3,7 @@
   --paper: #f6f1e7; --paper-2: #efe7d8; --paper-3: #e6dcc9;
   --ink: #1d1a16; --ink-2: #4a443b; --ink-3: #6f675b;
   --rule: #cfc4b0; --rule-strong: #1d1a16;
-  --accent: #b3261e; --accent-ink: var(--accent);
+  --accent: #256e64; --accent-ink: var(--accent);
   --accent-soft: color-mix(in oklab, var(--accent-ink) 12%, var(--paper));
   --accent-line: color-mix(in oklab, var(--accent-ink) 40%, transparent);
   --ok: #2e6b3a; --warn: #9a5b00; --bad: #a3261e;
@@ -18,10 +18,10 @@
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not(.hell) { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: color-mix(in oklab, var(--accent) 55%, white); --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
+  :root:not(.hell) { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: #45a595; --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
 }
 /* Die Entwürfe unter docs/planning erzwingen damit den Dunkelmodus; die Website selbst setzt .dunkel nicht. */
-:root.dunkel { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: color-mix(in oklab, var(--accent) 55%, white); --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
+:root.dunkel { --paper:#17150f; --paper-2:#211e17; --paper-3:#2b271f; --ink:#ece5d8; --ink-2:#c9c0b0; --ink-3:#a39a8a; --rule:#3d382e; --rule-strong:#ece5d8; --accent-ink: #45a595; --ok:#7fc28c; --warn:#e0a54a; --bad:#f08a80; --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 18px 48px rgba(0,0,0,.55); }
 
 @view-transition { navigation: auto; }
 

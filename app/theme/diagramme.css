@@ -1,32 +1,33 @@
 /* ==========================================================================
    Teil 1 — Vorlage für app/theme/diagramme.css (nur Theme-Variablen aus style.css).
    Palette: 8 kategoriale Farben (feste Reihenfolge), Einfarbskala s1–s5, Paar plus/minus.
-   Validiert mit scripts/validate_palette.js gegen die Seitenflächen (hell #f6f1e7, dunkel #17150f).
+   Farbwelt: gedecktes Blaugrün (Patina) und Grün, kein Neon; Rot nur als c6 und als --minus.
+   Nachbarfarben unterscheiden sich in der Helligkeit (Kontrastverhältnis ≥ 1,15); die Identität tragen zusätzlich Druckmuster und Beschriftung.
    ========================================================================== */
 .diagramm {
-  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100; --c5:#e87ba4; --c6:#008300; --c7:#6250d6; --c8:#e34948;
-  --t1:#000; --t2:#000; --t3:#000; --t4:#000; --t5:#000; --t6:#fff; --t7:#fff; --t8:#000;
-  --s1:#cde2fb; --s2:#9ec5f4; --s3:#5598e7; --s4:#256abf; --s5:#104281;
+  --c1:#2b7a6f; --c2:#7aa84f; --c3:#8ccbb9; --c4:#2c5f4f; --c5:#c0a96c; --c6:#c8353a; --c7:#7c9ab8; --c8:#7f7f2e;
+  --t1:#fff; --t2:#000; --t3:#000; --t4:#fff; --t5:#000; --t6:#fff; --t7:#000; --t8:#fff;
+  --s1:#d7ebe5; --s2:#a9d3c8; --s3:#5fa597; --s4:#2b7a6f; --s5:#174d44;
   --ts1:#000; --ts2:#000; --ts3:#000; --ts4:#fff; --ts5:#fff;
-  --plus:#256abf; --minus:#d03b3b; --summe:var(--ink-2);
+  --plus:#2b7a6f; --minus:#c8353a; --summe:var(--ink-2);
   --flaeche: var(--paper);
   margin: 2rem 0;
 }
 @media (prefers-color-scheme: dark) {
   :root:not(.hell) .diagramm {
-    --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300; --c7:#9085e9; --c8:#e66767;
-    --t7:#000;
-    --s1:#1d3a63; --s2:#235a9f; --s3:#3987e5; --s4:#6da7ec; --s5:#b7d3f6;
+    --c1:#4aa595; --c2:#86b86a; --c3:#2f6f62; --c4:#a6d6c6; --c5:#b59f66; --c6:#e06a6e; --c7:#7f9fbd; --c8:#b0b04e;
+    --t1:#000; --t2:#000; --t3:#fff; --t4:#000; --t5:#000; --t6:#000; --t7:#000; --t8:#000;
+    --s1:#1d3d37; --s2:#24574d; --s3:#3b8e7e; --s4:#6cc0ae; --s5:#bfe6db;
     --ts1:#fff; --ts2:#fff; --ts3:#000; --ts4:#000; --ts5:#000;
-    --plus:#3987e5; --minus:#e66767;
+    --plus:#4aa595; --minus:#e06a6e;
   }
 }
 :root.dunkel .diagramm {
-  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300; --c7:#9085e9; --c8:#e66767;
-  --t7:#000;
-  --s1:#1d3a63; --s2:#235a9f; --s3:#3987e5; --s4:#6da7ec; --s5:#b7d3f6;
+  --c1:#4aa595; --c2:#86b86a; --c3:#2f6f62; --c4:#a6d6c6; --c5:#b59f66; --c6:#e06a6e; --c7:#7f9fbd; --c8:#b0b04e;
+  --t1:#000; --t2:#000; --t3:#fff; --t4:#000; --t5:#000; --t6:#000; --t7:#000; --t8:#000;
+  --s1:#1d3d37; --s2:#24574d; --s3:#3b8e7e; --s4:#6cc0ae; --s5:#bfe6db;
   --ts1:#fff; --ts2:#fff; --ts3:#000; --ts4:#000; --ts5:#000;
-  --plus:#3987e5; --minus:#e66767;
+  --plus:#4aa595; --minus:#e06a6e;
 }
 
 /* ---- Fläche und Schrift ---- */

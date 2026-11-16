@@ -9,7 +9,7 @@ Artikel brauchen Diagramme (17 Typen von Linie bis Karte). Agenten dürfen weder
 ## Entscheidung
 
 - **Die Datentabelle ist die Quelle.** Der Agent schreibt `figure.chart` mit Typ, Titel und einer Tabelle; der Server liest sie (`ChartData`), die Formprüfung meldet Schieflagen als `component_invalid`, der Renderer erzeugt Figur, SVG, Legende und die Tabelle als Textalternative.
-- **Der Server zeichnet das SVG** (`ChartRenderer`, `ChartComplexPlots`, Layouts für Sankey und Baumkarte), keine Browser-Bibliothek. Gründe: CSP, Ladegröße, Funktion ohne Skript, feste Palette mit Druckmustern (`r1–r8`).
+- **Der Server zeichnet das SVG** (`ChartRenderer`, `ChartComplexPlots`, Layouts für Sankey und Baumkarte), keine Browser-Bibliothek. Gründe: CSP, Ladegröße, Funktion ohne Skript, feste Palette mit Druckmustern (`r1–r8`). Die Palette ist gedecktes Blaugrün und Grün (`c1` Teal-Patina, Rot nur als `c6` und `--minus`); Nachbarfarben unterscheiden sich in der Helligkeit, Einserien-Balken und -Säulen färben je Kategorie.
 - **Interaktion nur auf vorgerechnetem Markup.** `diagramme.js` schaltet Attribute und Klassen um (Hinweis, Auswahl, Dimmen, Zoom) und rechnet nie neu. Maße nur über `element.style`.
 - **Nicht jedes Diagramm ist interaktiv.** Nur Linie, Heatmap, Kalender, Sankey, Baumkarte, Blasen und Karte (`ChartRenderer::INTERACTIVE_TYPES`), und nur wenn der Agent `data-interactive="true"` setzt; die Formprüfung warnt sonst. Die übrigen Typen bleiben statisch.
 - **Legenden-Knöpfe entstehen erst im Browser** (`button[aria-pressed]` aus den Legendeneinträgen), damit ohne Skript keine toten Knöpfe stehen.

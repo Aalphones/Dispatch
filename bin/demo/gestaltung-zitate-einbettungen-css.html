@@ -1,0 +1,49 @@
+<style>
+.x-hero { display: grid; gap: 1rem; padding: 3rem 1.5rem; border-radius: 16px; color: #fff;
+  background: linear-gradient(135deg, #256e64, #45a595); animation: x-rein .8s ease-out both; }
+.x-hero h2 { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 3rem); margin: 0; color: #fff; }
+.x-hero p { margin: 0; font-size: 1.1rem; }
+@keyframes x-rein { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 40rem) { .x-hero { padding: 2rem 1rem; } }
+@media (prefers-reduced-motion: reduce) { .x-hero { animation: none; } }
+</style>
+
+<header class="x-hero"><h2>Gestaltung im Magazin</h2><p>Zitate mit Quelle, Beiträge aus sozialen Netzwerken und ein Aufmacher mit eigenem CSS: ein Beispielartikel.</p></header>
+
+<aside class="tldr"><p>Dieser Beispielartikel zeigt drei Gestaltungsmittel: den Zitat-Kasten mit Quellenlink, vier Social-Beiträge, die erst nach einem Klick laden, und einen Aufmacher mit eigenem CSS. Alle Adressen und Inhalte sind erfunden.</p></aside>
+
+<p class="lead">Ein Artikel muss nicht wie jeder andere aussehen. Drei Bausteine geben Texten ein eigenes Gesicht, ohne die Seite zu gefährden.</p>
+
+<h2>Zitate mit Quelle</h2>
+
+<p>Wer wörtlich zitiert, nennt die Quelle und verlinkt sie. Der Zitat-Kasten setzt dafür die Anführungszeichen selbst und macht aus der Adresse im Zitat einen Link „Quelle ansehen“. Ein Rechtszitat sieht so aus, wie es <a data-cite="s1">der Gesetzestext</a> vorgibt:</p>
+
+<figure class="zitat"><blockquote cite="https://www.gesetze-im-internet.de/bgb/__327e.html"><p>Die Ware ist frei von Sachmängeln, wenn sie […] den subjektiven Anforderungen entspricht.</p></blockquote><figcaption><span class="zitat-wer">Gesetzgeber</span>, <cite>Bürgerliches Gesetzbuch</cite>, § 327e Abs. 3 BGB</figcaption></figure>
+
+<p>Auch Äußerungen von Personen lassen sich so belegen, etwa aus <a data-cite="s2">einem Fachbeitrag</a>:</p>
+
+<figure class="zitat"><blockquote cite="https://www.example.org/gestaltung/lesbarkeit"><p>Gute Gestaltung führt den Blick, ohne dass die Lesenden es merken.</p></blockquote><figcaption><span class="zitat-wer">Beispiel-Designforum</span>, <cite>Lesbarkeit im Netz</cite>, Abschnitt 2</figcaption></figure>
+
+<aside class="tldr"><p>Ein Zitat steht in <code>figure.zitat</code> mit <code>blockquote</code> und Quelle in der Bildunterschrift; ohne Quelle genügt <code>pullquote</code>.</p></aside>
+
+<h2>Beiträge aus sozialen Netzwerken</h2>
+
+<p>Beiträge von X, Instagram, Facebook und TikTok erscheinen als Platzhalter. Erst nach einem Klick lädt die Plattform ihren Inhalt, vorher fließen keine Daten dorthin. <a data-cite="s3">Die Beispielbeiträge</a> sind erfunden.</p>
+
+<figure data-embed="x" data-url="https://x.com/beispiel/status/1234567890123456789"><figcaption>Ein Textbeitrag auf X</figcaption></figure>
+
+<figure data-embed="instagram" data-url="https://www.instagram.com/p/ABC123xyz/"><figcaption>Ein Bildbeitrag auf Instagram</figcaption></figure>
+
+<figure data-embed="facebook" data-url="https://www.facebook.com/beispiel/posts/1234567890"><figcaption>Ein Beitrag auf Facebook</figcaption></figure>
+
+<figure data-embed="tiktok" data-url="https://www.tiktok.com/@beispiel/video/1234567890123456789"><figcaption>Ein Video auf TikTok</figcaption></figure>
+
+<aside class="tldr"><p>Social-Beiträge stehen als <code>figure</code> mit <code>data-embed</code> und der langen Adresse des Beitrags; die Plattform lädt erst nach Klick.</p></aside>
+
+<h2>Eigenes CSS für besondere Abschnitte</h2>
+
+<p>Der Aufmacher oben ist mit eigenem CSS gestaltet: Verlauf in den Seitenfarben, abgerundete Ecken und eine kurze Einblendung, die bei „weniger Bewegung“ entfällt. <a data-cite="s4">Praxisberichte</a> raten zu solchen Aufmachern nur dort, wo sie etwas erklären. Der Server prüft das CSS, schreibt es als Datei und bindet sie nur an diesen Artikel; die Hinweise zur Prüfung stehen in den Rückmeldungen beim Speichern.</p>
+
+<p>Eigene Klassen beginnen mit <code>x-</code>, Selektoren müssen mit einer solchen Klasse anfangen. Adressen in <code>url()</code>, Importe und fest stehende Elemente fallen dabei immer heraus.</p>
+
+<aside class="tldr"><p>CSS steht im <code>&lt;style&gt;</code>-Block oder als <code>style</code>-Attribut; nur gefiltertes CSS erreicht die Seite.</p></aside>

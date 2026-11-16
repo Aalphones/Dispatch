@@ -91,6 +91,24 @@ return [
     // Reihenfolge = Alter: der erste Eintrag ist der neueste Artikel.
     'posts' => [
         [
+            'file' => 'gestaltung-zitate-einbettungen-css',
+            'title' => 'Gestaltung im Magazin: Zitate, Social-Beiträge und eigener Aufmacher',
+            'subtitle' => 'Ein Beispielartikel für Zitat-Kasten, Zwei-Klick-Einbettungen und Agenten-CSS',
+            'kicker' => 'Kultur',
+            'excerpt' => 'Wie Zitate mit Quellenlink, Beiträge aus sozialen Netzwerken und ein CSS-Aufmacher einem Artikel ein eigenes Gesicht geben.',
+            'layout' => 'standard',
+            'accent' => null,
+            'tags' => ['Gestaltung', 'Medien'],
+            'categories' => [['slug' => 'kultur', 'primary' => true]],
+            'bilder' => [false],
+            'sources' => [
+                demoQuelle('s1', 'official', 'Bürgerliches Gesetzbuch, § 327e', 'https://www.gesetze-im-internet.de/bgb/__327e.html', 'Bundesministerium der Justiz', '2026-01'),
+                demoQuelle('s2', 'web', 'Lesbarkeit im Netz', 'https://www.example.org/gestaltung/lesbarkeit', 'Beispiel-Designforum', '2026-04'),
+                demoQuelle('s3', 'social', 'Beispielbeiträge auf vier Plattformen', 'https://x.com/beispiel/status/1234567890123456789', 'X', '2026-09-01'),
+                demoQuelle('s4', 'news', 'Aufmacher mit CSS: Wann sie sich lohnen', 'https://nachrichten.example.net/gestaltung/css-aufmacher', 'Beispiel-Nachrichten', '2026-08-15'),
+            ],
+        ],
+        [
             'file' => 'energie-in-zahlen-diagramme',
             'title' => 'Energie in Zahlen: Alle Diagrammformen im Überblick',
             'subtitle' => 'Ein Beispielartikel mit erfundenen Daten, an dem sich jede Form ausprobieren lässt',

@@ -35,6 +35,7 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/posts/{id}/diff` | JWT | `Api\PostController::diff` (`Util\Diff`) | 3 |
 | GET | `/dispatch/api/preview?id&exp&sig` | Signatur | `Api\PreviewController::bySignature` | 2 |
 | GET | `/dispatch/api/preview-media?id&exp&sig&f=<uid>/<datei>` | Signatur (eine Stunde, von `PreviewLink::protectMedia` in das Vorschau-HTML geschrieben, nur für Bilder des Arbeitsstands; Karten fremder Live-Artikel behalten ihre öffentliche `/media/`-Adresse) | `Api\PreviewController::media` (Bilder unveröffentlichter Arbeitsstände; nur Varianten, die der Artikel nutzt) | 10 |
+| GET | `/dispatch/api/preview-css?id&exp&sig` | Signatur (wie `preview`) | `Api\PreviewController::css` (liefert das gefilterte Agenten-CSS des Arbeitsstands als `text/css`; das Vorschau-HTML verlinkt es, ADR-034) | BG 4 |
 | POST | `/dispatch/api/posts/{id}/approve` | JWT | `Api\PostController::approve` (+ Neubau); optionaler Body `{"when": "now"\|"slot"\|"fixed", "at": "YYYY-MM-DDTHH:MM"}` (Berliner Wandzeit), ohne Body sofort; Antwort `{post, rebuilt, rebuild_error}`, bei Einplanung `rebuilt` und `rebuild_error` `null` (kein Neubau) | 2, Plan 2026-11-12 |
 | POST | `/dispatch/api/posts/{id}/schedule` | JWT | `Api\PostController::schedule` (Termin ändern, Body wie `approve`; `now` veröffentlicht sofort samt Neubau) | Plan 2026-11-12 |
 | POST | `/dispatch/api/posts/{id}/unschedule` | JWT | `Api\PostController::unschedule` (zurück auf `review`; Antwort `{post}`) | Plan 2026-11-12 |

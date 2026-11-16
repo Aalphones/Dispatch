@@ -1,9 +1,8 @@
 # STATE
 
-**Aktiver Plan:** `docs/planning/2026-11-16_blog-gestaltung/`
-**Phase:** 4/5 — HTML + CSS für Agenten (complete, committet)
-**Nächster Schritt:** Phase 5 — Demo-Artikel, Style-Guide, Docs-Abgleich (`phase-5-*.md`, mechanisch). Dabei auch Browser-Sichtprüfung des Hero-Beispiels (Bau und Vorschau, Redaktionsleiste/Quellenblock sichtbar) und ein Bau mit Datenbank gegen ein eigenes `DISPATCH_WEB_ROOT`.
+**Aktiver Plan:** (kein aktiver Plan)
+**Nächster Schritt:** Deploy; danach Bau mit Datenbank (`php bin/dispatch demo`, `build`) und Browser-Sichtprüfung des Artikels `gestaltung-zitate-einbettungen-css` (Hero, Zitate, vier Social-Embeds mit Zwei-Klick, Druck, ohne Skript). Die `.htaccess` (CSP `frame-src` +4 Hosts, Plan Blog-Gestaltung Phase 3) wirkt erst nach dem Deploy.
 
-**Offen, plan-unabhängig:** Browser-Lauf des Dialogs „Anweisungen für Agenten“ gegen die lokale Instanz (angemeldet: Speichern, Konflikt, Wiederherstellen; bisher nur gegen Stub-API geprüft). Nach dem Deploy P3-AK5 des Plans „zeitversetzt veröffentlichen“ prüfen (ETag/304 auf https://quantum-canvas.de/feed.xml); Kategorie „Testlauf“ auf dem Server per Dialog löschen. Offen aus dem Plan Gestaltungs-Bausteine: Sichtprüfung der Baustein-Galerie (AK 5) im Browser, Druck- und Ohne-Skript-Ansicht der Diagramme, `php bin/dispatch demo` für die Demo-Artikel.
+**Offen, plan-unabhängig:** Browser-Lauf des Dialogs „Anweisungen für Agenten“ gegen die lokale Instanz (angemeldet: Speichern, Konflikt, Wiederherstellen; bisher nur gegen Stub-API geprüft). Nach dem Deploy P3-AK5 des Plans „zeitversetzt veröffentlichen“ prüfen (ETag/304 auf https://quantum-canvas.de/feed.xml); Kategorie „Testlauf“ auf dem Server per Dialog löschen. Offen aus dem Plan Gestaltungs-Bausteine: Sichtprüfung der Baustein-Galerie (AK 5) im Browser, Druck- und Ohne-Skript-Ansicht der Diagramme.
 
-**Zuletzt archiviert:** `docs/archive/2026-11/2026-11-12_gestaltungs-bausteine/` (Gestaltungs-Bausteine und Diagramme, Phasen 1–8).
+**Zuletzt archiviert:** `docs/archive/2026-11/2026-11-16_blog-gestaltung/` (Teal, Zitate, Social-Einbettungen, Agenten-CSS, Phasen 1–5).

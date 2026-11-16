@@ -28,6 +28,7 @@
 - Jede Ausgabe in Templates wird escaped (Helfer `e()`); nur Artikel-HTML aus dem Sanitizer geht roh hinaus.
 - Ohne JavaScript funktioniert alles außer Suche, Videos und Login.
 - Farbwelt: Primärfarbe gedecktes Teal (`--accent` `#256e64` hell, `--accent-ink` `#45a595` dunkel), Grün als Zweitfarbe, kein Neon. Rot nur für `--bad`/`--minus` und Diagramm-`c6`; Diagramm-Palette `--c1…--c8` in `diagramme.css`, keine harten Farbwerte außerhalb der Tokens.
+- Social-Beiträge (X, Instagram, Facebook, TikTok) sind Zwei-Klick-Einbettungen ohne Plattform-Skript; ihre Hosts stehen in der CSP `frame-src` der `.htaccess` (ADR-033, wirkt erst nach dem Deploy). Agenten-CSS wird nie inline ausgeliefert, sondern als `assets/artikel-<slug>.<hash>.css` mit `style-src 'self'` (ADR-034); eigene Klassen nur mit Präfix `x-`.
 - Dark Mode über `prefers-color-scheme`, `prefers-reduced-motion` beachten, Druck-Stylesheet mit ausgeschriebenen Quell-URLs.
 - Sprunglink zum Inhalt, sichtbare Fokusrahmen, Kontrast mindestens WCAG AA, jedes Bild mit Alt-Text, genau eine `h1` pro Seite.
 - Bilder als `<picture>` mit WebP und JPEG, feste `width`/`height`, `loading="lazy"` außer beim Titelbild.

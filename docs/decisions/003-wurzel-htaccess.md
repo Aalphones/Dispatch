@@ -21,3 +21,9 @@ Apache vererbt die Regeln einer `.htaccess` in alle Unterordner: Header, `ErrorD
 - Eine Änderung an dieser Datei betrifft potenziell alle Anwendungen der Domain. Nach jedem Deploy prüft das Skript, dass die Nachbarn antworten (ADR-005).
 - Kommt eine neue Anwendung dazu, wird ihr Ordner in die Ausnahme aufgenommen.
 - In CardMakers `www-root/.htaccess` und ADR-020 steht noch die alte Zuständigkeit; das ist dort nachzuziehen.
+
+## Nachtrag 2026-11-16: GARAGE und CSP-Prüfung
+
+- `garage` und `garage-app` stehen in beiden `<If>`-Ausnahmen (Blog-Regeln, HTML-Cache); dazu die Discovery-Umleitung für GARAGE (ADR-001, Nachtrag).
+- Der Rauchtest von `deploy.cmd` prüft zusätzlich die Header: Die Startseite muss die Blog-CSP tragen (Gegenprobe), jede Adresse aus `NEIGHBOR_URLS` darf sie nicht tragen. Merkmal ist die Freigabe für `youtube-nocookie` in `frame-src`.
+- `NEIGHBOR_URLS` enthält `/garage/` und `/garage/api/health`. Beim ersten Mal also erst GARAGE deployen, dann DISPATCH.

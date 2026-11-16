@@ -68,4 +68,4 @@ Alternative, bewusst verworfen: Lösch-Vorschlag für Agenten über die Änderun
 
 ## Summary / Files touched / Commits / Deviations / Follow-ups
 
-(beim Archivieren füllen)
+Archiviert am 2026-11-13 auf Wunsch des Inhabers. Phase 1 und 2 umgesetzt (Commits 6ef060f, 016d3de). Offen geblieben: Strato-Check, dass `DELETE` durchkommt, und das Löschen der Kategorie „Testlauf“ per Dialog auf dem Server.

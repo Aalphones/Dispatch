@@ -45,3 +45,7 @@ www/
 - Die Wurzel bleibt rein statisch; PHP sieht von Besuchern nur den Zähl-Aufruf unter `/dispatch/api/hit`.
 - Kommt eine weitere Anwendung auf die Domain, gehört ihr Ordnername in die Liste der reservierten Namen und in die Ausnahmen der Wurzel-`.htaccess` (ADR-003).
 - `robots.txt` sperrt `/dispatch/` und `/dispatch-app/`, nicht `/api/` — das gehört CardMaker.
+
+## Nachtrag 2026-11-16: GARAGE
+
+GARAGE (Fahrzeugakte, eigenes Repository) belegt `/garage/` (Brücke und Oberfläche) und `/garage-app/` (gesperrter Code). Beide Namen stehen in `reserved_top_level`, in `robots.txt` und in den Ausnahmen der Wurzel-`.htaccess`. GARAGE hat einen eigenen OAuth-Aussteller `https://quantum-canvas.de/garage`; die Wurzel-`.htaccess` leitet `/.well-known/{oauth-protected-resource,oauth-authorization-server,openid-configuration}/garage…` an `garage/index.php`, vor der eigenen Discovery-Regel. DISPATCHs Discovery an der Wurzel bleibt unverändert.

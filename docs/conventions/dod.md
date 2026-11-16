@@ -5,7 +5,7 @@
 - Jeden DoD-Punkt einzeln durchgehen und im Abschlussbericht sagen, was konkret geprüft wurde: Adresse aufgerufen, Statuscode, Antwort, Seite im Browser geöffnet, Konsole geprüft.
 - „Die CI ist grün" belegt nur die Syntax, nicht das Verhalten.
 - Sicherheitsrelevante Punkte (Sanitizer, JWT, Scopes, OAuth, Sperre von `dispatch-app/`) brauchen eine Liste der durchgespielten Fälle, inklusive der Fälle, die abgewiesen werden müssen.
-- Alles, was die Wurzel-`.htaccess` oder den Builder berührt, schließt mit dem Nachweis, dass `/card/` und `/scanner/capture` weiter antworten.
+- Alles, was die Wurzel-`.htaccess` oder den Builder berührt, schließt mit dem Nachweis, dass `/card/`, `/scanner/capture`, `/garage/` und `/garage/api/health` weiter antworten und keine Blog-CSP tragen (Rauchtest von `deploy.cmd`).
 
 ## Wenn hier nicht prüfbar
 

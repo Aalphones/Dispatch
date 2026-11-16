@@ -184,6 +184,8 @@ final class Builder
         $robots = "User-agent: *\n"
             . "Disallow: /dispatch/\n"
             . "Disallow: /dispatch-app/\n"
+            . "Disallow: /garage/\n"
+            . "Disallow: /garage-app/\n"
             . "Disallow: /vorschau/\n"
             . "Disallow: /anmelden/\n"
             . "Disallow: /suche/\n"

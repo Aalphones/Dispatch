@@ -4,7 +4,8 @@ rem  DISPATCH - hochladen per Doppelklick (ADR-005).
 rem    deploy.cmd          Code, Bruecke und Wurzel-.htaccess
 rem    deploy.cmd app      nur Code und Bruecke (samt .env und Nachlauf)
 rem    deploy.cmd root     nur die Wurzel-.htaccess
-rem  Nach jedem Lauf prueft ein Rauchtest, dass Sperre und Nachbarn halten.
+rem  Nach jedem Lauf prueft ein Rauchtest, dass Sperre und Nachbarn halten
+rem  und die Blog-CSP nicht auf die Nachbarn durchgreift.
 rem ==========================================================================
 setlocal
 chcp 65001 >nul
@@ -209,6 +210,10 @@ call :expect /dispatch-app/config.php 403
 call :expect /dispatch/mcp 405
 call :expectPost /dispatch/mcp 401
 for %%U in (!NEIGHBOR_URLS!) do call :expect "%%~U" 200
+rem Die Blog-CSP gilt auf der Startseite und nie bei den Nachbarn (ADR-003).
+rem Die Startseite ist die Gegenprobe: fehlt dort das Merkmal, waere jede Nachbar-Pruefung wertlos.
+call :expectBlogCsp / ja
+for %%U in (!NEIGHBOR_URLS!) do call :expectBlogCsp "%%~U" nein
 if "!SMOKE_FAILS!"=="0" goto :done
 echo.
 echo [FEHLER] Rauchtest: !SMOKE_FAILS! Fehlschlaege - der Server ist eventuell nur halb aktualisiert.
@@ -253,6 +258,25 @@ if "!ACTUAL_STATUS!"=="%~2" (
     exit /b 0
 )
 echo          FEHL !ACTUAL_STATUS! statt %~2  POST %~1
+set /a SMOKE_FAILS+=1
+exit /b 0
+
+rem Prueft, ob die Antwort die Blog-CSP traegt (ja/nein). Merkmal ist die Freigabe fuer
+rem youtube-nocookie aus frame-src (ADR-033) - aendert sich die CSP, hier nachziehen.
+rem Kopfzeilen ueber eine Datei statt per Pipe: in einer Pipe gilt !...! nicht.
+:expectBlogCsp
+set "EXPECT_URL=!PUBLIC_BASE_URL!%~1"
+set "HEADER_FILE=%TEMP%\dispatch-headers-%RANDOM%%RANDOM%.txt"
+curl -s --max-time 30 -o NUL -D "!HEADER_FILE!" "!EXPECT_URL!" >nul 2>&1
+set "HAS_BLOG_CSP=nein"
+findstr /i /c:"youtube-nocookie" "!HEADER_FILE!" >nul 2>&1
+if not errorlevel 1 set "HAS_BLOG_CSP=ja"
+del "!HEADER_FILE!" >nul 2>&1
+if /i "!HAS_BLOG_CSP!"=="%~2" (
+    echo          ok   Blog-CSP %~2  %~1
+    exit /b 0
+)
+echo          FEHL Blog-CSP !HAS_BLOG_CSP! statt %~2  %~1
 set /a SMOKE_FAILS+=1
 exit /b 0
 

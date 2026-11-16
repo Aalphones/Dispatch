@@ -1,5 +1,6 @@
 # Wurzel von quantum-canvas.de — gehoert DISPATCH (ADR-003), hochgeladen von DISPATCHs deploy.cmd.
-# Jede Regel hier vererbt sich in /card/, /api/, /backend/ (CardMaker) und /scanner/ (CamScanner).
+# Jede Regel hier vererbt sich in /card/, /api/, /backend/ (CardMaker), /scanner/ (CamScanner)
+# und /garage/, /garage-app/ (GARAGE).
 # Global nur HTTPS, -Indexes, DirectoryIndex; alles Blog-Spezifische nur in Bloecken, die die Nachbarn ausnehmen.
 Options -Indexes
 DirectoryIndex index.html
@@ -9,6 +10,10 @@ RewriteEngine On
 RewriteCond %{HTTPS} !=on
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# OAuth-Discovery von GARAGE (Aussteller https://quantum-canvas.de/garage, Pfad-Suffix nach RFC 9728/8414)
+# geht an GARAGEs Bruecke - muss vor der DISPATCH-Regel stehen, die sonst alles unter oauth-* nimmt (ADR-001).
+RewriteRule ^\.well-known/(oauth-protected-resource|oauth-authorization-server|openid-configuration)/garage(/.*)?$ garage/index.php [L]
+
 # OAuth-Discovery liegt an der Wurzel, beantwortet wird sie von der Bruecke (ADR-001).
 RewriteRule ^\.well-known/oauth-(protected-resource|authorization-server)(/.*)?$ dispatch/index.php [L]
 
@@ -16,7 +21,7 @@ RewriteRule ^\.well-known/oauth-(protected-resource|authorization-server)(/.*)?$
 RewriteRule ^(feed|sitemap)\.xml$ dispatch/index.php [L]
 
 # Blog-Regeln: nie fuer die Nachbarordner.
-<If "%{REQUEST_URI} !~ m#^/(card|api|backend|scanner)(/|$)#">
+<If "%{REQUEST_URI} !~ m#^/(card|api|backend|scanner|garage|garage-app)(/|$)#">
     ErrorDocument 404 /404.html
     <IfModule mod_headers.c>
         Header always set X-Content-Type-Options "nosniff"
@@ -33,7 +38,7 @@ RewriteRule ^(feed|sitemap)\.xml$ dispatch/index.php [L]
 </If>
 
 # HTML des Blogs kurz cachen, Nachbarn und Bruecke ausgenommen.
-<If "%{REQUEST_URI} !~ m#^/(card|api|backend|scanner|dispatch|dispatch-app)(/|$)# && %{REQUEST_URI} =~ m#(/|\.html)$#">
+<If "%{REQUEST_URI} !~ m#^/(card|api|backend|scanner|garage|garage-app|dispatch|dispatch-app)(/|$)#&& %{REQUEST_URI} =~ m#(/|\.html)$#">
     <IfModule mod_headers.c>
         Header set Cache-Control "public, max-age=300"
     </IfModule>

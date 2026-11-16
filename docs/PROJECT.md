@@ -44,7 +44,7 @@ Kein Composer: Laufzeit-Abhängigkeiten schließt das Konzept aus, und ohne Test
 
 ## Constraints
 
-- **Gemeinsame Domain:** `quantum-canvas.de` liefert einen Ordner `www/` aus, in dem schon CardMaker (`/card/`, `/api/`, `/backend/`) und CamScanner (`/scanner/`) laufen. Beide müssen erreichbar bleiben. DISPATCH belegt die Wurzel ([ADR-001](decisions/001-pfade-auf-gemeinsamer-domain.md)).
+- **Gemeinsame Domain:** `quantum-canvas.de` liefert einen Ordner `www/` aus, in dem schon CardMaker (`/card/`, `/api/`, `/backend/`), CamScanner (`/scanner/`) und GARAGE (`/garage/`, `/garage-app/`) laufen. Alle müssen erreichbar bleiben. DISPATCH belegt die Wurzel ([ADR-001](decisions/001-pfade-auf-gemeinsamer-domain.md)).
 - **Ein SFTP-Zugang, der nur `www/` sieht.** Programmcode und Daten liegen deshalb im Webroot, gesperrt per `.htaccess` ([ADR-002](decisions/002-code-im-webroot-gesperrt.md)).
 - **Keine Subdomain:** Strato stellt in diesem Paket für Subdomains kein Zertifikat aus.
 - **Kein SSH, keine Kommandozeile auf dem Server:** Migration und Rebuild nach dem Deploy laufen über einen tokengeschützten Endpunkt.

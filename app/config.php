@@ -10,7 +10,7 @@ return [
     'storage_dir' => __DIR__ . '/storage',
     'web_root' => Env::get('DISPATCH_WEB_ROOT') ?: dirname(__DIR__),
     // Namen der obersten Ebene, die der Builder nie beschreibt (ADR-001).
-    'reserved_top_level' => ['card', 'api', 'backend', 'scanner', 'dispatch', 'dispatch-app', '.htaccess', '.well-known'],
+    'reserved_top_level' => ['card', 'api', 'backend', 'scanner', 'garage', 'garage-app', 'dispatch', 'dispatch-app', '.htaccess', '.well-known'],
     // ADR-014: der Builder schreibt und löscht nur unter diesen Namen der obersten Ebene.
     'builder_top_level' => [
         'index.html', '404.html', 'feed.xml', 'sitemap.xml', 'robots.txt', 'seite', 'artikel', 'kategorie',

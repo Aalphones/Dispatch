@@ -49,9 +49,9 @@ Voraussetzung lokal: PHP 8.5 (Erweiterungen `curl, fileinfo, gd, intl, mbstring,
 
 ## Critical Rules
 
-1. **Nachbar-Anwendungen nie anfassen.** `/card/`, `/api/`, `/backend/` (CardMaker) und `/scanner/` (CamScanner) liegen im selben Webroot. Kein Abgleich mit Löschen auf die Wurzel; der Builder löscht nur, was in seinem Manifest steht, und schreibt nie in reservierte Namen ([ADR-001](docs/decisions/001-pfade-auf-gemeinsamer-domain.md)).
+1. **Nachbar-Anwendungen nie anfassen.** `/card/`, `/api/`, `/backend/` (CardMaker), `/scanner/` (CamScanner) und `/garage/`, `/garage-app/` (GARAGE) liegen im selben Webroot. Kein Abgleich mit Löschen auf die Wurzel; der Builder löscht nur, was in seinem Manifest steht, und schreibt nie in reservierte Namen ([ADR-001](docs/decisions/001-pfade-auf-gemeinsamer-domain.md)).
 2. **Die Wurzel-`.htaccess` vererbt sich in alle Nachbarordner.** Global nur HTTPS, `-Indexes`, `DirectoryIndex`; CSP, Header, `ErrorDocument` und Caching nur im Block, der die Nachbarn ausnimmt ([ADR-003](docs/decisions/003-wurzel-htaccess.md)).
-3. **PHP-Endpunkte nur unter `/dispatch/`** (dazu `/.well-known/oauth-*`). `/api/` gehört CardMaker.
+3. **PHP-Endpunkte nur unter `/dispatch/`** (dazu `/.well-known/oauth-*`, außer `/.well-known/<art>/garage…` — das gehört GARAGE). `/api/` gehört CardMaker.
 4. **`dispatch-app/` ist gesperrt und enthält `.env`.** Nach jedem Deploy muss `/dispatch-app/.env` mit 403 antworten ([ADR-002](docs/decisions/002-code-im-webroot-gesperrt.md)).
 5. **Nichts geht ohne Freigabe des Inhabers online.** Kein MCP- oder OAuth-Token kann veröffentlichen, Vorschläge übernehmen oder Formvorgaben ändern.
 6. **`docs/PROJECT.md` und die ADRs schlagen das Fachkonzept**, wo beide sich widersprechen.

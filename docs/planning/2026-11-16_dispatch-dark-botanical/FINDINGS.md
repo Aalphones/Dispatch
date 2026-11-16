@@ -1,0 +1,3 @@
+# Findings
+
+- [ ] → Phase N: Erkenntnis

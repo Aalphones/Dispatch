@@ -1,9 +1,9 @@
 # STATE
 
 **Aktiver Plan:** (kein aktiver Plan)
-**Next step:** Kategorien-Umstellung live bringen (ADR-037): Strato-Datenbanksicherung, `deploy.cmd` (Migration 018), dann `php bin/dispatch category:restructure --dry-run --remote` prüfen, `--apply --remote`, danach Rauchtest (alte Kategorie-URLs, Archive, Plan). Danach den Browser-Check der Vorschlags- und Veröffentlichungsplan-Dialoge.
+**Next step:** Browser-Check der Vorschlags- und Veröffentlichungsplan-Dialoge; Historien-Artikel (Altes Land 45, Postmaster 51, Ada Lovelace 50) schreiben lassen, freigeben und einplanen, damit die Geschichtsquote greift.
 
-**Kategorien-Umstellung (2026-11-17):** Code, Test gegen Scratch-MySQL (Apply, Rollback, Negativfälle, API) und Doku fertig, nicht committet, nicht deployt. Live bereits geändert: Dokumente `preferences` und `editorial_guidelines` (Revision 8) und die Reihenfolge des Veröffentlichungsplans (Gaming-Reserve ans Ende, 26/37/32/35 vorn). Offen: Live-Lauf, Historien-Artikel (Altes Land 45, Postmaster 51, Ada Lovelace 50) erst nach Recherche und Freigabe in den Plan.
+**Kategorien-Umstellung (ADR-037, 2026-11-17, live):** Migration 018, `category:restructure --apply --remote` und Rauchtest durch (42 Kategorien neu, 33 Artikel und 22 Queue-Einträge umgehängt, alte Adressen leiten weiter, Nachbarn und Sperre von `/dispatch-app/` in Ordnung). Sicherung für den Rollback: `deploy-backup/category-restructure-20261117-153851.json` (lokal, nicht im Git); Rollback: `php -d curl.cainfo=<ca-bundle.crt> bin/dispatch category:restructure --rollback=<Datei> --remote`. Dokumente `preferences` und `editorial_guidelines` (Revision 8) und die Plan-Reihenfolge sind angepasst.
 **Weitere offene Arbeit:** Nach dem Deploy stehen die Browser-Sichtpruefung des Artikels, der Agenten-Anweisungen und der Gestaltungs-Bausteine aus.
 
 **Nachbar GARAGE (2026-11-16, deployt):** Wurzel-`.htaccess` (Ausnahmen `/garage/`, Discovery-Umleitung), reservierte Namen, `robots.txt` und Rauchtest (Nachbarn + Blog-CSP-Prüfung) live; Rauchtest grün.

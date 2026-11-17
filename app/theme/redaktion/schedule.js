@@ -512,7 +512,7 @@ function slotOrderBlock(items, reorder) {
 			draw();
 			persist(items.map((entry) => entry.id));
 		};
-		return el('li', { 'data-id': String(item.id), draggable: true }, [
+		return el('li', { 'data-id': String(item.id), draggable: 'true' }, [
 			el('span', { class: 'plan-sort-griff', 'aria-hidden': 'true', text: '⠿' }),
 			el('span', { class: 'plan-sort-zeit', text: when(parseStamp(item.expected_at)) }),
 			el('span', { class: 'plan-sort-titel', text: item.title }),

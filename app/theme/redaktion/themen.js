@@ -36,7 +36,7 @@ function row(item, index, count, move, edit) {
 	if (item.brief) {
 		children.push(el('small', { text: item.brief.length > 160 ? item.brief.slice(0, 159) + '…' : item.brief }));
 	}
-	const itemRow = el('li', { 'data-id': String(item.id), draggable: true }, [
+	const itemRow = el('li', { 'data-id': String(item.id), draggable: 'true' }, [
 		el('span', { class: 'vorschlag-griff', 'aria-hidden': 'true', text: '⠿' }),
 		el('span', { class: 't' }, children),
 		el('span', { class: 'vorschlag-aktionen' }, [

@@ -53,7 +53,7 @@ export async function oeffnen() {
 	const errorLine = fehlerZeile('themen-fehler');
 	const list = el('ul', { class: 'liste vorschlaege' });
 	const status = el('p', { class: 'meta', text: 'Lädt …' });
-	const state = { items: [], categories: [], saving: false, dragged: null };
+	const state = { items: [], categories: [], saving: false, dragged: null, dropped: false, before: null };
 	const box = dialog('themen', rahmen('Vorschläge', [el('p', { class: 'hinweis', text: INTRO }), status, list, errorLine], [
 		el('button', { type: 'button', class: 'knopf', 'data-close': true, text: 'Schließen' }),
 	]), 'breit');
@@ -104,12 +104,16 @@ export async function oeffnen() {
 	}
 
 	list.addEventListener('dragstart', (event) => {
-		const item = event.target.closest('li[data-id]');
-		if (item === null || state.saving) {
-			e.preventDefault();
+		// Der Browser feuert `drop` nur, wenn `dragover` zuvor `preventDefault()` aufgerufen hat – auch über der gezogenen
+		// Zeile selbst und in den Lücken zwischen den Zeilen. Deshalb wird dragover immer bestätigt, solange gezogen wird.
+		const item = event.target.closest?.('li[data-id]');
+		if (!item || state.saving) {
+			event.preventDefault();
 			return;
 		}
 		state.dragged = item;
+		state.dropped = false;
+		state.before = [...list.children];
 		event.dataTransfer.effectAllowed = 'move';
 		event.dataTransfer.setData('text/plain', item.dataset.id);
 	});
@@ -117,22 +121,32 @@ export async function oeffnen() {
 		if (state.dragged === null || state.saving) {
 			return;
 		}
-		const target = event.target.closest('li[data-id]');
-		if (target === null || target === state.dragged) {
+		event.preventDefault();
+		event.dataTransfer.dropEffect = 'move';
+		const target = event.target.closest?.('li[data-id]');
+		if (!target || target === state.dragged) {
 			return;
 		}
-		event.preventDefault();
 		const after = event.clientY > target.getBoundingClientRect().top + target.offsetHeight / 2;
 		list.insertBefore(state.dragged, after ? target.nextSibling : target);
 	});
 	list.addEventListener('drop', (event) => {
-		if (state.dragged !== null) {
-			event.preventDefault();
-			state.dragged = null;
-			void saveOrder();
+		if (state.dragged === null) {
+			return;
 		}
+		event.preventDefault();
+		state.dropped = true;
+		state.dragged = null;
+		void saveOrder();
 	});
-	list.addEventListener('dragend', () => { state.dragged = null; });
+	list.addEventListener('dragend', () => {
+		// Losgelassen außerhalb der Liste (oder Esc): Reihenfolge wie vor dem Ziehen, nichts speichern.
+		if (!state.dropped && state.before !== null) {
+			list.replaceChildren(...state.before);
+		}
+		state.dragged = null;
+		state.before = null;
+	});
 
 	function edit(item) {
 		const id = 'vorschlag-' + item.id;

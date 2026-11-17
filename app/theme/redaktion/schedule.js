@@ -494,6 +494,8 @@ function planParts(state, update, change, remove, reorder) {
 function slotOrderBlock(items, reorder) {
 	const list = el('ol', { class: 'plan-sortierung' });
 	let dragged = null;
+	let dropped = false;
+	let before = null;
 	let saving = false;
 	const persist = (ids) => {
 		if (saving) {
@@ -523,21 +525,29 @@ function slotOrderBlock(items, reorder) {
 		]);
 	}));
 	list.addEventListener('dragstart', (event) => {
-		const row = event.target.closest('li[data-id]');
-		if (row === null || saving) {
+		// Der Browser feuert `drop` nur, wenn `dragover` zuvor `preventDefault()` aufgerufen hat – auch über der gezogenen
+		// Zeile selbst und in den Lücken zwischen den Zeilen. Deshalb wird dragover immer bestätigt, solange gezogen wird.
+		const row = event.target.closest?.('li[data-id]');
+		if (!row || saving) {
 			event.preventDefault();
 			return;
 		}
 		dragged = row;
+		dropped = false;
+		before = [...list.children];
 		event.dataTransfer.effectAllowed = 'move';
 		event.dataTransfer.setData('text/plain', row.dataset.id);
 	});
 	list.addEventListener('dragover', (event) => {
-		const target = event.target.closest('li[data-id]');
-		if (saving || dragged === null || target === null || target === dragged) {
+		if (saving || dragged === null) {
 			return;
 		}
 		event.preventDefault();
+		event.dataTransfer.dropEffect = 'move';
+		const target = event.target.closest?.('li[data-id]');
+		if (!target || target === dragged) {
+			return;
+		}
 		const after = event.clientY > target.getBoundingClientRect().top + target.offsetHeight / 2;
 		list.insertBefore(dragged, after ? target.nextSibling : target);
 	});
@@ -549,10 +559,18 @@ function slotOrderBlock(items, reorder) {
 		const ids = [...list.children].map((row) => Number(row.dataset.id));
 		const byId = new Map(items.map((item) => [item.id, item]));
 		items.splice(0, items.length, ...ids.map((id) => byId.get(id)));
+		dropped = true;
 		dragged = null;
 		persist(ids);
 	});
-	list.addEventListener('dragend', () => { dragged = null; });
+	list.addEventListener('dragend', () => {
+		// Losgelassen außerhalb der Liste (oder Esc): Reihenfolge wie vor dem Ziehen, nichts speichern.
+		if (!dropped && before !== null) {
+			list.replaceChildren(...before);
+		}
+		dragged = null;
+		before = null;
+	});
 	draw();
 
 	return el('section', { class: 'plan-sort' }, [

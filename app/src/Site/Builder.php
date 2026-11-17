@@ -166,6 +166,7 @@ final class Builder
             + $this->collectHome()
             + $this->collectArticles()
             + $this->collectCategories()
+            + $this->collectCategoryRedirects()
             + $this->collectTags()
             + $this->collectSearch()
             + $this->collectPreview()
@@ -382,6 +383,44 @@ final class Builder
         }
 
         return $files + $this->collectCategoryOverview();
+    }
+
+    /**
+     * Weiterleitungsseiten an den alten Adressen abgeschalteter oder umgehängter Kategorien (ADR-037). Die Seite ist
+     * statisch, also meta refresh plus canonical statt einer echten 301; sie entsteht nur, wo keine Kategorie-Seite liegt.
+     *
+     * @return array<string, string>
+     */
+    private function collectCategoryRedirects(): array
+    {
+        $occupied = [];
+        foreach ($this->site->categories as $category) {
+            $occupied[(string) $category['url']] = true;
+        }
+        $bySlug = $this->categoriesBySlug();
+        $baseUrl = rtrim((string) $this->config['base_url'], '/');
+
+        $rows = $this->pdo->query(
+            'SELECT r.old_slug, c.slug AS target_slug FROM category_redirects r JOIN categories c ON c.id = r.category_id ORDER BY r.old_slug'
+        )->fetchAll();
+
+        $files = [];
+        foreach ($rows as $row) {
+            $target = $bySlug[(string) $row['target_slug']] ?? null;
+            $oldUrl = '/kategorie/' . $row['old_slug'] . '/';
+            if ($target === null || $target['url'] === $oldUrl || isset($occupied[$oldUrl])) {
+                continue;
+            }
+
+            $files[$this->pageFile($oldUrl)] = "<!DOCTYPE html>\n<html lang=\"de\">\n<head>\n<meta charset=\"utf-8\">\n"
+                . '<title>' . e((string) $target['name']) . " · umgezogen</title>\n"
+                . "<meta name=\"robots\" content=\"noindex, follow\">\n"
+                . '<link rel="canonical" href="' . e($baseUrl . $target['url']) . "\">\n"
+                . '<meta http-equiv="refresh" content="0; url=' . e((string) $target['url']) . "\">\n</head>\n<body>\n"
+                . '<p>Diese Kategorie ist umgezogen: <a href="' . e((string) $target['url']) . '">' . e((string) $target['name']) . "</a></p>\n</body>\n</html>\n";
+        }
+
+        return $files;
     }
 
     /** @return array<string, string> */

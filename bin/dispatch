@@ -7,6 +7,7 @@ use Dispatch\Auth\Scopes;
 use Dispatch\Db\Connection;
 use Dispatch\Db\Migrator;
 use Dispatch\Domain\Actor;
+use Dispatch\Domain\CategoryRestructureService;
 use Dispatch\Domain\CategoryService;
 use Dispatch\Domain\DomainError;
 use Dispatch\Domain\MediaService;
@@ -352,6 +353,11 @@ Befehle:
                   widerruft einen Rückfall-Client samt aller seiner Tokens
   category:create <slug> <name> [--description=…] [--remote]
                   legt eine aktive Kategorie als Inhaber an (--remote: auf dem Server über deploy.env)
+  category:restructure --dry-run|--apply|--rollback=<datei> [--remote]
+                  stellt auf sieben Hauptkategorien mit Unterkategorien um (ADR-037). --dry-run liest nur und
+                  schreibt den Vorher/Nachher-Bericht; --apply sichert zuerst alles Geänderte (Datei auf dem Server und
+                  eine Kopie in deploy-backup/), schreibt in einer Transaktion und prüft vor dem Commit;
+                  --rollback stellt eine Sicherungsdatei wieder her.
   category:delete <slug> [--move-to=<slug>]
                   löscht eine Kategorie lokal; zugeordnete Artikel brauchen eine Ersatz-Kategorie (--move-to).
                   Auf dem Server löscht der Inhaber im Redaktionsmodus.
@@ -516,6 +522,79 @@ switch ($command) {
             $categoryRecord = (new CategoryService(Connection::open(), $config))->create($categoryFields, Actor::owner())['category'];
         }
         echo 'Kategorie angelegt: ', $categoryRecord['slug'], ' (ID ', $categoryRecord['id'], ')', PHP_EOL;
+        break;
+
+    case 'category:restructure':
+        ['options' => $options] = parseArguments(array_slice($argv, 2));
+        $restructureBackupFile = is_string($options['rollback'] ?? null) ? $options['rollback'] : null;
+        $restructureMode = match (true) {
+            $restructureBackupFile !== null => 'rollback',
+            isset($options['apply']) => 'apply',
+            isset($options['dry-run']) => 'dry-run',
+            default => throw new RuntimeException('Aufruf: php bin/dispatch category:restructure --dry-run|--apply|--rollback=<datei> [--remote]'),
+        };
+        $restructureBody = ['mode' => $restructureMode];
+        if ($restructureBackupFile !== null) {
+            $restructureBackup = json_decode((string) @file_get_contents($restructureBackupFile), true);
+            if (!is_array($restructureBackup)) {
+                throw new RuntimeException('Die Sicherungsdatei lässt sich nicht lesen: ' . $restructureBackupFile);
+            }
+            $restructureBody['backup'] = $restructureBackup;
+        }
+
+        if (isset($options['remote'])) {
+            $restructureResult = callDeployEndpoint($root . '/deploy.env', '/dispatch/api/categories/restructure', $restructureBody)['result'];
+        } else {
+            $restructurePdo = Connection::open();
+            $restructureService = new CategoryRestructureService($restructurePdo, $config);
+            $restructureResult = match ($restructureMode) {
+                'dry-run' => ['plan' => $restructureService->plan()],
+                'apply' => $restructureService->apply(Actor::cli()),
+                'rollback' => ['summary' => $restructureService->rollback($restructureBody['backup'], Actor::cli())],
+            };
+            if ($restructureMode !== 'dry-run') {
+                (new Builder($config, $restructurePdo))->build();
+            }
+        }
+
+        $reportDir = $root . '/deploy-backup';
+        if (!is_dir($reportDir)) {
+            mkdir($reportDir, 0700, true);
+        }
+        $stamp = gmdate('Ymd-His');
+        $encodeFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR;
+        if (isset($restructureResult['backup'])) {
+            $backupCopy = $reportDir . '/' . ($restructureResult['backup_file'] ?? 'category-restructure-' . $stamp . '.json');
+            file_put_contents($backupCopy, json_encode($restructureResult['backup'], $encodeFlags));
+            echo 'Sicherung (Kopie): ', $backupCopy, PHP_EOL;
+            unset($restructureResult['backup']);
+        }
+        $reportFile = $reportDir . '/category-restructure-' . $restructureMode . '-' . $stamp . '.json';
+        file_put_contents($reportFile, json_encode($restructureResult, $encodeFlags));
+        echo 'Bericht: ', $reportFile, PHP_EOL;
+
+        $restructurePlan = $restructureResult['plan'] ?? null;
+        if (is_array($restructurePlan)) {
+            echo sprintf(
+                'Kategorien: %d neu, %d umgehängt/aktualisiert, %d abgeschaltet. Artikel: %d zugeordnet, %d ohne Zuordnung. Queue: %d zu setzen, %d ausgelassen.',
+                count($restructurePlan['categories']['create']),
+                count($restructurePlan['categories']['update']),
+                count($restructurePlan['categories']['retire']),
+                count($restructurePlan['posts']),
+                count($restructurePlan['unmapped_posts']),
+                count(array_filter($restructurePlan['queue'], static fn (array $item): bool => $item['action'] === 'set')),
+                count(array_filter($restructurePlan['queue'], static fn (array $item): bool => $item['action'] !== 'set'))
+            ), PHP_EOL;
+            foreach ($restructurePlan['problems'] as $problem) {
+                echo 'PROBLEM: ', $problem, PHP_EOL;
+            }
+            if ($restructurePlan['already_applied']) {
+                echo 'Hinweis: Die Zielstruktur ist bereits angewendet.', PHP_EOL;
+            }
+        }
+        if (isset($restructureResult['summary'])) {
+            echo json_encode($restructureResult['summary'], JSON_UNESCAPED_UNICODE), PHP_EOL;
+        }
         break;
 
     case 'category:delete':

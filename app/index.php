@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Dispatch\Api\AuthController;
 use Dispatch\Api\CategoryController;
+use Dispatch\Api\CategoryRestructureController;
 use Dispatch\Api\ChangeController;
 use Dispatch\Api\DeployController;
 use Dispatch\Api\FeedController;
@@ -34,6 +35,7 @@ $request = Request::fromGlobals();
 $router = new Router();
 $router->add('POST', '/dispatch/api/deploy', static fn () => (new DeployController($config))->handle($request));
 $router->add('POST', '/dispatch/api/categories', static fn () => (new CategoryController($config))->handle($request));
+$router->add('POST', '/dispatch/api/categories/restructure', static fn () => (new CategoryRestructureController($config))->handle($request));
 $router->add('POST', '/dispatch/api/tokens', static fn () => (new TokenController($config))->handle($request));
 $router->add('GET', '/dispatch/api/tokens', static fn () => (new TokenController($config))->list($request));
 $router->add('DELETE', '/dispatch/api/tokens/{id}', static fn (array $params) => (new TokenController($config))->revokeById($request, (int) $params['id']));

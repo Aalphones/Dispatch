@@ -154,7 +154,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 .1em; borde
 .artikelkopf .unterzeile { font-style: italic; font-size: clamp(1.1rem, 2.4vw, 1.3rem); color: var(--ink-2); margin: 0 0 1rem; text-wrap: balance; }
 .autor { display: flex; justify-content: center; flex-wrap: wrap; gap: .3rem .9rem; font: .85rem var(--sans); color: var(--ink-3); }
 .badges { display: flex; justify-content: center; flex-wrap: wrap; gap: .45rem; margin-top: .8rem; }
-.titelbild { max-width: 64rem; margin: 0 auto 2.5rem; }
+.titelbild { max-width: none; width: 100vw; margin: 0 0 2.5rem calc(50% - 50vw); }
 .titelbild .foto { display: grid; aspect-ratio: 2 / 1; isolation: isolate; }
 .titelbild .foto::before { content: ""; grid-area: 1 / 1; background: center / cover no-repeat var(--titelbild-fuellung); filter: blur(1.5rem); transform: scale(1.08); opacity: .8; }
 .titelbild .foto picture { grid-area: 1 / 1; z-index: 1; display: grid; place-items: center; min-width: 0; min-height: 0; }
@@ -277,7 +277,7 @@ body.fokus .text { font-size: clamp(1.15rem, .9rem + .55vw, 1.45rem); line-heigh
 body.fokus .text .stats { grid-template-columns: repeat(3, 1fr); }
 body.fokus .artikelkopf { max-width: var(--fokus-breite); }
 body.fokus .artikelkopf h1 { font-size: clamp(2.2rem, 4.5vw, 4.4rem); }
-body.fokus .titelbild { max-width: var(--fokus-breite); }
+body.fokus .titelbild { max-width: var(--fokus-breite); width: auto; margin-left: 0; }
 body.fokus .abb[data-layout="wide"], body.fokus .galerie { margin-right: 0; }
 body.fokus .abb[data-layout="left"], body.fokus .abb[data-layout="right"] { float: none; width: auto; margin: 2rem 0; }
 
@@ -384,7 +384,7 @@ body.fokus .abb[data-layout="left"], body.fokus .abb[data-layout="right"] { floa
 
   .artikelkopf { margin-top: .8rem; text-align: left; }
   .autor, .badges { justify-content: flex-start; }
-  .titelbild { margin: 0 -1rem 1.75rem; }
+  .titelbild { width: auto; margin: 0 -1rem 1.75rem; }
   .titelbild .foto { aspect-ratio: 4 / 3; border-radius: 0; }
   .titelbild figcaption { padding: 0 1rem; }
   .iv-mobil { margin: 0 -1rem 1.25rem; }
@@ -560,7 +560,7 @@ dialog.lightbox .lightbox-leiste button { width: 3.8rem; height: 2.6rem; }
 .layout-briefing > .krumen { grid-row: 1; }
 .layout-briefing > .artikelkopf { grid-column: 1; grid-row: 2; max-width: none; margin: 1.25rem 0 1.5rem; text-align: left; }
 .layout-briefing > .artikelkopf:not(:has(+ .titelbild)) { grid-column: 1 / -1; }
-.layout-briefing > .titelbild { grid-column: 2; grid-row: 2; max-width: none; margin: 0; }
+.layout-briefing > .titelbild { grid-column: 2; grid-row: 2; max-width: none; width: auto; margin: 0; }
 .layout-briefing .titelbild .foto { aspect-ratio: 1; }
 .layout-feature .titelbild .foto img, .layout-briefing .titelbild .foto img { object-fit: contain; }
 .layout-briefing .autor, .layout-briefing .badges { justify-content: flex-start; }

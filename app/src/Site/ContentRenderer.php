@@ -102,6 +102,7 @@ final class ContentRenderer
         $this->renderCitations((array) $post['sources']);
         $toc = $this->addHeadingIds();
         $this->addShortTitles();
+        $this->openLinksInNewTabs();
 
         return [
             'html' => $body->innerHTML,
@@ -885,6 +886,17 @@ final class ContentRenderer
             $title->setAttribute('class', 'kurz-titel');
             $title->textContent = $isSidenote ? 'Randnotiz' : 'Kurz gesagt';
             $element->insertBefore($title, $element->firstChild);
+        }
+    }
+
+    /** Alle Links im Artikeltext, auch nachträglich erzeugte Beleg- und Medienlinks, öffnen in einem neuen Tab. */
+    private function openLinksInNewTabs(): void
+    {
+        foreach ($this->select('a[href]') as $link) {
+            $link->setAttribute('target', '_blank');
+            $rel = preg_split('/\s+/', trim((string) $link->getAttribute('rel')), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            $rel[] = 'noopener';
+            $link->setAttribute('rel', implode(' ', array_unique($rel)));
         }
     }
 

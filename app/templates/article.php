@@ -64,7 +64,7 @@ $style = $accent === '' ? '' : ' style="--accent:' . e($accent) . '"';
   <figure class="titelbild">
     <div class="foto"><?= picture($cover, '(max-width: 46rem) 100vw, 64rem', true) ?></div>
 <?php if ($caption !== '' || $credit !== '' || $license !== '') { ?>
-    <figcaption><?= e($caption) ?><?php if ($credit !== '' || $license !== '') { ?> <span class="nachweis"><?= $credit !== '' ? e('Foto: ' . $credit) : '' ?><?= $credit !== '' && $license !== '' ? ' · ' : '' ?><?php if ($license !== '') { ?><?php if (preg_match('#^https?://#i', (string) $cover['license_url']) === 1) { ?><a href="<?= e((string) $cover['license_url']) ?>" rel="license"><?= e($license) ?></a><?php } else { ?><?= e($license) ?><?php } ?><?php } ?></span><?php } ?></figcaption>
+    <figcaption><?= e($caption) ?><?php if ($credit !== '' || $license !== '') { ?> <span class="nachweis"><?= $credit !== '' ? e('Foto: ' . $credit) : '' ?><?= $credit !== '' && $license !== '' ? ' · ' : '' ?><?php if ($license !== '') { ?><?php if (preg_match('#^https?://#i', (string) $cover['license_url']) === 1) { ?><a href="<?= e((string) $cover['license_url']) ?>" target="_blank" rel="license noopener"><?= e($license) ?></a><?php } else { ?><?= e($license) ?><?php } ?><?php } ?></span><?php } ?></figcaption>
 <?php } ?>
   </figure>
 <?php } ?>
@@ -140,7 +140,7 @@ $style = $accent === '' ? '' : ' style="--accent:' . e($accent) . '"';
         $source['accessed'] === null ? '' : 'abgerufen ' . datum((string) $source['accessed']),
     ], static fn (string $part): bool => $part !== '');
 ?>
-          <li id="quelle-<?= (int) $source['nr'] ?>"><?php if ($author !== '') { ?><?= e($author) ?>: <?php } ?><?php if ($isLinked) { ?><a href="<?= e($address) ?>" rel="noopener">„<?= e((string) $source['title']) ?>“</a><?php } else { ?>„<?= e((string) $source['title']) ?>“<?php } ?><?php if ($details !== []) { ?>, <?= e(implode(', ', $details)) ?><?php } ?></li>
+          <li id="quelle-<?= (int) $source['nr'] ?>"><?php if ($author !== '') { ?><?= e($author) ?>: <?php } ?><?php if ($isLinked) { ?><a href="<?= e($address) ?>" target="_blank" rel="noopener">„<?= e((string) $source['title']) ?>“</a><?php } else { ?>„<?= e((string) $source['title']) ?>“<?php } ?><?php if ($details !== []) { ?>, <?= e(implode(', ', $details)) ?><?php } ?></li>
 <?php } ?>
         </ol>
       </section>

@@ -142,6 +142,17 @@ function button(className, text, label) {
 }
 
 // Ein Dialog für alle Bilder (Delegation): Zähler, Pfeile, Unterschrift, Vorschaubilder; ←/→/Pos1/Ende, Esc.
+function fillTitleImages() {
+	document.querySelectorAll('.titelbild .foto').forEach((photo) => {
+		if (photo.dataset.fuellung) return;
+		const picture = photo.querySelector('picture');
+		if (!picture) return;
+		const source = new URL(largestSource(picture), document.baseURI).href;
+		photo.style.setProperty('--titelbild-fuellung', 'url(' + JSON.stringify(source) + ')');
+		photo.dataset.fuellung = '1';
+	});
+}
+
 function setUpLightbox() {
 	const SELECTOR = '.titelbild .foto, .abb .foto, .galerie .foto';
 	const parts = {};
@@ -287,6 +298,7 @@ trackSections();
 hideSideColumnAtFullImages();
 placeMarginNotes();
 setUpFocusMode();
+fillTitleImages();
 setUpLightbox();
 setUpEmbeds();
 loadComponents();

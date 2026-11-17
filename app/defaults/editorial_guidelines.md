@@ -32,6 +32,8 @@ Verlinke im Artikeltext aktiv auf die relevanten Originalquellen, Datensätze, S
 
 ## 5. Bilder
 
+- Suche für das Titelbild ein passendes 16:9-Breitbild heraus oder lass eines erstellen. Das Motiv muss auch vollständig in den vorgesehenen Bildrahmen passen.
+
 Nutze nur Bilder mit klarer Lizenz, bevorzugt von Wikimedia Commons. Liefere Urheber, Lizenz mit Link, Herkunftsseite und Alt-Text mit. Verwende keine Symbolbilder, die Falsches nahelegen. KI-Bilder nur gekennzeichnet. Keine Privatpersonen ohne Einwilligung, keine Kinder, keine Paparazzi-Fotos.
 
 ## 6. Aufbau

@@ -143,7 +143,7 @@ function button(className, text, label) {
 
 // Ein Dialog für alle Bilder (Delegation): Zähler, Pfeile, Unterschrift, Vorschaubilder; ←/→/Pos1/Ende, Esc.
 function setUpLightbox() {
-	const SELECTOR = '.abb .foto, .galerie .foto';
+	const SELECTOR = '.titelbild .foto, .abb .foto, .galerie .foto';
 	const parts = {};
 	let dialog = null;
 	let list = [];

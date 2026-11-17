@@ -156,6 +156,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 .1em; borde
 .badges { display: flex; justify-content: center; flex-wrap: wrap; gap: .45rem; margin-top: .8rem; }
 .titelbild { max-width: 64rem; margin: 0 auto 2.5rem; }
 .titelbild .foto { aspect-ratio: 2 / 1; }
+.titelbild .foto img { object-fit: contain; }
 figcaption { font: .8rem/1.45 var(--sans); color: var(--ink-3); margin-top: .5rem; }
 figcaption .nachweis { color: var(--ink-3); }
 
@@ -213,6 +214,7 @@ sup a { text-decoration: none; color: var(--accent-ink); font: 600 .7rem var(--s
 .abb { margin: 2rem 0; }
 .abb .foto { cursor: zoom-in; }
 .abb .foto img { aspect-ratio: 3 / 2; }
+.text .abb .foto img { object-fit: contain; }
 .abb:hover .foto img { transform: scale(1.02); }
 .abb[data-layout="wide"], .galerie { clear: both; }
 .text:not(:has(> .tldr, > .sidenote)) > .abb[data-layout="wide"], .text:not(:has(> .tldr, > .sidenote)) > .galerie { margin-right: calc(-1 * (var(--side-r) + var(--gap))); }
@@ -558,6 +560,7 @@ dialog.lightbox .lightbox-leiste button { width: 3.8rem; height: 2.6rem; }
 .layout-briefing > .artikelkopf:not(:has(+ .titelbild)) { grid-column: 1 / -1; }
 .layout-briefing > .titelbild { grid-column: 2; grid-row: 2; max-width: none; margin: 0; }
 .layout-briefing .titelbild .foto { aspect-ratio: 1; }
+.layout-feature .titelbild .foto img, .layout-briefing .titelbild .foto img { object-fit: contain; }
 .layout-briefing .autor, .layout-briefing .badges { justify-content: flex-start; }
 @media (max-width: 46rem) {
   .layout-feature .titelbild { width: auto; margin: 0 -1rem 1.75rem; }

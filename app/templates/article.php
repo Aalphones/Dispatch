@@ -62,7 +62,10 @@ $style = $accent === '' ? '' : ' style="--accent:' . e($accent) . '"';
 <?php if ($cover !== null) { ?>
 <?php $credit = trim((string) $cover['credit']); $license = trim((string) $cover['license']); $caption = trim((string) $cover['caption']); ?>
   <figure class="titelbild">
-    <div class="foto"><?= picture($cover, '(max-width: 46rem) 100vw, 64rem', true) ?></div>
+    <div class="foto">
+      <div class="titelbild-hintergrund" aria-hidden="true"><?= picture($cover, '100vw', true) ?></div>
+      <?= picture($cover, '100vw', true) ?>
+    </div>
 <?php if ($caption !== '' || $credit !== '' || $license !== '') { ?>
     <figcaption><?= e($caption) ?><?php if ($credit !== '' || $license !== '') { ?> <span class="nachweis"><?= $credit !== '' ? e('Foto: ' . $credit) : '' ?><?= $credit !== '' && $license !== '' ? ' · ' : '' ?><?php if ($license !== '') { ?><?php if (preg_match('#^https?://#i', (string) $cover['license_url']) === 1) { ?><a href="<?= e((string) $cover['license_url']) ?>" target="_blank" rel="license noopener"><?= e($license) ?></a><?php } else { ?><?= e($license) ?><?php } ?><?php } ?></span><?php } ?></figcaption>
 <?php } ?>

@@ -1,7 +1,8 @@
 # STATE
 
 **Aktiver Plan:** (kein aktiver Plan)
-**Nächster Schritt:** Deploy; danach Bau mit Datenbank (`php bin/dispatch demo`, `build`) und Browser-Sichtprüfung des Artikels `gestaltung-zitate-einbettungen-css` (Hero, Zitate, vier Social-Embeds mit Zwei-Klick, Druck, ohne Skript). Die `.htaccess` (CSP `frame-src` +4 Hosts, Plan Blog-Gestaltung Phase 3) wirkt erst nach dem Deploy.
+**Next step:** Deploy, run migration 017, then inspect the suggestion and publication schedule dialogs in a browser.
+**Weitere offene Arbeit:** Nach dem Deploy stehen die Browser-Sichtpruefung des Artikels, der Agenten-Anweisungen und der Gestaltungs-Bausteine aus.
 
 **Nachbar GARAGE (2026-11-16, deployt):** Wurzel-`.htaccess` (Ausnahmen `/garage/`, Discovery-Umleitung), reservierte Namen, `robots.txt` und Rauchtest (Nachbarn + Blog-CSP-Prüfung) live; Rauchtest grün.
 

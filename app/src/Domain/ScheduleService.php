@@ -6,11 +6,12 @@ namespace Dispatch\Domain;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Dispatch\Db\Transaction;
 use PDO;
 
 /**
  * Veröffentlichungsplan: Je Berliner Kalendertag gibt es bis zu `release_per_day` feste Termine (08:00 bis 18:00, fest
- * verdrahtet in SLOT_MINUTES). Die Warteschlange belegt sie der Reihe nach mit der ältesten Freigabe zuerst; ein
+ * verdrahtet in SLOT_MINUTES). Die Warteschlange belegt sie in gespeicherter Reihenfolge; ein
  * verstrichener, ungenutzter Termin verfällt, Termine vergangener Tage werden nie nachgeholt. Feste Termine kommen
  * zusätzlich und erscheinen beim ersten Auslöser ab ihrem Zeitpunkt (ADR-028).
  */
@@ -33,15 +34,19 @@ final class ScheduleService
     ];
 
     private ScheduleRepository $schedule;
+    private readonly PDO $pdo;
     private PostService $posts;
     private SettingService $settings;
+    private AuditRepository $audit;
 
     /** @param array<string, mixed> $config */
     public function __construct(PDO $pdo, array $config)
     {
+        $this->pdo = $pdo;
         $this->schedule = new ScheduleRepository($pdo);
         $this->posts = new PostService($pdo, $config);
         $this->settings = new SettingService($pdo, $config);
+        $this->audit = new AuditRepository($pdo);
     }
 
     /** @return list<string> Uhrzeiten `HH:MM` der Tagestermine */
@@ -132,6 +137,30 @@ final class ScheduleService
             'items' => $items,
             'released_today' => $this->schedule->releasedBetween($dayFrom, $dayTo),
         ];
+    }
+
+    /** @param list<int> $ids VollstÃ¤ndige neue Reihenfolge aller wartenden Queue-Termine. */
+    public function reorder(array $ids, Actor $actor): array
+    {
+        if (!array_is_list($ids) || array_filter($ids, static fn (mixed $id): bool => !is_int($id) || $id < 1) !== []) {
+            throw new DomainError('invalid_value', 'ids muss eine geordnete Liste positiver Artikelnummern sein.', ['field' => 'ids']);
+        }
+        if (count(array_unique($ids)) !== count($ids)) {
+            throw new DomainError('invalid_value', 'ids darf keine Artikelnummer doppelt enthalten.', ['field' => 'ids']);
+        }
+
+        Transaction::join($this->pdo, function () use ($ids, $actor): void {
+            $current = $this->schedule->waitingSlotIdsForUpdate();
+            if (count($ids) !== count($current) || array_diff($ids, $current) !== []) {
+                throw new DomainError('order_conflict', 'Der VerÃ¶ffentlichungsplan hat sich geÃ¤ndert. Lade ihn neu und sortiere die aktuelle Liste.', ['current_ids' => $current]);
+            }
+            foreach ($ids as $index => $id) {
+                $this->schedule->updateScheduleOrder($id, $index + 1);
+            }
+            $this->audit->record($actor, 'schedule.reorder', 'schedule', ['ids' => $ids]);
+        });
+
+        return $this->plan(new DateTimeImmutable('now', new DateTimeZone('UTC')));
     }
 
     /**

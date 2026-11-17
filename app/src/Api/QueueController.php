@@ -31,7 +31,36 @@ final class QueueController
         ApiAuth::owner($request);
 
         try {
-            $items = (new QueueService(Connection::open(), $this->config))->list(['open']);
+            $items = (new QueueService(Connection::open(), $this->config))->list(['open'], 1000);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json(['items' => $items]);
+    }
+
+    public function edit(Request $request, int $id): never
+    {
+        $actor = ApiAuth::owner($request);
+        try {
+            $item = (new QueueService(Connection::open(), $this->config))->edit($id, $request->json(), $actor);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json(['item' => $item]);
+    }
+
+    public function reorder(Request $request): never
+    {
+        $actor = ApiAuth::owner($request);
+        try {
+            $input = $request->json();
+            $ids = $input['ids'] ?? null;
+            if (!is_array($ids) || !array_is_list($ids)) {
+                throw new DomainError('invalid_value', 'ids muss eine geordnete Liste aller offenen Vorschlagsnummern sein.', ['field' => 'ids']);
+            }
+            $items = (new QueueService(Connection::open(), $this->config))->reorder($ids, $actor);
         } catch (DomainError $error) {
             ApiErrors::respond($error);
         }

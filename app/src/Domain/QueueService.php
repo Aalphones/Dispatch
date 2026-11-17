@@ -55,6 +55,7 @@ final class QueueService
         return Transaction::join($this->pdo, function () use ($normalized, $actor): array {
             $itemId = $this->queue->insert($normalized['columns'] + [
                 'status' => 'open',
+                'sort_order' => $this->queue->nextOpenOrder(),
                 'created_by' => $actor->name,
             ]);
             foreach ($normalized['media'] as $attachment) {
@@ -83,6 +84,58 @@ final class QueueService
         return $item + ['media' => $this->queue->media($id)];
     }
 
+    /** Bearbeitet einen offenen Vorschlag. Ein Agent kann nur einen selbst eingereichten Vorschlag Ã¤ndern. */
+    public function edit(int $id, array $input, Actor $actor): array
+    {
+        return Transaction::join($this->pdo, function () use ($id, $input, $actor): array {
+            $item = $this->lockedItem($id);
+            if ($item['effective_status'] !== 'open') {
+                throw new DomainError('not_editable', 'Nur offene VorschlÃ¤ge lassen sich bearbeiten. Ein reservierter oder bereits verwendeter Vorschlag ist gesperrt.', ['id' => $id, 'status' => $item['effective_status']]);
+            }
+            if (!$actor->isOwner() && $item['created_by'] !== $actor->name) {
+                throw new DomainError('not_creator', 'Ein Agent kann nur einen selbst eingereichten Vorschlag bearbeiten.', ['id' => $id]);
+            }
+
+            $base = [
+                'title' => $item['title'],
+                'brief' => $item['brief'],
+                'links' => $item['links'],
+                'priority' => $item['priority'],
+                'depth' => $item['depth'],
+                'category' => $item['category'],
+            ];
+            $normalized = $this->normalizeNew(array_replace($base, $input));
+            $this->queue->update($id, $normalized['columns']);
+            $this->audit->record($actor, 'queue.edit', 'queue:' . $id, ['fields' => array_keys($input)]);
+
+            return $this->get($id);
+        });
+    }
+
+    /** @param list<int> $ids VollstÃ¤ndige neue Reihenfolge aller offenen VorschlÃ¤ge. */
+    public function reorder(array $ids, Actor $actor): array
+    {
+        if (!array_is_list($ids) || array_filter($ids, static fn (mixed $id): bool => !is_int($id) || $id < 1) !== []) {
+            throw new DomainError('invalid_value', 'ids muss eine geordnete Liste positiver Vorschlagsnummern sein.', ['field' => 'ids']);
+        }
+        if (count(array_unique($ids)) !== count($ids)) {
+            throw new DomainError('invalid_value', 'ids darf keine Vorschlagsnummer doppelt enthalten.', ['field' => 'ids']);
+        }
+
+        return Transaction::join($this->pdo, function () use ($ids, $actor): array {
+            $current = $this->queue->openIdsForUpdate();
+            if (count($ids) !== count($current) || array_diff($ids, $current) !== []) {
+                throw new DomainError('order_conflict', 'Die Vorschlagsliste hat sich geÃ¤ndert. Lade sie neu und sortiere die aktuelle Liste.', ['current_ids' => $current]);
+            }
+            foreach ($ids as $index => $id) {
+                $this->queue->updateSortOrder($id, $index + 1);
+            }
+            $this->audit->record($actor, 'queue.reorder', 'queue', ['ids' => $ids]);
+
+            return $this->list(['open'], max(1, count($ids)));
+        });
+    }
+
     /**
      * @param list<string> $statuses leer = alle; gefiltert wird nach dem Status, den der Leser sieht
      * @return list<array<string, mixed>>
@@ -99,7 +152,7 @@ final class QueueService
     }
 
     /**
-     * Mit `id` genau dieser Auftrag, ohne `id` der wichtigste und älteste offene.
+     * Mit `id` genau dieser Auftrag, ohne `id` der erste offene in gespeicherter Reihenfolge.
      *
      * @return array<string, mixed>
      */

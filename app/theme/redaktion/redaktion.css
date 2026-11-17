@@ -209,6 +209,23 @@ label.feld input[aria-invalid="true"] { border-color: var(--bad); }
 .liste li .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .liste li small { display: block; color: var(--ink-3); }
 .liste.dateien { margin: -.3rem 0 .9rem; }
+.vorschlaege > li { align-items: flex-start; }
+.vorschlag-griff { color: var(--ink-3); cursor: grab; user-select: none; padding-top: .15rem; }
+.vorschlaege > li[draggable="true"]:active .vorschlag-griff { cursor: grabbing; }
+.vorschlag-aktionen { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .25rem; }
+.vorschlag-aktionen .knopf { min-width: 2rem; }
+.vorschlag-form { display: grid; gap: .8rem; }
+.vorschlag-form .feld { display: grid; gap: .3rem; font: 600 .84rem var(--sans); }
+.vorschlag-form .feld input, .vorschlag-form .feld textarea, .vorschlag-form .feld select { width: 100%; font: 400 .95rem var(--sans); padding: .55rem .7rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); }
+.vorschlag-form .feld :focus { border-color: var(--accent-ink); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+.plan-sort { margin: 1rem 0 1.3rem; padding: .8rem 0 0; border-top: 1px solid var(--rule); }
+.plan-sort h3 { font: 700 .95rem var(--sans); margin: 0 0 .3rem; }
+.plan-sortierung { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .35rem; }
+.plan-sortierung > li { display: grid; grid-template-columns: auto 5rem minmax(0, 1fr) auto; gap: .35rem .65rem; align-items: center; border: 1px solid var(--rule); border-radius: 8px; padding: .45rem .55rem; }
+.plan-sort-griff { color: var(--ink-3); cursor: grab; user-select: none; }
+.plan-sort-zeit { color: var(--ink-2); font: .78rem var(--sans); font-variant-numeric: tabular-nums; }
+.plan-sort-titel { min-width: 0; overflow-wrap: anywhere; font: .86rem/1.35 var(--sans); }
+.plan-sort-aktionen { display: flex; gap: .2rem; }
 progress { width: 100%; height: .5rem; accent-color: var(--accent-ink); margin-bottom: .9rem; }
 
 .gewicht.hell { background: var(--paper); border-color: var(--rule); backdrop-filter: none; }
@@ -608,3 +625,12 @@ dialog.anweisungen .dlg-fuss[hidden] { display: none; }
   dialog.anweisungen .anw-fusstext { flex: 1 0 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .anw-pfeil { transition: none; } }
+@media (max-width: 46rem) {
+  .vorschlaege > li { flex-wrap: wrap; gap: .45rem; }
+  .vorschlaege > li .t { flex-basis: calc(100% - 2rem); }
+  .vorschlag-aktionen { width: 100%; justify-content: flex-end; }
+  .plan-sortierung > li { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .plan-sort-zeit { grid-column: 2; grid-row: 1; }
+  .plan-sort-titel { grid-column: 2; grid-row: 2; }
+  .plan-sort-aktionen { grid-column: 3; grid-row: 1 / span 2; }
+}

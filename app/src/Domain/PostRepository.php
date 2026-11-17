@@ -25,7 +25,7 @@ final class PostRepository
     /** Spalten, die `setStatus` schreiben darf. */
     private const STATUS_COLUMNS = [
         'status', 'review_note', 'published_revision', 'author_model',
-        'schedule_mode', 'scheduled_at', 'scheduled_since', 'release_slot',
+        'schedule_mode', 'scheduled_at', 'scheduled_since', 'schedule_order', 'release_slot',
     ];
 
     private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;

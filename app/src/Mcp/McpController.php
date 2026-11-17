@@ -16,6 +16,7 @@ use Dispatch\Domain\MediaService;
 use Dispatch\Domain\PostService;
 use Dispatch\Domain\QueueService;
 use Dispatch\Domain\SettingService;
+use Dispatch\Domain\ScheduleService;
 use Dispatch\Domain\SiteInfoService;
 use Dispatch\Domain\StatsService;
 use Dispatch\Domain\TokenService;
@@ -28,6 +29,7 @@ use Dispatch\Mcp\Tools\DocumentTools;
 use Dispatch\Mcp\Tools\MediaTools;
 use Dispatch\Mcp\Tools\PostTools;
 use Dispatch\Mcp\Tools\QueueTools;
+use Dispatch\Mcp\Tools\ScheduleTools;
 use Dispatch\Mcp\Tools\SettingTools;
 use Dispatch\Mcp\Tools\SiteTools;
 use Dispatch\Mcp\Tools\StatsTools;
@@ -67,6 +69,7 @@ final class McpController
             'changes' => new ChangeService($pdo, $config),
             'queue' => new QueueService($pdo, $config),
             'posts' => new PostService($pdo, $config),
+            'schedule' => new ScheduleService($pdo, $config),
             'media' => new MediaService($pdo, $config),
             'briefing' => new BriefingService($pdo, $config),
             'site_info' => new SiteInfoService($pdo, $config),
@@ -388,6 +391,8 @@ final class McpController
         QueueTools::register($registry, $services);
         $registry->group('Artikel');
         PostTools::register($registry, $services);
+        $registry->group('Veröffentlichungsplan');
+        ScheduleTools::register($registry, $services);
         $registry->group('Medien');
         MediaTools::register($registry, $services);
         $registry->group('Statistik und Website');

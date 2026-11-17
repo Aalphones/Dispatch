@@ -383,7 +383,7 @@ export async function planOeffnen() {
 	const state = { plan: null, openId: null, focusSelector: null, redraw: null };
 
 	const draw = () => {
-		body.replaceChildren(...planParts(state, update, change, remove));
+		body.replaceChildren(...planParts(state, update, change, remove, reorder));
 		if (state.focusSelector !== null) {
 			body.querySelector(state.focusSelector)?.focus();
 			state.focusSelector = null;
@@ -419,6 +419,16 @@ export async function planOeffnen() {
 		state.focusSelector = '.gewicht [aria-pressed="true"]';
 		draw();
 		toast('Gespeichert: ' + perDay + ' am Tag, ' + timesText(state.plan.times) + ' Uhr. Die Termine der Warteschlange sind neu berechnet.', () => update(previous));
+	}
+	async function reorder(ids) {
+		try {
+			state.plan = await api('PATCH', 'schedule/order', { ids });
+			draw();
+			toast('Reihenfolge gespeichert. Die erwarteten Termine wurden neu berechnet.');
+		} catch (error) {
+			toast(error.message);
+			try { await reload(); } catch {}
+		}
 	}
 	async function change(item, wish, choice) {
 		try {
@@ -463,9 +473,13 @@ export async function planOeffnen() {
 	await reload();
 }
 
-function planParts(state, update, change, remove) {
+function planParts(state, update, change, remove, reorder) {
 	const plan = state.plan;
 	const parts = [settingBlock(plan, update)];
+	const slots = plan.items.filter((item) => item.mode === MODE_SLOT).sort((a, b) => a.position - b.position);
+	if (slots.length > 0) {
+		parts.push(slotOrderBlock(slots, reorder));
+	}
 	if (plan.items.length === 0) {
 		parts.push(el('div', { class: 'leer' }, [icon('uhr'), el('p', { text: 'Nichts geplant.' }), el('p', { text: 'Was du freigibst, landet hier und erscheint ' + timesText(plan.times) + ' Uhr – ein Artikel je Termin.' })]));
 	} else {
@@ -475,6 +489,77 @@ function planParts(state, update, change, remove) {
 	parts.push(visitHint());
 
 	return parts;
+}
+
+function slotOrderBlock(items, reorder) {
+	const list = el('ol', { class: 'plan-sortierung' });
+	let dragged = null;
+	let saving = false;
+	const persist = (ids) => {
+		if (saving) {
+			return;
+		}
+		saving = true;
+		reorder(ids).finally(() => { saving = false; });
+	};
+	const draw = () => list.replaceChildren(...items.map((item, index) => {
+		const move = (direction) => {
+			const next = index + direction;
+			if (next < 0 || next >= items.length) {
+				return;
+			}
+			[items[index], items[next]] = [items[next], items[index]];
+			draw();
+			persist(items.map((entry) => entry.id));
+		};
+		return el('li', { 'data-id': String(item.id), draggable: true }, [
+			el('span', { class: 'plan-sort-griff', 'aria-hidden': 'true', text: '⠿' }),
+			el('span', { class: 'plan-sort-zeit', text: when(parseStamp(item.expected_at)) }),
+			el('span', { class: 'plan-sort-titel', text: item.title }),
+			el('span', { class: 'plan-sort-aktionen' }, [
+				el('button', { type: 'button', class: 'knopf leise klein-k', 'aria-label': 'Nach oben: ' + item.title, disabled: index === 0 || saving, text: '↑', onclick: () => move(-1) }),
+				el('button', { type: 'button', class: 'knopf leise klein-k', 'aria-label': 'Nach unten: ' + item.title, disabled: index === items.length - 1 || saving, text: '↓', onclick: () => move(1) }),
+			]),
+		]);
+	}));
+	list.addEventListener('dragstart', (event) => {
+		const row = event.target.closest('li[data-id]');
+		if (row === null || saving) {
+			event.preventDefault();
+			return;
+		}
+		dragged = row;
+		event.dataTransfer.effectAllowed = 'move';
+		event.dataTransfer.setData('text/plain', row.dataset.id);
+	});
+	list.addEventListener('dragover', (event) => {
+		const target = event.target.closest('li[data-id]');
+		if (saving || dragged === null || target === null || target === dragged) {
+			return;
+		}
+		event.preventDefault();
+		const after = event.clientY > target.getBoundingClientRect().top + target.offsetHeight / 2;
+		list.insertBefore(dragged, after ? target.nextSibling : target);
+	});
+	list.addEventListener('drop', (event) => {
+		if (dragged === null) {
+			return;
+		}
+		event.preventDefault();
+		const ids = [...list.children].map((row) => Number(row.dataset.id));
+		const byId = new Map(items.map((item) => [item.id, item]));
+		items.splice(0, items.length, ...ids.map((id) => byId.get(id)));
+		dragged = null;
+		persist(ids);
+	});
+	list.addEventListener('dragend', () => { dragged = null; });
+	draw();
+
+	return el('section', { class: 'plan-sort' }, [
+		el('h3', { text: 'Reihenfolge der Warteschlange' }),
+		el('p', { class: 'plan-summe', text: 'Diese Reihenfolge bestimmt die nächsten Veröffentlichungen. Artikel mit festem Termin bleiben unverändert.' }),
+		list,
+	]);
 }
 
 function settingBlock(plan, update) {

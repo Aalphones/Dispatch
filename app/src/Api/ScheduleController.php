@@ -57,6 +57,23 @@ final class ScheduleController
         Response::json($plan);
     }
 
+    public function reorder(Request $request): never
+    {
+        $actor = ApiAuth::owner($request);
+        try {
+            $input = $request->json();
+            $ids = $input['ids'] ?? null;
+            if (!is_array($ids) || !array_is_list($ids)) {
+                throw new DomainError('invalid_value', 'ids muss eine geordnete Liste aller wartenden Queue-Artikelnummern sein.', ['field' => 'ids']);
+            }
+            $plan = (new ScheduleService(Connection::open(), $this->config))->reorder($ids, $actor);
+        } catch (DomainError $error) {
+            ApiErrors::respond($error);
+        }
+
+        Response::json($plan);
+    }
+
     /** @return array<string, mixed> */
     private function plan(PDO $pdo): array
     {

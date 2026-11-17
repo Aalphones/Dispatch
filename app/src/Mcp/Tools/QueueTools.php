@@ -81,7 +81,7 @@ final class QueueTools
         $registry->add(new Tool(
             'claim_queue_item',
             'Auftrag reservieren',
-            'Reserviert einen Auftrag für die eingestellte Frist (Standard 180 Minuten) und liefert Titel, Auftragstext, Links und die angehängten Medien; Bild-Anhänge kommen als Bilder mit (höchstens 6, weitere stehen in images_not_shown und lassen sich mit get_media ansehen). Ohne id kommt der wichtigste und älteste offene Auftrag, mit id genau dieser. Beispiel: {"id": 7}. Danach recherchieren und mit create_post (queue_item_id) schreiben; gelingt das nicht, gibt release_queue_item ihn zurück.',
+            'Reserviert einen Auftrag für die eingestellte Frist (Standard 180 Minuten) und liefert Titel, Auftragstext, Links und die angehängten Medien; Bild-Anhänge kommen als Bilder mit (höchstens 6, weitere stehen in images_not_shown und lassen sich mit get_media ansehen). Ohne id kommt der erste offene Auftrag in gespeicherter Reihenfolge, mit id genau dieser. Beispiel: {"id": 7}. Danach recherchieren und mit create_post (queue_item_id) schreiben; gelingt das nicht, gibt release_queue_item ihn zurück.',
             Schema::object(['id' => Schema::integer('Nummer des Auftrags; ohne Angabe der nächste offene')]),
             Tool::annotations('Auftrag reservieren', 'W'),
             Scopes::WRITE,
@@ -94,6 +94,40 @@ final class QueueTools
                 }
 
                 return ToolResult::json($data, $images['blocks']);
+            }
+        ));
+
+        $registry->add(new Tool(
+            'edit_queue_item',
+            'Vorschlag bearbeiten',
+            'Ändert Titel, Auftragstext, Links, Priorität, Recherchetiefe oder Kategorie eines offenen eigenen Vorschlags. Der Inhaber darf alle offenen Vorschläge bearbeiten. Reservierte Vorschläge sind gesperrt. Beispiel: {"id": 7, "brief": "Vergleiche zusätzlich die Betriebskosten"}.',
+            Schema::object([
+                'id' => Schema::integer('Nummer des offenen Vorschlags'),
+                'title' => Schema::text('Neuer Arbeitstitel'),
+                'brief' => Schema::text('Neuer Auftragstext'),
+                'links' => Schema::list(['type' => 'string'], 'Neue Liste von Web-Adressen; ersetzt die bisherige Liste'),
+                'priority' => Schema::integer('Priorität 1 (wichtig) bis 3'),
+                'depth' => Schema::choice(['standard', 'deep'], 'Recherchetiefe'),
+                'category' => Schema::text('Slug einer aktiven Kategorie'),
+            ], ['id']),
+            Tool::annotations('Vorschlag bearbeiten', 'W'),
+            Scopes::WRITE,
+            static function (array $args, Actor $actor) use ($queue): ToolResult {
+                $input = array_intersect_key($args, array_flip(['title', 'brief', 'links', 'priority', 'depth', 'category']));
+
+                return ToolResult::json(['item' => $queue->edit((int) $args['id'], $input, $actor)]);
+            }
+        ));
+
+        $registry->add(new Tool(
+            'reorder_queue',
+            'Vorschläge sortieren',
+            'Setzt die Reihenfolge aller offenen Vorschläge. Übergib die vollständige Liste ihrer IDs aus list_queue(status=["open"]) in der gewünschten Reihenfolge; bei mehr als 100 Einträgen list_queue mit offset seitenweise abrufen. Bei zwischenzeitlichen Änderungen wird nichts gespeichert; dann neu laden und erneut sortieren. Beispiel: {"ids": [12, 7, 19]}.',
+            Schema::object(['ids' => Schema::list(Schema::integer('Vorschlagsnummer'), 'Vollständige neue Reihenfolge aller offenen Vorschläge')], ['ids']),
+            Tool::annotations('Vorschläge sortieren', 'W'),
+            Scopes::WRITE,
+            static function (array $args, Actor $actor) use ($queue): ToolResult {
+                return ToolResult::json(['items' => $queue->reorder($args['ids'], $actor)]);
             }
         ));
 

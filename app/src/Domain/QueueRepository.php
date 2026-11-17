@@ -10,7 +10,7 @@ final class QueueRepository
 {
     /** Spalten, die insert/update schreiben dürfen — nur diese Namen landen im SQL. */
     private const WRITABLE = [
-        'title', 'brief', 'links', 'status', 'priority', 'depth', 'category_id',
+        'title', 'brief', 'links', 'status', 'priority', 'sort_order', 'depth', 'category_id',
         'claimed_by', 'claim_expires', 'post_id', 'result_note', 'created_by',
     ];
 
@@ -95,7 +95,7 @@ final class QueueRepository
         if ($statuses !== []) {
             $sql .= ' WHERE ' . self::EFFECTIVE_STATUS . ' IN (' . implode(', ', array_fill(0, count($statuses), '?')) . ')';
         }
-        $sql .= ' ORDER BY q.priority ASC, q.created_at ASC, q.id ASC LIMIT ? OFFSET ?';
+        $sql .= ' ORDER BY q.sort_order ASC, q.priority ASC, q.created_at ASC, q.id ASC LIMIT ? OFFSET ?';
 
         $statement = $this->pdo->prepare($sql);
         $position = 1;
@@ -123,11 +123,34 @@ final class QueueRepository
         return $counts;
     }
 
-    /** @return array<string, mixed>|null der nächste offene Auftrag in Vergabe-Reihenfolge, ohne ihn zu reservieren */
+    /** @return list<int> Alle aktuell offenen EintrÃ¤ge, gesperrt fÃ¼r eine atomare Sortierung. */
+    public function openIdsForUpdate(): array
+    {
+        $rows = $this->pdo->query(
+            'SELECT id FROM queue_items q WHERE ' . self::EFFECTIVE_STATUS . " = 'open' ORDER BY q.sort_order, q.priority, q.created_at, q.id FOR UPDATE"
+        )->fetchAll(PDO::FETCH_COLUMN);
+
+        return array_map('intval', $rows);
+    }
+
+    public function updateSortOrder(int $id, int $position): void
+    {
+        $statement = $this->pdo->prepare('UPDATE queue_items SET sort_order = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?');
+        $statement->execute([$position, $id]);
+    }
+
+    public function nextOpenOrder(): int
+    {
+        return (int) $this->pdo->query(
+            'SELECT COALESCE(MAX(sort_order), 0) + 1 FROM queue_items q WHERE ' . self::EFFECTIVE_STATUS . " = 'open'"
+        )->fetchColumn();
+    }
+
+    /** @return array<string, mixed>|null der nächste offene Auftrag in gespeicherter Reihenfolge, ohne ihn zu reservieren */
     public function nextClaimable(): ?array
     {
         $statement = $this->pdo->query(
-            'SELECT id FROM queue_items WHERE ' . self::CLAIMABLE . ' ORDER BY priority ASC, created_at ASC, id ASC LIMIT 1'
+            'SELECT id FROM queue_items WHERE ' . self::CLAIMABLE . ' ORDER BY sort_order ASC, priority ASC, created_at ASC, id ASC LIMIT 1'
         );
         $id = $statement->fetchColumn();
 
@@ -138,7 +161,7 @@ final class QueueRepository
     public function claimCandidates(int $limit): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id FROM queue_items WHERE ' . self::CLAIMABLE . ' ORDER BY priority ASC, created_at ASC, id ASC LIMIT ?'
+            'SELECT id FROM queue_items WHERE ' . self::CLAIMABLE . ' ORDER BY sort_order ASC, priority ASC, created_at ASC, id ASC LIMIT ?'
         );
         $statement->bindValue(1, max(1, $limit), PDO::PARAM_INT);
         $statement->execute();
@@ -241,6 +264,7 @@ final class QueueRepository
     {
         $row['id'] = (int) $row['id'];
         $row['priority'] = (int) $row['priority'];
+        $row['sort_order'] = (int) $row['sort_order'];
         $row['category_id'] = $row['category_id'] === null ? null : (int) $row['category_id'];
         $row['post_id'] = $row['post_id'] === null ? null : (int) $row['post_id'];
         $row['links'] = json_decode((string) $row['links'], true, 512, JSON_THROW_ON_ERROR);

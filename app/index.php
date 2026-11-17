@@ -42,6 +42,8 @@ $router->add('PATCH', '/dispatch/api/categories/{id}', static fn (array $params)
 $router->add('DELETE', '/dispatch/api/categories/{id}', static fn (array $params) => (new CategoryController($config))->delete($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/queue', static fn () => (new QueueController($config))->list($request));
 $router->add('POST', '/dispatch/api/queue',static fn () => (new QueueController($config))->add($request));
+$router->add('PATCH', '/dispatch/api/queue/order', static fn () => (new QueueController($config))->reorder($request));
+$router->add('PATCH', '/dispatch/api/queue/{id}', static fn (array $params) => (new QueueController($config))->edit($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/posts/{id}/reaction', static fn (array $params) => (new ReactionController())->set($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/reactions', static fn () => (new ReactionController())->list($request));
 $router->add('GET', '/dispatch/api/stats', static fn () => (new StatsController())->overview($request));
@@ -64,6 +66,7 @@ $router->add('POST', '/dispatch/api/posts/{id}/schedule', static fn (array $para
 $router->add('POST', '/dispatch/api/posts/{id}/unschedule', static fn (array $params) => (new PostController($config))->unschedule($request, (int) $params['id']));
 $router->add('GET', '/dispatch/api/schedule', static fn () => (new ScheduleController($config))->show($request));
 $router->add('PATCH', '/dispatch/api/schedule', static fn () => (new ScheduleController($config))->patch($request));
+$router->add('PATCH', '/dispatch/api/schedule/order', static fn () => (new ScheduleController($config))->reorder($request));
 $router->add('POST', '/dispatch/api/posts/{id}/return', static fn (array $params) => (new PostController($config))->return($request, (int) $params['id']));
 $router->add('POST', '/dispatch/api/posts/{id}/unpublish', static fn (array $params) => (new PostController($config))->unpublish($request, (int) $params['id']));
 $router->add('DELETE', '/dispatch/api/posts/{id}', static fn (array $params) => (new PostController($config))->discard($request, (int) $params['id']));

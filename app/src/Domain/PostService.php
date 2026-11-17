@@ -71,6 +71,7 @@ final class PostService
     private MediaRepository $media;
     private AuditRepository $audit;
     private QueueService $queue;
+    private ScheduleRepository $schedule;
     private Sanitizer $sanitizer;
     private FormCheck $formCheck;
 
@@ -82,6 +83,7 @@ final class PostService
         $this->media = new MediaRepository($pdo);
         $this->audit = new AuditRepository($pdo);
         $this->queue = new QueueService($pdo, $config);
+        $this->schedule = new ScheduleRepository($pdo);
         $this->sanitizer = new Sanitizer();
         $this->formCheck = new FormCheck();
     }
@@ -371,6 +373,7 @@ final class PostService
                     'schedule_mode' => $when,
                     'scheduled_at' => $when === 'fixed' ? $at->format('Y-m-d H:i:s') : null,
                     'scheduled_since' => gmdate('Y-m-d H:i:s'),
+                    'schedule_order' => $when === 'slot' ? $this->schedule->nextSlotOrder() : 0,
                 ]);
             } else {
                 $this->posts->setStatus($id, [
@@ -425,7 +428,11 @@ final class PostService
             } elseif ($when === 'slot' && $post['schedule_mode'] === 'slot') {
                 $isChanged = false;
             } elseif ($when === 'slot') {
-                $this->posts->setStatus($id, ['schedule_mode' => 'slot', 'scheduled_at' => null, 'scheduled_since' => gmdate('Y-m-d H:i:s')]);
+                $this->posts->setStatus($id, [
+                    'schedule_mode' => 'slot', 'scheduled_at' => null,
+                    'scheduled_since' => gmdate('Y-m-d H:i:s'),
+                    'schedule_order' => $this->schedule->nextSlotOrder(),
+                ]);
             } else {
                 $this->posts->setStatus($id, ['schedule_mode' => 'fixed', 'scheduled_at' => $at->format('Y-m-d H:i:s')]);
             }
@@ -460,7 +467,7 @@ final class PostService
                 throw $this->invalidTransition($post, 'unschedule');
             }
 
-            $this->posts->setStatus($id, ['status' => 'review', 'schedule_mode' => null, 'scheduled_at' => null, 'scheduled_since' => null]);
+            $this->posts->setStatus($id, ['status' => 'review', 'schedule_mode' => null, 'scheduled_at' => null, 'scheduled_since' => null, 'schedule_order' => 0]);
             $this->audit->record($actor, 'post.unschedule', 'post:' . $id, ['revision' => (int) $post['revision']]);
 
             return $this->get($id);

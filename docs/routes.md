@@ -41,6 +41,7 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | POST | `/dispatch/api/posts/{id}/unschedule` | JWT | `Api\PostController::unschedule` (zurück auf `review`; Antwort `{post}`) | Plan 2026-11-12 |
 | GET | `/dispatch/api/schedule` | JWT | `Api\ScheduleController::show` (Plan: `per_day`, `times`, `next_free`, `items`, `released_today`; Zeiten UTC) | Plan 2026-11-12 |
 | PATCH | `/dispatch/api/schedule` | JWT | `Api\ScheduleController::patch` (Body `{"per_day": 1–6}`, Antwort wie GET) | Plan 2026-11-12 |
+| PATCH | `/dispatch/api/schedule/order` | JWT | `Api\ScheduleController::reorder` (`{"ids":[...]}` setzt die vollständige Reihenfolge wartender Queue-Artikel; feste Termine ausgeschlossen) | Feature Artikel sortieren |
 | POST | `/dispatch/api/posts/{id}/return` | JWT | `Api\PostController::return` | 2 |
 | POST | `/dispatch/api/posts/{id}/unpublish` | JWT | `Api\PostController::unpublish` (+ Neubau) | 2 |
 | DELETE | `/dispatch/api/posts/{id}` | JWT | `Api\PostController::discard` | 2 |
@@ -54,8 +55,10 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | GET | `/dispatch/api/instructions/{slug}/revisions/{id}` | JWT | `Api\InstructionController::revision` (Fassung als `html` samt `diff` zur Fassung davor) | AA 2 |
 | POST | `/dispatch/api/instructions/{slug}/restore` | JWT | `Api\InstructionController::restore` (Body `revision`, `base_revision`, `force`; neue Fassung mit altem Inhalt; 409 `revision_conflict`; Antwort `document`) | AA 2 |
 
-| GET | `/dispatch/api/queue` | JWT | `Api\QueueController::list` (offene Themen, wichtigste und älteste zuerst; Antwort `items`) | 4 |
+| GET | `/dispatch/api/queue` | JWT | `Api\QueueController::list` (offene Themen in gespeicherter Reihenfolge; Antwort `items`) | 4 |
 | POST | `/dispatch/api/queue` | JWT | `Api\QueueController::add` (multipart, `files[]`; abgelehnte Dateien in `rejected`; zu große Anfrage → 413) | 4 |
+| PATCH | `/dispatch/api/queue/{id}` | JWT | `Api\QueueController::edit` (offenen Vorschlag bearbeiten; Eigentümer oder einreichender Agent) | Feature Artikel sortieren |
+| PATCH | `/dispatch/api/queue/order` | JWT | `Api\QueueController::reorder` (`{"ids":[...]}` setzt die vollständige Reihenfolge offener Vorschläge; Konflikt → 409) | Feature Artikel sortieren |
 | GET | `/dispatch/api/tokens` | JWT | `Api\TokenController::list` (nicht widerrufene `mcp`-Zugänge) | 4 |
 | DELETE | `/dispatch/api/tokens/{id}` | JWT/Deploy | `Api\TokenController::revokeById` | 4 |
 | GET | `/dispatch/api/categories` | JWT | `Api\CategoryController::list` (mit `signals`, `suggestion`) | 4 |

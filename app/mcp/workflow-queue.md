@@ -2,6 +2,8 @@
 
 Ein Lauf bearbeitet genau einen Auftrag. Die Redaktionsrichtlinien aus dem Briefing sind verbindlich.
 
+Vor der Reservierung kannst du mit `list_queue(status=["open"])` die Themen vergleichen. Sind viele hintereinander zum selben Thema, schlage eine gleichmäßigere Verteilung vor und sortiere sie mit `reorder_queue`; übergib dafür die vollständige offene Liste. Einen eigenen offenen Vorschlag korrigierst du mit `edit_queue_item`.
+
 1. **Reservieren:** `claim_queue_item` (ohne `id` den nächsten offenen Auftrag, mit `id` einen bestimmten). Die Reservierung sperrt den Auftrag gegen doppelte Bearbeitung; abgelaufene Reservierungen fallen automatisch zurück. Lies `get_style_guide` einmal, bevor du schreibst.
 2. **Material sichten:** Titel, Auftragstext, Links und Anhänge des Auftrags auswerten. Video und Audio: nur Metadaten, Inhalt aus dem Auftragstext entnehmen.
 3. **Tief recherchieren:** Bei `depth = deep` gelten `form_rules.min_sources_deep` und `form_rules.min_words_deep`, sonst `min_sources` und `min_words`. Primärquellen zuerst, zentrale Zahlen aus zwei unabhängigen Quellen.

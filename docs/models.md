@@ -50,6 +50,18 @@ Nicht in Meilenstein 1: `login_attempts` (M4), `oauth_clients`, `oauth_codes` (M
 | `active` | TINYINT(1) | Default 1 |
 | `created_at`, `updated_at` | DATETIME | |
 
+## category_redirects (018)
+
+Alte Adressen abgeschalteter oder umgehängter Kategorien (ADR-037). Der Builder schreibt unter `/kategorie/<old_slug>/` eine statische Weiterleitungsseite auf die aktuelle Adresse der Kategorie `category_id`, sofern dort keine aktive Kategorie liegt.
+
+| Spalte | Typ | Hinweis |
+|---|---|---|
+| `old_slug` | VARCHAR(80) | PK |
+| `category_id` | INT UNSIGNED | FK → `categories.id` CASCADE |
+| `created_at` | DATETIME | |
+
+**Hierarchie (ADR-037).** `categories.parent_id` trägt die Hauptkategorie; Hauptkategorien haben `parent_id = NULL`. Die Hauptkategorie eines Artikels ist die übergeordnete Kategorie seiner primären Zuordnung (`post_categories.is_primary`). Die Website liest die Kategorien freigegebener Artikel aus dem Snapshot (`post_revisions.snapshot.categories`); die Umstellung schreibt dort nur dieses Feld um. Quoten rechnen auf der primären Hauptkategorie (`Domain/QuotaService`, Konfiguration `quota` in `config.php`).
+
 ## Einstellungen (Tabelle `settings`)
 
 Werte stehen als JSON in `settings.value`; fehlt eine Zeile, gilt der Startwert. Der `Seeder` legt alle dreizehn an (`php bin/dispatch seed`). Formvorgaben (`form_rules`, `publish_mode`, `stats_enabled`) stehen in `app/config.php`, nicht in der Tabelle; ein Änderungsversuch → `not_changeable`.

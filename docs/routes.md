@@ -22,6 +22,7 @@ Auth: **JWT** = Access-Token des Inhabers (`Auth\ApiAuth::owner`), **JWT/Deploy*
 | DELETE | `/dispatch/api/oauth-clients/{id}` | Deploy | `OAuthClientController::revoke` (Client und alle seine Tokens widerrufen, Audit `oauth_client.revoke`; 204) | M5 4 |
 | POST | `/dispatch/api/deploy` | Deploy | `Api\DeployController` | M1 |
 | POST | `/dispatch/api/categories` | Deploy | `Api\CategoryController` | M3 |
+| POST | `/dispatch/api/categories/restructure` | Deploy/JWT | `Api\CategoryRestructureController` (Body `{"mode": "dry-run" \| "apply" \| "rollback", "backup": {…}}`; `dry-run` nur lesen → `plan`; `apply` → `plan`, `summary`, `backup_file`, `backup`, `rebuilt`; `rollback` braucht `backup` → `summary`; 409 `restructure_blocked`, `already_applied`, `verification_failed`, `rollback_blocked`; ADR-037) | ADR-037 |
 | POST | `/dispatch/api/tokens` | JWT/Deploy | `Api\TokenController::handle` (Deploy + `action` im Body = Kommandozeilenweg wie in M3; sonst neuer Zugang, 201 mit Klartext und `command`) | M3, 4 |
 | POST | `/dispatch/api/auth/login` | — (Login-Bremse) | `Api\AuthController::login` | 1 |
 | POST | `/dispatch/api/auth/refresh` | Cookie + `Origin` | `Api\AuthController::refresh` | 1 |

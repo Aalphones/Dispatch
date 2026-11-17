@@ -1,7 +1,9 @@
 # STATE
 
 **Aktiver Plan:** (kein aktiver Plan)
-**Next step:** Deploy, run migration 017, then inspect the suggestion and publication schedule dialogs in a browser.
+**Next step:** Kategorien-Umstellung live bringen (ADR-037): Strato-Datenbanksicherung, `deploy.cmd` (Migration 018), dann `php bin/dispatch category:restructure --dry-run --remote` prüfen, `--apply --remote`, danach Rauchtest (alte Kategorie-URLs, Archive, Plan). Danach den Browser-Check der Vorschlags- und Veröffentlichungsplan-Dialoge.
+
+**Kategorien-Umstellung (2026-11-17):** Code, Test gegen Scratch-MySQL (Apply, Rollback, Negativfälle, API) und Doku fertig, nicht committet, nicht deployt. Live bereits geändert: Dokumente `preferences` und `editorial_guidelines` (Revision 8) und die Reihenfolge des Veröffentlichungsplans (Gaming-Reserve ans Ende, 26/37/32/35 vorn). Offen: Live-Lauf, Historien-Artikel (Altes Land 45, Postmaster 51, Ada Lovelace 50) erst nach Recherche und Freigabe in den Plan.
 **Weitere offene Arbeit:** Nach dem Deploy stehen die Browser-Sichtpruefung des Artikels, der Agenten-Anweisungen und der Gestaltungs-Bausteine aus.
 
 **Nachbar GARAGE (2026-11-16, deployt):** Wurzel-`.htaccess` (Ausnahmen `/garage/`, Discovery-Umleitung), reservierte Namen, `robots.txt` und Rauchtest (Nachbarn + Blog-CSP-Prüfung) live; Rauchtest grün.

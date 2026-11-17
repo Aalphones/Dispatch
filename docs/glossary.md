@@ -17,7 +17,9 @@ Ein Begriff, eine Bedeutung. Fachbegriffe in Code, Docs und Commits nur so verwe
 | Warteschlange | Freigegebene Artikel ohne festen Termin, die der Reihe nach auf die Erscheinungstermine verteilt werden (`schedule_mode = slot`); nicht dasselbe wie Queue/Auftrag. |
 | Erscheinungstermin | Uhrzeit, zu der die Warteschlange einen Artikel veröffentlicht: bei `release_per_day` = n gleichmäßig ab 08:00 über zwölf Stunden (ADR-028). |
 | Fälligkeitsprüfung | Prüfung bei jeder Anfrage an die Brücke, ob ein geplanter Artikel fällig ist (`ScheduleTrigger`, Merkdatei `storage/schedule/next.json`). |
-| Rotationswert | Gewicht einer Kategorie × Tage seit dem letzten Artikel darin, gedeckelt bei 90. |
+| Rotationswert | Gewicht einer Kategorie × Tage seit dem letzten Artikel darin, gedeckelt bei 90; eine Hauptkategorie rechnet mit dem letzten Artikel in ihren Unterkategorien. Eine Kategorie ohne Artikel zählt wie 60 Tage. |
+| Hauptkategorie | Kategorie ohne Elternteil (`parent_id` leer); es gibt sieben. Die Hauptkategorie eines Artikels ist die übergeordnete Kategorie seiner primären Unterkategorie. |
+| Redaktionsquote | Pro Fenster von vier Veröffentlichungen höchstens eine aus der Hauptkategorie „Gaming & Sammelkarten“ (Gaming-Deckel) und mindestens eine aus „Geschichte“; gerechnet auf der Hauptkategorie der primären Kategorie (ADR-037). Vorzug, keine Sperre. |
 | Ersatz-Kategorie | Die Kategorie, in die beim Löschen einer Kategorie ihre Artikel wandern (`move_to`); ohne sie lässt sich eine Kategorie mit Artikeln nicht löschen. |
 | Änderungsvorschlag | Eine per MCP gewünschte Änderung an öffentlich Sichtbarem, die erst nach Übernahme durch den Inhaber wirkt (`changes`). |
 | Redaktionsmodus | Nachgeladenes JavaScript, das nach dem Login Redaktionsfunktionen in die öffentliche Website einblendet. |

@@ -28,6 +28,8 @@ Sorgfalt geht vor Tempo. Trenne Nachricht und Meinung: Wertendes gehört in `sec
 
 Setze den Beleg direkt hinter die Aussage. Zitate sind kurz, wörtlich und belegt; Übersetzungen kennzeichnest du. Zahlen nennst du mit Einheit, Bezugsgröße und Zeitraum. Ganze Absätze fremder Texte sind tabu.
 
+Verlinke im Artikeltext aktiv auf die relevanten Originalquellen, Datensätze, Studien und weiterführenden Informationen. Setze Links direkt an die passende Aussage und wähle einen aussagekräftigen Linktext statt „hier“ oder einer ausgeschriebenen URL. Ein Quellenverweis (`<a data-cite="s1"></a>`) bleibt zusätzlich erforderlich: Er verbindet die Aussage mit dem Quellenverzeichnis. Artikel-Links werden automatisch mit `target="_blank"` und `rel="noopener"` ausgegeben; diese Attribute musst du nicht selbst setzen.
+
 ## 5. Bilder
 
 Nutze nur Bilder mit klarer Lizenz, bevorzugt von Wikimedia Commons. Liefere Urheber, Lizenz mit Link, Herkunftsseite und Alt-Text mit. Verwende keine Symbolbilder, die Falsches nahelegen. KI-Bilder nur gekennzeichnet. Keine Privatpersonen ohne Einwilligung, keine Kinder, keine Paparazzi-Fotos.

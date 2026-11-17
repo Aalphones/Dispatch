@@ -148,6 +148,8 @@ Jede Quelle ist ein Eintrag in `sources` mit `ref` (Schlüssel, z. B. `s1`), `ki
 
 Im Text steht der Beleg direkt hinter der Aussage: `<a data-cite="s1"></a>`, mehrere mit `<a data-cite="s1,s3"></a>`. Der Renderer macht daraus nummerierte Fußnoten mit Sprungmarke zum Quellenverzeichnis.
 
+Setze zusätzlich aktive Links im Fließtext auf passende Originalquellen und weiterführende Informationen, mit aussagekräftigem Linktext: `<a href="https://example.org/bericht">Bericht der Behörde</a>`. Links mit `href` werden automatisch mit `target="_blank"` und `rel="noopener"` ausgegeben. Der `data-cite`-Beleg bleibt für das Quellenverzeichnis erforderlich.
+
 ## Layouts, Akzentfarbe, Kategorien
 
 - `standard`: Titelbild über dem Text (Standard).

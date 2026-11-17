@@ -254,6 +254,12 @@ final class Sanitizer
             }
         }
 
+        // Eingereichte Artikel-Links öffnen in einem neuen Tab; noopener verhindert Zugriff auf das Ausgangsfenster.
+        if ($name === 'a' && $element->hasAttribute('href')) {
+            $element->setAttribute('target', '_blank');
+            $element->setAttribute('rel', 'noopener');
+        }
+
         $this->checkSocialAddress($element, $name);
     }
 

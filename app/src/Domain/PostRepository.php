@@ -87,7 +87,7 @@ final class PostRepository
      * Ohne `content_html` und `editor_notes` — Listen sollen klein bleiben.
      *
      * @param list<string> $statuses leer = alle
-     * @param string|null $categorySlug direkte Zuordnung, Haupt- oder Nebenkategorie
+     * @param string|null $categorySlug Kategorie; bei einer Hauptkategorie zählen auch die Artikel ihrer Unterkategorien
      * @param string|null $tag exakter Name
      * @param int|null $year Jahr der Veröffentlichung, bei Unveröffentlichten das der Erstellung
      * @return list<array<string, mixed>>
@@ -100,9 +100,10 @@ final class PostRepository
         $parameters = [];
 
         if ($categorySlug !== null) {
-            $sql .= ' JOIN post_categories pc ON pc.post_id = p.id JOIN categories c ON c.id = pc.category_id';
-            $conditions[] = 'c.slug = ?';
-            $parameters[] = $categorySlug;
+            // Eine Hauptkategorie schließt ihre Unterkategorien ein (ADR-037); ein Artikel erscheint nur einmal.
+            $conditions[] = 'EXISTS (SELECT 1 FROM post_categories pc JOIN categories c ON c.id = pc.category_id
+                WHERE pc.post_id = p.id AND (c.slug = ? OR c.parent_id = (SELECT id FROM categories WHERE slug = ?)))';
+            array_push($parameters, $categorySlug, $categorySlug);
         }
         if ($statuses !== []) {
             $conditions[] = 'p.status IN (' . implode(', ', array_fill(0, count($statuses), '?')) . ')';

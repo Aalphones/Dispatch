@@ -157,7 +157,7 @@ Setze zusätzlich aktive Links im Fließtext auf passende Originalquellen und we
 - `longform`: für Texte ab 1500 Wörtern; darunter warnt die Formprüfung (`longform_short`).
 - `briefing`: dichter Satz mit quadratischem Titelbild neben der Titelzeile; die Mindestwortzahl sinkt auf 40 %.
 - `accent`: Akzentfarbe des Artikels als `#rrggbb` (sechsstellig, z. B. `#1a73e8`); der Dark Mode hellt sie automatisch auf.
-- `categories`: 1 bis 3 Slugs aus `list_categories`; der erste ist die Hauptkategorie.
+- `categories`: 1 bis 3 Slugs aus `list_categories`; der erste ist die primäre Kategorie und soll eine Unterkategorie sein. Ihre Hauptkategorie ergibt sich aus `parent` und zählt für die Redaktionsquote (Gaming-Deckel, Geschichtsquote); Gaming-Themen gehören immer nach „Gaming & Sammelkarten“, auch wenn sie wirtschaftlich oder rechtlich aufgezogen sind.
 - `ai_assisted`: Standard `true` (Kennzeichnung „KI-recherchiert“ und Transparenzkasten); selbst geschriebene Artikel setzen `false`.
 
 ## Pflichtangaben der Formprüfung

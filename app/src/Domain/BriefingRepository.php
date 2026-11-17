@@ -16,17 +16,22 @@ final class BriefingRepository
     }
 
     /**
-     * Live und eingeplante Artikel einer Kategorie, direkte Zuordnung; ein eingeplanter Artikel zählt als heute erschienen.
+     * Live und eingeplante Artikel je Kategorie; ein eingeplanter Artikel zählt als heute erschienen. Eine Hauptkategorie
+     * fasst ihre Unterkategorien zusammen (ein Artikel zählt einmal); `own_post_count` zählt nur die direkte Zuordnung.
+     * Eine Kategorie ohne Artikel hat kein „zuletzt“ (`NULL`), damit sie in der Rotation nach vorn rückt.
      *
-     * @return array<int, array{interest: int, post_count: int, last_published_at: string|null, days_since_last: int|null}> Schlüssel = Kategorie-ID
+     * @return array<int, array{interest: int, post_count: int, own_post_count: int, last_published_at: string|null, days_since_last: int|null}> Schlüssel = Kategorie-ID
      */
     public function liveStatsByCategory(): array
     {
         $statement = $this->pdo->query(
-            "SELECT c.id, c.interest, COUNT(p.id) AS post_count, MAX(COALESCE(p.published_at, UTC_TIMESTAMP())) AS last_published_at,
-                    DATEDIFF(UTC_DATE(), DATE(MAX(COALESCE(p.published_at, UTC_TIMESTAMP())))) AS days_since_last
+            "SELECT c.id, c.interest, COUNT(DISTINCT p.id) AS post_count,
+                    COUNT(DISTINCT CASE WHEN x.id = c.id THEN p.id END) AS own_post_count,
+                    MAX(CASE WHEN p.id IS NULL THEN NULL ELSE COALESCE(p.published_at, UTC_TIMESTAMP()) END) AS last_published_at,
+                    DATEDIFF(UTC_DATE(), DATE(MAX(CASE WHEN p.id IS NULL THEN NULL ELSE COALESCE(p.published_at, UTC_TIMESTAMP()) END))) AS days_since_last
              FROM categories c
-             LEFT JOIN post_categories pc ON pc.category_id = c.id
+             LEFT JOIN categories x ON x.id = c.id OR x.parent_id = c.id
+             LEFT JOIN post_categories pc ON pc.category_id = x.id
              LEFT JOIN posts p ON p.id = pc.post_id AND ((p.published_revision IS NOT NULL AND p.status <> 'archived') OR p.status = 'scheduled')
              GROUP BY c.id, c.interest"
         );
@@ -36,6 +41,7 @@ final class BriefingRepository
             $stats[(int) $row['id']] = [
                 'interest' => (int) $row['interest'],
                 'post_count' => (int) $row['post_count'],
+                'own_post_count' => (int) $row['own_post_count'],
                 'last_published_at' => $row['last_published_at'],
                 'days_since_last' => $row['days_since_last'] === null ? null : (int) $row['days_since_last'],
             ];

@@ -29,10 +29,12 @@ final class StatsRepository
         [$keyColumn, $labelColumn, $joins, $order] = match ($groupBy) {
             'day' => ['d.day', 'd.day', '', 'd.day ASC'],
             'post' => ['p.slug', 'p.title', 'JOIN posts p ON p.id = d.post_id', 'views DESC, p.id'],
+            // Nach Hauptkategorie: Aufrufe einer Unterkategorie zählen für ihre Hauptkategorie (ADR-037).
             'category' => [
-                'c.slug', 'c.name',
-                'JOIN post_categories pc ON pc.post_id = d.post_id AND pc.is_primary = 1 JOIN categories c ON c.id = pc.category_id',
-                'views DESC, c.id',
+                'COALESCE(par.slug, c.slug)', 'COALESCE(par.name, c.name)',
+                'JOIN post_categories pc ON pc.post_id = d.post_id AND pc.is_primary = 1 JOIN categories c ON c.id = pc.category_id
+                 LEFT JOIN categories par ON par.id = c.parent_id',
+                'views DESC, COALESCE(par.slug, c.slug)',
             ],
         };
 

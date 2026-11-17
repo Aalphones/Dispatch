@@ -20,8 +20,10 @@ final class BriefingService
     private const SEARCHES_WITHOUT_RESULTS = 10;
     private const ROTATION_CAP_DAYS = 90;
     private const ROTATION_DAYS_WITHOUT_POST = 60;
+    private const QUOTA_CANDIDATES = 100;
 
     private BriefingRepository $briefing;
+    private QuotaService $quota;
     private CategoryRepository $categories;
     private QueueRepository $queue;
     private StatsRepository $stats;
@@ -33,6 +35,7 @@ final class BriefingService
     public function __construct(PDO $pdo, array $config)
     {
         $this->briefing = new BriefingRepository($pdo);
+        $this->quota = new QuotaService($pdo, $config);
         $this->categories = new CategoryRepository($pdo);
         $this->queue = new QueueRepository($pdo);
         $this->stats = new StatsRepository($pdo);
@@ -52,7 +55,7 @@ final class BriefingService
         }
 
         $returned = $this->briefing->returnedDrafts();
-        $nextItem = $this->queue->nextClaimable();
+        $nextItem = $this->nextQueueItem();
         $today = new DateTimeImmutable('today', new DateTimeZone('UTC'));
 
         return [
@@ -63,6 +66,7 @@ final class BriefingService
             'preferences' => $this->documents->get('preferences')['content'],
             'form_rules' => $this->settings->formRules(),
             'categories' => $this->categoryOverview(),
+            'quota' => $this->quota->status(),
             'recent_posts' => $this->briefing->recentPosts(self::RECENT_POSTS),
             'reader_interest' => $this->readerInterest($today),
             'reactions' => $this->reactions->recent(self::REACTION_DAYS),
@@ -81,7 +85,9 @@ final class BriefingService
     }
 
     /**
-     * @return array<int, array{post_count: int, last_published_at: string|null, rotation: int}> Schlüssel = Kategorie-ID
+     * Hauptkategorien aggregieren ihre Unterkategorien (post_count, letzter Artikel, Rotation); own_post_count = nur direkt.
+     *
+     * @return array<int, array{post_count: int, own_post_count: int, last_published_at: string|null, rotation: int}> Schlüssel = Kategorie-ID
      */
     public function categoryStats(): array
     {
@@ -89,12 +95,26 @@ final class BriefingService
         foreach ($this->briefing->liveStatsByCategory() as $categoryId => $row) {
             $result[$categoryId] = [
                 'post_count' => $row['post_count'],
+                'own_post_count' => $row['own_post_count'],
                 'last_published_at' => $row['last_published_at'],
                 'rotation' => $this->rotation($row['interest'], $row['days_since_last']),
             ];
         }
 
         return $result;
+    }
+
+    /**
+     * Der Auftrag, den ein Agent ohne Angabe einer ID bekäme: der erste, der zur Redaktionsquote passt
+     * (Gaming zurückgestellt, wenn der Deckel erreicht ist; Geschichte vorn, wenn sie fehlt).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function nextQueueItem(): ?array
+    {
+        $ordered = $this->quota->preferQueueOrder($this->queue->claimCandidates(self::QUOTA_CANDIDATES));
+
+        return $ordered === [] ? null : $this->queue->find($ordered[0]);
     }
 
     private function resolveAutoMode(bool $hasReturned, bool $hasOpenItem): string
@@ -138,6 +158,7 @@ final class BriefingService
                 'keywords' => $category['keywords'],
                 'avoid' => $category['avoid'],
                 'post_count' => $categoryStats['post_count'],
+                'own_post_count' => $categoryStats['own_post_count'],
                 'last_published_at' => $categoryStats['last_published_at'],
                 'rotation' => $categoryStats['rotation'],
                 'excluded' => $interest === 0,

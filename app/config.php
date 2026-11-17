@@ -53,6 +53,14 @@ return [
         'default_scopes' => ['blog:read', 'blog:write'],
         'manual_redirect_uris' => ['https://claude.ai/api/mcp/auth_callback'],
     ],
+    // Redaktionsquote (ADR-037): gerechnet auf der Hauptkategorie der primären Kategorie, in jedem Fenster aufeinanderfolgender Artikel.
+    'quota' => [
+        'window' => 4,
+        'capped_main' => 'gaming-sammelkarten',
+        'capped_max' => 1,
+        'required_main' => 'geschichte',
+        'required_min' => 1,
+    ],
     'publish_mode' => 'review',
     'stats_enabled' => true,
     // Anfragen, die zu diesem User-Agent-Muster passen (oder keinen haben), zählen nicht.

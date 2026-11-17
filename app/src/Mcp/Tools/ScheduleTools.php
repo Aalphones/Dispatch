@@ -25,14 +25,14 @@ final class ScheduleTools
         $registry->add(new Tool(
             'get_publication_schedule',
             'Veröffentlichungsplan lesen',
-            'Liefert wartende Artikel mit erwartetem Zeitpunkt und Modus. Nur Einträge mit mode="slot" gehören zur umsortierbaren Warteschlange; feste Termine bleiben unverändert.',
+            'Liefert wartende Artikel mit erwartetem Zeitpunkt, Modus und Hauptkategorie sowie den Quotenstand (Gaming-Deckel, Geschichtsquote, Verstöße). Nur Einträge mit mode="slot" gehören zur umsortierbaren Warteschlange; feste Termine bleiben unverändert. Die Reihenfolge folgt der Redaktionsquote (Gaming-Deckel, Geschichtsquote); quota_moved=true heißt: Die Quote hat den Artikel gegenüber der gespeicherten Reihenfolge vorgezogen. Ohne passenden Artikel bleibt es bei der gespeicherten Reihenfolge.',
             Schema::object([]),
             Tool::annotations('Veröffentlichungsplan lesen', 'R'),
             Scopes::READ,
             static function (array $args, Actor $actor) use ($schedule): ToolResult {
                 $plan = $schedule->plan(new DateTimeImmutable('now', new DateTimeZone('UTC')));
 
-                return ToolResult::json(['items' => $plan['items']]);
+                return ToolResult::json(['items' => $plan['items'], 'quota' => $plan['quota']]);
             }
         ));
 

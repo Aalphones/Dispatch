@@ -38,12 +38,14 @@ final class ScheduleService
     private PostService $posts;
     private SettingService $settings;
     private AuditRepository $audit;
+    private QuotaService $quota;
 
     /** @param array<string, mixed> $config */
     public function __construct(PDO $pdo, array $config)
     {
         $this->pdo = $pdo;
         $this->schedule = new ScheduleRepository($pdo);
+        $this->quota = new QuotaService($pdo, $config);
         $this->posts = new PostService($pdo, $config);
         $this->settings = new SettingService($pdo, $config);
         $this->audit = new AuditRepository($pdo);
@@ -111,7 +113,11 @@ final class ScheduleService
      * Der Plan in der Form von `GET /dispatch/api/schedule`: wartende Artikel mit erwartetem Erscheinen, der nächste
      * freie Termin und die heute erschienenen Artikel. Alle Zeiten UTC.
      *
-     * @return array{per_day: int, times: list<string>, next_free: string|null, items: list<array<string, mixed>>, released_today: list<array<string, mixed>>}
+     * Die Reihenfolge der Warteschlange folgt der Redaktionsquote (ADR-037): `items` zeigt, wie die Termine besetzt werden;
+     * `quota_moved` markiert Artikel, die die Quote gegenüber der gespeicherten Reihenfolge vorgezogen hat; die dafür
+     * zurückgerückten stehen entsprechend später.
+     *
+     * @return array{per_day: int, times: list<string>, next_free: string|null, items: list<array<string, mixed>>, released_today: list<array<string, mixed>>, quota: array<string, mixed>}
      */
     public function plan(DateTimeImmutable $nowUtc): array
     {
@@ -136,7 +142,27 @@ final class ScheduleService
             'next_free' => $nextFree,
             'items' => $items,
             'released_today' => $this->schedule->releasedBetween($dayFrom, $dayTo),
+            'quota' => $this->quota->status(),
         ];
+    }
+
+    /**
+     * Die Warteschlange in der Reihenfolge, in der die Termine besetzt werden: gespeicherte Reihenfolge, mit Vorzug
+     * für die Quote. Ohne passenden Artikel bleibt es bei der gespeicherten Reihenfolge — nie blockieren.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function arrangedWaiting(): array
+    {
+        $waiting = $this->schedule->waitingSlots();
+        $order = $this->quota->arrange(array_column($waiting, 'main'), $this->quota->recentMains());
+
+        $arranged = [];
+        foreach ($order as $position => $index) {
+            $arranged[] = $waiting[$index] + ['moved' => $index > $position];
+        }
+
+        return $arranged;
     }
 
     /** @param list<int> $ids VollstÃ¤ndige neue Reihenfolge aller wartenden Queue-Termine. */
@@ -202,7 +228,7 @@ final class ScheduleService
      */
     private function queueItems(DateTimeImmutable $today, string $now, array $takenToday, ?string &$nextFree): array
     {
-        $waiting = $this->schedule->waitingSlots();
+        $waiting = $this->arrangedWaiting();
         $items = [];
         $nextFree = null;
         $queueIndex = 0;
@@ -245,6 +271,7 @@ final class ScheduleService
         return [
             'id' => $post['id'], 'title' => $post['title'], 'slug' => $post['slug'], 'mode' => 'slot',
             'expected_at' => $slotUtc, 'position' => $queueIndex + 1, 'due' => $isDue,
+            'main_category' => $post['main'] ?? null, 'quota_moved' => (bool) ($post['moved'] ?? false),
         ];
     }
 
@@ -270,7 +297,7 @@ final class ScheduleService
             $today->setTimezone($utc)->format(self::SQL_FORMAT),
             $today->modify('+1 day')->setTimezone($utc)->format(self::SQL_FORMAT)
         );
-        $waiting = $this->schedule->waitingSlots();
+        $waiting = $this->arrangedWaiting();
         $queueIndex = 0;
         $released = 0;
 

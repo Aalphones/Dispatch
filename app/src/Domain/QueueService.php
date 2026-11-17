@@ -19,6 +19,7 @@ final class QueueService
     private const PRIORITY_MAX = 3;
     private const PRIORITY_DEFAULT = 2;
     private const CLAIM_CANDIDATES = 5;
+    private const QUOTA_CANDIDATES = 100;
 
     private const FIELDS = ['title', 'brief', 'links', 'priority', 'depth', 'category', 'media'];
     private const DEPTHS = ['standard', 'deep'];
@@ -32,11 +33,13 @@ final class QueueService
     private MediaService $mediaService;
     private SettingService $settings;
     private AuditRepository $audit;
+    private QuotaService $quota;
 
     /** @param array<string, mixed> $config */
     public function __construct(private readonly PDO $pdo, array $config)
     {
         $this->queue = new QueueRepository($pdo);
+        $this->quota = new QuotaService($pdo, $config);
         $this->categories = new CategoryRepository($pdo);
         $this->media = new MediaRepository($pdo);
         $this->mediaService = new MediaService($pdo, $config);
@@ -152,7 +155,9 @@ final class QueueService
     }
 
     /**
-     * Mit `id` genau dieser Auftrag, ohne `id` der erste offene in gespeicherter Reihenfolge.
+     * Mit `id` genau dieser Auftrag. Ohne `id` der erste offene, der zur Redaktionsquote passt (ADR-037): Gaming
+     * wird zurückgestellt, wenn der Deckel erreicht ist, Geschichte rückt vor, wenn sie fehlt; sonst gilt die
+     * gespeicherte Reihenfolge. Passt keiner, bekommt der Agent trotzdem den ersten (nie blockieren).
      *
      * @return array<string, mixed>
      */
@@ -168,7 +173,8 @@ final class QueueService
             return $this->get($id);
         }
 
-        foreach ($this->queue->claimCandidates(self::CLAIM_CANDIDATES) as $candidateId) {
+        $ordered = $this->quota->preferQueueOrder($this->queue->claimCandidates(self::QUOTA_CANDIDATES));
+        foreach (array_slice($ordered, 0, self::CLAIM_CANDIDATES) as $candidateId) {
             if ($this->tryClaim($candidateId, $actor, $minutes)) {
                 return $this->get($candidateId);
             }

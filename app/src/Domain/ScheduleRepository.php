@@ -15,11 +15,11 @@ final class ScheduleRepository
     {
     }
 
-    /** @return list<array{id: int, title: string, slug: string, scheduled_since: string}> Warteschlange, älteste Freigabe zuerst */
+    /** @return list<array{id: int, title: string, slug: string, scheduled_since: string, main: string|null}> Warteschlange in gespeicherter Reihenfolge; `main` = Hauptkategorie */
     public function waitingSlots(): array
     {
         $rows = $this->pdo->query(
-            "SELECT id, title, slug, scheduled_since FROM posts
+            'SELECT id, title, slug, scheduled_since, ' . QuotaService::mainOfPostSql('posts.id') . " AS main FROM posts
              WHERE status = 'scheduled' AND schedule_mode = 'slot' ORDER BY schedule_order, id"
         )->fetchAll();
 

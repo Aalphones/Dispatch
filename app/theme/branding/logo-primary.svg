@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 128" role="img" aria-label="DISPATCH — Your agents. Your publication.">
+  <g transform="translate(0 0)">
+    <path fill="#43D6C5" d="M17 101C22 48 55 12 112 13c-2 54-34 91-95 88Z"/>
+    <path d="M27 95c23-28 48-48 77-66" fill="none" stroke="#071D1B" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <path d="M143 18v92" stroke="#43D6C5" stroke-width="2" opacity=".8"/>
+  <text x="174" y="73" fill="#F1F5E9" font-family="Inter, Arial, sans-serif" font-size="58" font-weight="750" letter-spacing="1">DISPATCH</text>
+  <text x="177" y="104" fill="#A5B9B1" font-family="Inter, Arial, sans-serif" font-size="15" letter-spacing="3.4">YOUR AGENTS. YOUR PUBLICATION.</text>
+</svg>

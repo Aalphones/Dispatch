@@ -212,6 +212,10 @@ final class Builder
             $aboutText = trim((string) $this->site->settings['site_tagline']);
         }
         $topTags = array_slice($this->site->tags, 0, 10);
+        $topCategories = array_values(array_filter(
+            $this->site->categories,
+            static fn (array $category): bool => $category['parent_id'] === null && $category['post_count'] > 0,
+        ));
 
         $files = [];
         foreach ($pages as $index => $cards) {
@@ -229,7 +233,9 @@ final class Builder
                 'gesamt' => $total,
                 'aboutText' => $aboutText,
                 'topTags' => $topTags,
+                'topCategories' => $topCategories,
             ], [
+                'seitenleiste' => $number === 1,
                 'title' => $title,
                 'description' => (string) $this->site->settings['site_description'],
                 'canonical' => $url,

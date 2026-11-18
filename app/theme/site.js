@@ -9,7 +9,27 @@ if (nav && 'ResizeObserver' in window) {
 	new ResizeObserver(() => root.style.setProperty('--nav-h', nav.offsetHeight + 'px')).observe(nav);
 }
 
-const isApple = /Mac|iPhone|iPad/.test(navigator.platform);
+// Hamburger (Tablet, Handy): klappt die Kategorien auf; ohne Skript führt der Link zur Kategorienseite.
+const burger = document.getElementById('burger');
+if (burger && nav) {
+	burger.setAttribute('role', 'button');
+	const toggle = (open) => {
+		nav.classList.toggle('offen', open);
+		burger.setAttribute('aria-expanded', String(open));
+	};
+	burger.addEventListener('click', (event) => {
+		event.preventDefault();
+		toggle(!nav.classList.contains('offen'));
+	});
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape' && nav.classList.contains('offen')) {
+			toggle(false);
+			burger.focus();
+		}
+	});
+}
+
+const isApple =/Mac|iPhone|iPad/.test(navigator.platform);
 document.querySelectorAll('.taste').forEach((key) => {
 	key.textContent = isApple ? '⌘ K' : 'Strg K';
 });

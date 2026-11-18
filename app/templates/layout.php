@@ -38,7 +38,13 @@ foreach ($site->categories as $category) {
         $mainCategories[] = $category;
     }
 }
-$mainCategories = array_slice($mainCategories, 0, 6);
+// Auf dem Desktop zeigt die Leiste die ersten sechs; im Hamburger-Menü (Tablet, Handy) stehen alle.
+$hatSeitenleiste = ($meta['seitenleiste'] ?? false) === true;
+$footTags = array_slice($site->tags, 0, 10);
+$footAbout = trim((string) $site->settings['site_description']);
+if ($footAbout === '') {
+    $footAbout = $siteTagline;
+}
 // Marken-Adressen: ohne Asset leer, die Vorlage zeigt dann statt des Bildes den Namen.
 $brand = [];
 foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKey) {
@@ -77,6 +83,7 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
 <header>
   <div class="leiste">
     <div class="wrap">
+      <a class="burger" id="burger" href="/kategorien/" aria-label="Kategorien" aria-controls="kat-menue" aria-expanded="false"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></a>
       <a class="logo" href="/"<?php if ($brand['logoPrimary'] !== '') { ?> aria-label="<?= e($siteTitle) ?> – zur Startseite"<?php } ?>>
 <?php if ($brand['logoPrimary'] !== '') { ?>
         <picture>
@@ -102,10 +109,10 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
       </div>
     </div>
   </div>
-  <nav class="nav" aria-label="Kategorien">
+  <nav class="nav<?= $hatSeitenleiste ? ' nav-seitenleiste' : '' ?>" id="kat-menue" aria-label="Kategorien">
     <ul>
-<?php foreach ($mainCategories as $category) { ?>
-      <li><a href="<?= e($category['url']) ?>"<?php if ($category['slug'] === $activeCategory) { ?> aria-current="page"<?php } ?>><?= e($category['name']) ?></a></li>
+<?php foreach ($mainCategories as $index => $category) { ?>
+      <li<?= $index >= 6 ? ' class="mehr"' : '' ?>><a href="<?= e($category['url']) ?>"<?php if ($category['slug'] === $activeCategory) { ?> aria-current="page"<?php } ?>><?= e($category['name']) ?><span class="zahl"><?= (int) $category['post_count'] ?></span></a></li>
 <?php } ?>
       <li><a href="/kategorien/" class="alle">Alle Kategorien</a></li>
     </ul>
@@ -123,6 +130,27 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
 <div class="fuss-motiv"><img src="<?= e($brand['footerMascot']) ?>" alt="" width="1774" height="887" loading="lazy" decoding="async"></div>
 <?php } ?>
 <footer class="fuss">
+<?php if ($footTags !== [] || $footAbout !== '') { ?>
+  <div class="wrap fuss-extra">
+<?php if ($footAbout !== '') { ?>
+    <section>
+      <h2>Über <?= e($siteTitle) ?></h2>
+      <p><?= e($footAbout) ?></p>
+      <a class="weiter" href="/ueber/">Mehr über <?= e($siteTitle) ?> <span aria-hidden="true">→</span></a>
+    </section>
+<?php } ?>
+<?php if ($footTags !== []) { ?>
+    <section>
+      <h2>Beliebte Schlagwörter</h2>
+      <ul class="chips">
+<?php foreach ($footTags as $tag) { ?>
+        <li><a class="chip tag" href="<?= e($tag['url']) ?>"><?= e($tag['name']) ?> <span class="zahl"><?= (int) $tag['count'] ?></span></a></li>
+<?php } ?>
+      </ul>
+    </section>
+<?php } ?>
+  </div>
+<?php } ?>
   <div class="wrap">
     <a class="marke" href="/"><?php if ($brand['logoIcon'] !== '') { ?><img src="<?= e($brand['logoIcon']) ?>" alt="" width="128" height="128"><?php } ?><span><?= e($siteTitle) ?></span></a>
     <nav aria-label="Rechtliches und Kontakt"><a href="/ueber/">Kontakt</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>

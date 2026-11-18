@@ -15,6 +15,7 @@ use function Dispatch\Site\quellenText;
  * @var int $gesamt
  * @var string $aboutText site_description, sonst site_tagline (Karte „Über DISPATCH“)
  * @var list<array{name: string, slug: string, url: string, count: int}> $topTags die zehn häufigsten Schlagwörter
+ * @var list<array<string, mixed>> $topCategories Hauptkategorien mit mindestens einem Artikel (Karte „Kategorien“)
  */
 ?>
 <div class="wrap">
@@ -55,6 +56,17 @@ use function Dispatch\Site\quellenText;
   </div>
 <?php if ($mitSeite) { ?>
   <aside class="home-sidebar" aria-label="Über die Seite">
+<?php if ($topCategories !== []) { ?>
+    <section class="side-karte">
+      <h2>Kategorien</h2>
+      <ul class="kat-liste">
+<?php foreach ($topCategories as $category) { ?>
+        <li><a href="<?= e($category['url']) ?>"><span><?= e($category['name']) ?></span><span class="zahl"><?= (int) $category['post_count'] ?></span></a></li>
+<?php } ?>
+      </ul>
+      <a class="weiter" href="/kategorien/">Alle Kategorien <span aria-hidden="true">→</span></a>
+    </section>
+<?php } ?>
     <section class="side-karte">
       <h2><?php if (($assets['logoIcon'] ?? '') !== '') { ?><img src="<?= e($assets['logoIcon']) ?>" alt="" width="128" height="128"><?php } ?>Über DISPATCH</h2>
 <?php if ($aboutText !== '') { ?>

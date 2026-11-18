@@ -429,6 +429,38 @@ body.fokus .abb[data-layout="left"], body.fokus .abb[data-layout="right"] { floa
   body.fokus .text { font-size: 1.15rem; }
   body.fokus .artikel { padding-top: 3.5rem; }
 }
+
+/* Kategorien: Seitenleiste (Desktop) bzw. Hamburger-Menü + Fuß (Tablet, Handy) */
+.burger { display: none; flex: none; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; margin-left: -.5rem; border-radius: 8px; color: var(--ink-2); text-decoration: none; }
+.burger:hover, .burger[aria-expanded="true"] { color: var(--color-primary); background: var(--paper-2); }
+.burger .ico { width: 1.4rem; height: 1.4rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.nav .zahl, .kat-liste .zahl { color: var(--ink-3); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.nav .zahl { display: none; }
+.kat-liste { list-style: none; margin: 0; padding: 0; }
+.kat-liste a { display: flex; justify-content: space-between; align-items: baseline; gap: .75rem; padding: .45rem 0; border-top: 1px solid var(--rule); text-decoration: none; color: var(--ink-2); font: 500 .95rem var(--sans); transition: color var(--t-fast); }
+.kat-liste li:first-child a { border-top: 0; }
+.kat-liste a:hover { color: var(--color-primary); }
+.fuss .fuss-extra { display: none; }
+.fuss-extra h2 { font-size: 1.05rem; color: var(--ink); margin: 0 0 .6rem; }
+.fuss-extra p { margin: 0 0 .5rem; }
+
+@media (min-width: 62rem) {
+  .home-sidebar { position: sticky; top: 1.25rem; align-self: start; max-height: calc(100vh - 2.5rem); overflow-y: auto; scrollbar-width: thin; }
+  .nav-seitenleiste { display: none; }
+  .nav .mehr { display: none; }
+}
+@media (max-width: 61.99rem) {
+  .burger { display: inline-flex; }
+  .home-sidebar { display: none; }
+  .nav { display: none; position: relative; backdrop-filter: none; background: var(--paper); }
+  .nav.offen { display: block; }
+  .nav ul { flex-direction: column; gap: 0; padding: .25rem 1.25rem .75rem; overflow: visible; -webkit-mask-image: none; mask-image: none; }
+  .nav li + li { border-top: 1px solid var(--rule); }
+  .nav a { display: flex; justify-content: space-between; align-items: baseline; padding: .8rem 0; font-size: 1.05rem; }
+  .nav a::after { display: none; }
+  .nav .zahl { display: inline; }
+  .fuss .fuss-extra { display: grid; gap: 1.5rem; padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--rule); }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 
 /* Bausteine ohne Entwurf */

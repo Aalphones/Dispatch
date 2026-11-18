@@ -13,6 +13,8 @@ use function Dispatch\Site\quellenText;
  * @var list<array<string, mixed>> $posts Karten dieser Seite
  * @var int $seite
  * @var int $gesamt
+ * @var string $aboutText site_description, sonst site_tagline (Karte „Über DISPATCH“)
+ * @var list<array{name: string, slug: string, url: string, count: int}> $topTags die zehn häufigsten Schlagwörter
  */
 ?>
 <div class="wrap">

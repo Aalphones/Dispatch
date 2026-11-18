@@ -207,6 +207,11 @@ final class Builder
         $pages = $this->paginate(array_slice($posts, 1));
         $total = count($pages);
         $siteTitle = (string) $this->site->settings['site_title'];
+        $aboutText = trim((string) $this->site->settings['site_description']);
+        if ($aboutText === '') {
+            $aboutText = trim((string) $this->site->settings['site_tagline']);
+        }
+        $topTags = array_slice($this->site->tags, 0, 10);
 
         $files = [];
         foreach ($pages as $index => $cards) {
@@ -222,6 +227,8 @@ final class Builder
                 'posts' => $cards,
                 'seite' => $number,
                 'gesamt' => $total,
+                'aboutText' => $aboutText,
+                'topTags' => $topTags,
             ], [
                 'title' => $title,
                 'description' => (string) $this->site->settings['site_description'],

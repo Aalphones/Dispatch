@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Dispatch\Site;
 
-/** Die Theme-Dateien als hash-benannte Assets (`assets/style.<sha1-8>.css`), damit Browser sie unbegrenzt cachen können. */
+/** Die Theme-Dateien und Marken-Assets als hash-benannte Assets (`assets/style.<sha1-8>.css`), damit Browser sie unbegrenzt cachen können. */
 final class Assets
 {
     /** Schlüssel der Adressen → [Dateiname ohne Endung, Endung]. */
@@ -20,6 +20,16 @@ final class Assets
         'diagramme' => ['diagramme', 'js'],
         'diagrammestil' => ['diagramme', 'css'],
     ];
+
+    /** Marken-Assets aus `theme/branding/`: Schlüssel der Adressen → [Quelldatei, Name der Ausgabe, Endung]. */
+    private const BRANDING_FILES = [
+        'logoPrimary' => ['logo-primary.svg', 'logo-primary', 'svg'],
+        'logoIcon' => ['logo-icon.svg', 'logo-icon', 'svg'],
+        'logoWordmark' => ['logo-wordmark.svg', 'logo-wordmark', 'svg'],
+        'footerMascot' => ['footer-mascot.png', 'footer-mascot', 'png'],
+    ];
+
+    private const BRANDING_FOLDER = 'branding';
 
     private const EDITORIAL_FOLDER = 'redaktion';
 
@@ -37,6 +47,19 @@ final class Assets
             $source = (string) $config['app_dir'] . '/theme/' . $name . '.' . $extension;
             $content = is_file($source) ? (string) file_get_contents($source) : '';
 
+            $path = self::hashedPath($name, $extension, $content);
+            $files[$path] = $content;
+            $urls[$key] = '/' . $path;
+        }
+
+        // Ein fehlendes Marken-Asset fällt auf eine leere Adresse zurück, es bricht den Bau nicht.
+        foreach (self::BRANDING_FILES as $key => [$source, $name, $extension]) {
+            $file = (string) $config['app_dir'] . '/theme/' . self::BRANDING_FOLDER . '/' . $source;
+            if (!is_file($file)) {
+                $urls[$key] = '';
+                continue;
+            }
+            $content = (string) file_get_contents($file);
             $path = self::hashedPath($name, $extension, $content);
             $files[$path] = $content;
             $urls[$key] = '/' . $path;

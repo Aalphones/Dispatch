@@ -4,7 +4,7 @@ Stand: 2026-11-16 · Quelle: Design-Handover vom 2026-11-16
 
 | Phase | Inhalt | Rating | Status |
 |---|---|---|---|
-| 1 | Marken-Assets, Builder-Kontrakt und verbindliche Designquelle | heikel | pending |
+| 1 | Marken-Assets, Builder-Kontrakt und verbindliche Designquelle | heikel | complete |
 | 2 | Dunkle globale Schale: Header, Navigation, Footer, Tokens | standard | pending |
 | 3 | Startseite: Featured-Artikel, Sidebar und Raster | standard | pending |
 | 4 | Restliche öffentliche Seiten, Redaktionsmodus und Dokumentation | standard | pending |

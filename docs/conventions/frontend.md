@@ -24,7 +24,8 @@
 
 - Budgets (ADR-015, 023, 032): `style.css` ≤ 50 000 Byte, `site.js` ≤ 5 000, `suche.js` ≤ 9 500, `artikel.js` ≤ 13 000, `zaehler.js` ≤ 2 500, `vorschau.js` ≤ 3 000, `bausteine.js` ≤ 8 000, `bausteine.css` ≤ 16 000, `diagramme.js` ≤ 13 500, `diagramme.css` ≤ 9 000 (ADR-030). `bausteine.*` laden nur bei Artikeln mit Gestaltungs-Bausteinen (Stylesheet per Seitenkopf, Skript per `artikel.js` bei bedienbaren Bausteinen); `diagramme.css` nur bei Artikeln mit Diagrammen, `diagramme.js` nur bei `.diagramm[data-interaktiv]` (Tabelle `COMPONENTS` in `loadComponents()`). Redaktionsmodule: kein Budget.
 - Kein `style="…"` in von Modulen erzeugtem HTML (`el()` in `redaktion/ui.js` ignoriert es); Maße und Farben über `element.style.…`.
-- Gestaltung: `docs/design/entwurf-website.html` ist verbindlich (ADR-013).
+- Gestaltung: `docs/design/dispatch-dark-botanical.md` ist verbindlich (ADR-035) und ersetzt den alten interaktiven Entwurf `entwurf-website.html` (ADR-013) als Referenz.
+- Marken-Assets (Logos, Footer-Maskottchen) liegen in `app/theme/branding/` und kommen nur über `$assets` (`logoPrimary`, `logoIcon`, `logoWordmark`, `footerMascot`) in Templates; eine leere Adresse ist erlaubt.
 - Jede Ausgabe in Templates wird escaped (Helfer `e()`); nur Artikel-HTML aus dem Sanitizer geht roh hinaus.
 - Ohne JavaScript funktioniert alles außer Suche, Videos und Login.
 - Farbwelt: Primärfarbe gedecktes Teal (`--accent` `#256e64` hell, `--accent-ink` `#45a595` dunkel), Grün als Zweitfarbe, kein Neon. Rot nur für `--bad`/`--minus` und Diagramm-`c6`; Diagramm-Palette `--c1…--c8` in `diagramme.css`, keine harten Farbwerte außerhalb der Tokens.

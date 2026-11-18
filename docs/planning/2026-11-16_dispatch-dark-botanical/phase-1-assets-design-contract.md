@@ -19,12 +19,14 @@ Fehlerklassen: PHP-/CSS-/HTML-Vault-Abschnitte standen in dieser Planungssitzung
 
 ## Checkliste
 
-- [ ] `app/theme/branding/` mit `logo-primary.svg`, `logo-icon.svg`, `logo-wordmark.svg`, `footer-mascot.png` aus `artifacts/` anlegen.
-- [ ] `app/src/Site/Assets.php`: getrennte, explizite Branding-Map ergänzen; Inhalt lesen, Hash über den Inhalt bilden, als `assets/<name>.<hash>.<ext>` registrieren und URLs unter den vier Kontrakt-Schlüsseln bereitstellen.
-- [ ] `app/src/Site/Builder.php`: für die Startseite `aboutText` und `topTags` wie im Kontrakt bereitstellen; keine Seitendaten global mutieren.
-- [ ] `app/templates/layout.php`: die später verwendeten vier `$assets`-Einträge defensive lesen, damit Vorschau/Build ohne Asset nicht mit Notice scheitert.
-- [ ] `docs/design/dispatch-dark-botanical.md` als Designvertrag anlegen; `docs/conventions/frontend.md` von `entwurf-website.html` auf diese Datei umstellen.
-- [ ] `docs/decisions/035-dark-botanical-design-und-marken-assets.md` anlegen: Optionen (alte Papier-Optik, Handover mit SVG-Footerbild, Handover mit neuem Maskottchen-PNG), Entscheidung für lokale hash-benannte Marken-Assets und das PNG, Konsequenzen (keine hellen Varianten, neuer Build-Assettyp, feste intrinsische Bildmaße).
-- [ ] `docs/code-map.md` um `app/theme/branding/` und die Branding-Map in `Assets` ergänzen.
+- [x] `app/theme/branding/` mit `logo-primary.svg`, `logo-icon.svg`, `logo-wordmark.svg`, `footer-mascot.png` aus `artifacts/` anlegen.
+- [x] `app/src/Site/Assets.php`: getrennte, explizite Branding-Map ergänzen; Inhalt lesen, Hash über den Inhalt bilden, als `assets/<name>.<hash>.<ext>` registrieren und URLs unter den vier Kontrakt-Schlüsseln bereitstellen.
+- [x] `app/src/Site/Builder.php`: für die Startseite `aboutText` und `topTags` wie im Kontrakt bereitstellen; keine Seitendaten global mutieren.
+- [x] `app/templates/layout.php`: die später verwendeten vier `$assets`-Einträge defensive lesen, damit Vorschau/Build ohne Asset nicht mit Notice scheitert.
+- [x] `docs/design/dispatch-dark-botanical.md` als Designvertrag anlegen; `docs/conventions/frontend.md` von `entwurf-website.html` auf diese Datei umstellen.
+- [x] `docs/decisions/035-dark-botanical-design-und-marken-assets.md` anlegen: Optionen (alte Papier-Optik, Handover mit SVG-Footerbild, Handover mit neuem Maskottchen-PNG), Entscheidung für lokale hash-benannte Marken-Assets und das PNG, Konsequenzen (keine hellen Varianten, neuer Build-Assettyp, feste intrinsische Bildmaße).
+- [x] `docs/code-map.md` um `app/theme/branding/` und die Branding-Map in `Assets` ergänzen.
 
 ## Report-Back
+
+Status: complete (2026-11-18). Die vier Branding-Quellen lagen schon in `app/theme/branding/` (Commit d512807). `Assets::collect()` verifiziert per Lauf: vier hash-benannte URLs (`/assets/logo-primary.cb4521ac.svg` u. a., `footer-mascot.c55c9fe8.png`). `php -l` für Assets, Builder, layout, home grün. Layout legt `$brand` defensiv an; genutzt wird es erst ab Phase 2.

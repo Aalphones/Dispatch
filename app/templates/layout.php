@@ -12,7 +12,7 @@ use function Dispatch\Site\e;
  * @var string $content fertiges HTML der Seitenvorlage
  * @var array<string, mixed> $meta title, description, canonical, robots, bodyPage, activeCategory, scripts, styles
  * @var SiteData $site
- * @var array<string, string> $assets Name → URL
+ * @var array<string, string> $assets Name → URL (Marken-Assets: logoPrimary, logoIcon, logoWordmark, footerMascot; leer, wenn die Quelldatei fehlt)
  * @var string $baseUrl
  */
 
@@ -41,6 +41,11 @@ foreach ($site->categories as $category) {
 }
 $mainCategories = array_slice($mainCategories, 0, 6);
 $topTags = array_slice($site->tags, 0, 10);
+// Marken-Adressen: ohne Asset leer, die Vorlage zeigt dann statt des Bildes den Namen.
+$brand = [];
+foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKey) {
+    $brand[$brandKey] = (string) ($assets[$brandKey] ?? '');
+}
 ?>
 <!doctype html>
 <html lang="de" data-suche="<?= e($assets['suche'] ?? '') ?>" data-zaehler="<?= e($assets['zaehler'] ?? '') ?>" data-artikel="<?= e($assets['artikel'] ?? '') ?>" data-redaktion="<?= e($assets['redaktion'] ?? '') ?>" data-bausteine="<?= e($assets['bausteine'] ?? '') ?>" data-bausteinestil="<?= e($assets['bausteinestil'] ?? '') ?>" data-diagramme="<?= e($assets['diagramme'] ?? '') ?>" data-diagrammestil="<?= e($assets['diagrammestil'] ?? '') ?>"<?php if (isset($assets['suchindex'])) { ?> data-suchindex="<?= e($assets['suchindex']) ?>"<?php } ?>>

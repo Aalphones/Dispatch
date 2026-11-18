@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Dispatch\Site\Seo;
 use Dispatch\Site\SiteData;
 
-use function Dispatch\Site\datum;
 use function Dispatch\Site\e;
 
 /**
@@ -30,8 +29,8 @@ $canonical = (string) ($meta['canonical'] ?? '');
 $robots = (string) ($meta['robots'] ?? 'index, follow');
 $activeCategory = (string) ($meta['activeCategory'] ?? '');
 $scripts = (array) ($meta['scripts'] ?? []);
-// Die Seitenvorlage trägt die einzige h1; nur auf der ersten Startseite ist das der Seitenname im Kopf.
-$nameTag = ($meta['nameAlsH1'] ?? false) === true ? 'h1' : 'p';
+// Die Seitenvorlage trägt die einzige h1; nur die erste Startseite hat keine sichtbare und bekommt einen Screenreader-Titel.
+$startseiteH1 = ($meta['nameAlsH1'] ?? false) === true;
 
 $mainCategories = [];
 foreach ($site->categories as $category) {
@@ -40,7 +39,6 @@ foreach ($site->categories as $category) {
     }
 }
 $mainCategories = array_slice($mainCategories, 0, 6);
-$topTags = array_slice($site->tags, 0, 10);
 // Marken-Adressen: ohne Asset leer, die Vorlage zeigt dann statt des Bildes den Namen.
 $brand = [];
 foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKey) {
@@ -79,7 +77,18 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
 <header>
   <div class="leiste">
     <div class="wrap">
-      <span class="klein ausgabe-zeile"><span class="ausgabe" title="Laufende Nummer: so viele Artikel sind bisher erschienen">Ausgabe Nr. <?= $site->issueNumber ?></span><span class="ausgabe-datum"> · <?= e(datum(gmdate('Y-m-d H:i:s'))) ?></span></span>
+      <a class="logo" href="/"<?php if ($brand['logoPrimary'] !== '') { ?> aria-label="<?= e($siteTitle) ?> – zur Startseite"<?php } ?>>
+<?php if ($brand['logoPrimary'] !== '') { ?>
+        <picture>
+<?php if ($brand['logoIcon'] !== '') { ?>
+          <source media="(max-width: 45.99rem)" srcset="<?= e($brand['logoIcon']) ?>" width="128" height="128">
+<?php } ?>
+          <img src="<?= e($brand['logoPrimary']) ?>" alt="" width="680" height="128">
+        </picture>
+<?php } else { ?>
+        <span class="name"><?= e($siteTitle) ?></span>
+<?php } ?>
+      </a>
       <div class="kopf-rechts">
         <form class="suche" id="suche" action="/suche/" role="search">
           <label class="suche-feld">
@@ -93,7 +102,6 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
       </div>
     </div>
   </div>
-  <div class="titelkopf wrap"><<?= $nameTag ?> class="name"><a href="/"><?= e($siteTitle) ?></a></<?= $nameTag ?>></div>
   <nav class="nav" aria-label="Kategorien">
     <ul>
 <?php foreach ($mainCategories as $category) { ?>
@@ -105,28 +113,19 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
 </header>
 
 <main id="inhalt">
+<?php if ($startseiteH1) { ?>
+<h1 class="sr-nur"><?= e($siteTitle) ?></h1>
+<?php } ?>
 <?= $content ?>
 </main>
 
+<?php if ($brand['footerMascot'] !== '') { ?>
+<div class="fuss-motiv"><img src="<?= e($brand['footerMascot']) ?>" alt="" width="1774" height="887" loading="lazy" decoding="async"></div>
+<?php } ?>
 <footer class="fuss">
   <div class="wrap">
-    <div class="spalten">
-<?php if ($topTags !== []) { ?>
-      <section aria-labelledby="fh-tags">
-        <h2 id="fh-tags">Häufige Schlagwörter</h2>
-        <ul class="chips">
-<?php foreach ($topTags as $tag) { ?>
-          <li><a class="chip tag" href="<?= e($tag['url']) ?>"><?= e($tag['name']) ?> <span class="zahl"><?= $tag['count'] ?></span></a></li>
-<?php } ?>
-        </ul>
-      </section>
-<?php } ?>
-      <section aria-labelledby="fh-seiten">
-        <h2 id="fh-seiten"><?= e($siteTitle) ?></h2>
-        <nav aria-labelledby="fh-seiten"><a href="/ueber/">Über</a><a href="/kategorien/">Alle Kategorien</a><a href="/feed.xml">RSS-Feed</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
-      </section>
-    </div>
-    <div class="unten"><span><?= e($siteTitle) ?> · <?= e($siteTagline) ?></span></div>
+    <a class="marke" href="/"><?php if ($brand['logoIcon'] !== '') { ?><img src="<?= e($brand['logoIcon']) ?>" alt="" width="128" height="128"><?php } ?><span><?= e($siteTitle) ?></span></a>
+    <nav aria-label="Rechtliches und Kontakt"><a href="/ueber/">Kontakt</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
   </div>
 </footer>
 

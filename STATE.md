@@ -1,8 +1,8 @@
 # STATE
 
 **Aktiver Plan:** `docs/planning/2026-11-16_dispatch-dark-botanical/`
-**Phase:** 3/4 abgeschlossen; nächste: Phase 4 — Restliche Seiten, Redaktionsmodus, Doku (standard)
-**Next step:** Browser-Check der Vorschlags- und Veröffentlichungsplan-Dialoge; Historien-Artikel (Altes Land 45, Postmaster 51, Ada Lovelace 50) schreiben lassen, freigeben und einplanen, damit die Geschichtsquote greift.
+**Phase:** 4/4 abgeschlossen (Code und Doku); offen nur Sichtprüfung an der Demo-Site (finale AK 7)
+**Next step (Dark Botanical):** Datenbank einrichten, `php bin/dispatch demo` + `build`, Desktop/Tablet/Mobil/Druck/ohne JS/Redaktionssicht belegen, dann Plan archivieren. **Weiter (alt):** Browser-Check der Vorschlags- und Veröffentlichungsplan-Dialoge; Historien-Artikel (Altes Land 45, Postmaster 51, Ada Lovelace 50) schreiben lassen, freigeben und einplanen, damit die Geschichtsquote greift.
 
 **Kategorien-Umstellung (ADR-037, 2026-11-17, live):** Migration 018, `category:restructure --apply --remote` und Rauchtest durch (42 Kategorien neu, 33 Artikel und 22 Queue-Einträge umgehängt, alte Adressen leiten weiter, Nachbarn und Sperre von `/dispatch-app/` in Ordnung). Sicherung für den Rollback: `deploy-backup/category-restructure-20261117-153851.json` (lokal, nicht im Git); Rollback: `php -d curl.cainfo=<ca-bundle.crt> bin/dispatch category:restructure --rollback=<Datei> --remote`. Dokumente `preferences` und `editorial_guidelines` (Revision 8) und die Plan-Reihenfolge sind angepasst.
 **Weitere offene Arbeit:** Nach dem Deploy stehen die Browser-Sichtpruefung des Artikels, der Agenten-Anweisungen und der Gestaltungs-Bausteine aus.

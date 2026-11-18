@@ -7,7 +7,7 @@ Stand: 2026-11-16 · Quelle: Design-Handover vom 2026-11-16
 | 1 | Marken-Assets, Builder-Kontrakt und verbindliche Designquelle | heikel | complete |
 | 2 | Dunkle globale Schale: Header, Navigation, Footer, Tokens | standard | complete |
 | 3 | Startseite: Featured-Artikel, Sidebar und Raster | standard | complete |
-| 4 | Restliche öffentliche Seiten, Redaktionsmodus und Dokumentation | standard | pending |
+| 4 | Restliche öffentliche Seiten, Redaktionsmodus und Dokumentation | standard | complete |
 
 ## Kontrakt
 
@@ -19,13 +19,13 @@ Stand: 2026-11-16 · Quelle: Design-Handover vom 2026-11-16
 
 ## Finale AK
 
-1. Die öffentliche Website ist in allen Farbschemata dauerhaft Dark Botanical: Hintergrund `#071D1B`, erkennbare teal-farbene Primäraktionen `#43D6C5`, grüne Zweitfarbe, Text `#F1F5E9`; keine helle Standardvariante oder rote Alt-Primärfarbe bleibt sichtbar.
-2. Header und Kategorienavigation sind kompakt; auf der Startseite steht der erste Artikel ohne Hero, Begrüßung oder Leerfläche direkt nach der Navigation. Fokus, Suche, Login, Skip-Link und Tastaturbedienung funktionieren weiter.
-3. Desktop-Startseite: Featured Card mit Bild links/Text rechts und rechte Sidebar mit „Über DISPATCH“ sowie „Beliebte Schlagwörter“. Tablet stapelt Sidebar kontrolliert, Mobil zeigt Karten einspaltig und Navigation ohne horizontalen Seitenüberlauf.
-4. Vor dem minimalen Footer erscheint das neue Maskottchen-PNG als nicht fixes, dekoratives Footer-Motiv; Gesicht/Silhouette bleiben bei allen Breakpoints erkennbar. Der Footer enthält nur Signet/Name, Kontakt, Impressum und Datenschutz.
-5. Artikel, Kategorien, Tags, Suche, Dokumente, 404, Vorschau, Zustimmung und angemeldeter Redaktionsmodus bleiben funktionsfähig, kontrastreich und lesbar; Inhalt, URLs, Builder-Manifest, Bildvarianten und Sicherheitsgrenzen ändern sich nicht.
-6. `app/theme/style.css` bleibt höchstens 50.000 Byte; die bestehenden Größenobergrenzen aller übrigen Theme-Dateien bleiben eingehalten. Kein externes CSS, JavaScript oder Webfont wird eingeführt.
-7. Die Implementierung enthält ADR-035, aktualisierte Frontend-/Code-Map-Dokumentation und eine an der erzeugten Demo-Site belegte Desktop-, Tablet-, Mobil-, Druck-, Ohne-JavaScript- und angemeldete Redaktionssicht.
+- [x] 1. Die öffentliche Website ist in allen Farbschemata dauerhaft Dark Botanical: Hintergrund `#071D1B`, erkennbare teal-farbene Primäraktionen `#43D6C5`, grüne Zweitfarbe, Text `#F1F5E9`; keine helle Standardvariante oder rote Alt-Primärfarbe bleibt sichtbar.
+- [x] 2. Header und Kategorienavigation sind kompakt; auf der Startseite steht der erste Artikel ohne Hero, Begrüßung oder Leerfläche direkt nach der Navigation. Fokus, Suche, Login, Skip-Link und Tastaturbedienung funktionieren weiter. (Code geprüft; Sichtprüfung offen, siehe Report)
+- [x] 3. Desktop-Startseite: Featured Card mit Bild links/Text rechts und rechte Sidebar mit „Über DISPATCH“ sowie „Beliebte Schlagwörter“. Tablet stapelt Sidebar kontrolliert, Mobil zeigt Karten einspaltig und Navigation ohne horizontalen Seitenüberlauf. (Code geprüft; Sichtprüfung offen, siehe Report)
+- [x] 4. Vor dem minimalen Footer erscheint das neue Maskottchen-PNG als nicht fixes, dekoratives Footer-Motiv; Gesicht/Silhouette bleiben bei allen Breakpoints erkennbar. Der Footer enthält nur Signet/Name, Kontakt, Impressum und Datenschutz. (Code geprüft; Sichtprüfung offen, siehe Report)
+- [x] 5. Artikel, Kategorien, Tags, Suche, Dokumente, 404, Vorschau, Zustimmung und angemeldeter Redaktionsmodus bleiben funktionsfähig, kontrastreich und lesbar; Inhalt, URLs, Builder-Manifest, Bildvarianten und Sicherheitsgrenzen ändern sich nicht. (Code geprüft; Sichtprüfung offen, siehe Report)
+- [x] 6. `app/theme/style.css` bleibt höchstens 50.000 Byte; die bestehenden Größenobergrenzen aller übrigen Theme-Dateien bleiben eingehalten. Kein externes CSS, JavaScript oder Webfont wird eingeführt.
+- [ ] 7. Die Implementierung enthält ADR-035, aktualisierte Frontend-/Code-Map-Dokumentation und eine an der erzeugten Demo-Site belegte Desktop-, Tablet-, Mobil-, Druck-, Ohne-JavaScript- und angemeldete Redaktionssicht. (ADR-035 und Doku vorhanden; Demo-Site-Belege fehlen, keine DB)
 
 ## Formatentscheidung
 
@@ -33,12 +33,12 @@ Das vom Auftraggeber gelieferte Maskottchen-PNG (1.774 × 887 px, Alpha-Kanal) i
 
 ## Summary / Files touched / Commits / Deviations / Follow-ups
 
-**Summary:**
+**Summary:** Dauerhaft dunkle Website (Schale, Startseite, Restseiten) mit lokalen Marken-Assets; Phase 4 schloss die Reste (Diagramm-Palette, Redaktions-Kontraste, Doku).
 
-**Files touched:**
+**Files touched:** `app/theme/{style.css,diagramme.css,redaktion/redaktion.css,branding/*}`, `app/src/Site/{Assets,Builder}.php`, `app/templates/{layout,home}.php`, `docs/{code-map.md,conventions/frontend.md,design/dispatch-dark-botanical.md,decisions/035-*.md}`.
 
-**Commits:**
+**Commits:** 366c509, 550823d, 71c0da7, Phase-4-Commit (feat/docs, siehe git log); nicht gepusht.
 
-**Deviations from plan:**
+**Deviations from plan:** Kein Bau und keine Browserprüfung (keine lokale Datenbank): AK 7 nur zum Teil belegt; AK 2–5 nur am Code geprüft.
 
-**Follow-ups:**
+**Follow-ups:** Datenbank einrichten, `php bin/dispatch demo` und `build` laufen lassen, Desktop/Tablet/Mobil/Druck/ohne JS/Redaktionssicht an der Demo-Site belegen (dod.md).

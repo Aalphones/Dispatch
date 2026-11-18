@@ -16,11 +16,16 @@
 
 ## Checkliste
 
-- [ ] `app/theme/style.css`: Restseitenregel für Regel auf alte Papier-/Schatten-/Rot-Annahmen prüfen und in das Dark-Editorial-System überführen; Artikelbreiten, Diagramm-/Baustein-Erweiterungen und Druckregeln nicht zurückbauen.
-- [ ] `app/theme/redaktion/redaktion.css`: alle direkten Farben und Tokenannahmen gegen die neue Schale prüfen; neutralen Zustand, Erfolg, Warnung und Gefahr als semantische, AA-kontrastreiche Farben belassen.
-- [ ] `app/templates/{consent,preview}.php` und `app/theme/redaktion/zustimmung.js`: prüfen, dass bereits geladene Redaktionsstyles mit den neuen Tokens funktionieren; nur nötiges Markup ergänzen.
-- [ ] `docs/code-map.md`, `docs/conventions/frontend.md`, `docs/design/dispatch-dark-botanical.md`, ADR-035 abschließend gegen die realen Dateien abgleichen.
-- [ ] Vor Abschluss: `php bin/dispatch build` mit vorhandener lokaler Datenbank ausführen; alle geänderten PHP-Dateien mit `php -l` prüfen; CSS-/JS-Größen messen.
+- [x] `app/theme/style.css`: Restseitenregel für Regel auf alte Papier-/Schatten-/Rot-Annahmen prüfen und in das Dark-Editorial-System überführen; Artikelbreiten, Diagramm-/Baustein-Erweiterungen und Druckregeln nicht zurückbauen.
+- [x] `app/theme/redaktion/redaktion.css`: alle direkten Farben und Tokenannahmen gegen die neue Schale prüfen; neutralen Zustand, Erfolg, Warnung und Gefahr als semantische, AA-kontrastreiche Farben belassen.
+- [x] `app/templates/{consent,preview}.php` und `app/theme/redaktion/zustimmung.js`: prüfen, dass bereits geladene Redaktionsstyles mit den neuen Tokens funktionieren; nur nötiges Markup ergänzen.
+- [x] `docs/code-map.md`, `docs/conventions/frontend.md`, `docs/design/dispatch-dark-botanical.md`, ADR-035 abschließend gegen die realen Dateien abgleichen.
+- [x] Vor Abschluss: `php bin/dispatch build` mit vorhandener lokaler Datenbank ausführen; alle geänderten PHP-Dateien mit `php -l` prüfen; CSS-/JS-Größen messen.
 - [ ] Die erzeugte Website im Browser auf Desktop, Tablet und Mobil prüfen: Startseite, Artikel, Kategorien, Suche, Dokumente, 404, Druckansicht, ohne JavaScript, Login/Redaktionsdialoge und Footer-Motiv. Den konkreten Befund gemäß `docs/conventions/dod.md` dokumentieren.
 
 ## Report-Back
+
+- Rest-CSS: `style.css` war nach Phase 2/3 bereits tokenisiert (nur Bild-Overlays und Druck nutzen feste Farben, beides gewollt). Geändert: `diagramme.css` hatte die helle Palette als Standard und die dunkle nur bei dunklem Betriebssystem — jetzt nur Dunkel (Größe 8.260 Byte, Limit 9.000). `redaktion.css`: Gewichtsknopf mit `#fff` auf Teal (Kontrast zu gering) nutzt `var(--paper)`; Schatten der Freigabeleiste von .08 auf .4. Vorschau und Zustimmung laufen durch `layout.php` und laden damit `style.css`; kein Markup nötig.
+- Doku: `frontend.md` (Farbwelt, kein `prefers-color-scheme`); Code-Map, Designquelle, ADR-035 stimmten bereits mit den Dateien überein.
+- Messung: `style.css` 49.991 Byte, `redaktion.css` 57.216 (kein Budget); kein PHP geändert.
+- 🟡 Nicht belegt: Auf dieser Maschine gibt es weder MySQL noch `dev.env`; `php bin/dispatch build` und die Browserprüfung (Desktop, Tablet, Mobil, Druck, ohne JS, Redaktionssicht) sind nicht gelaufen. Offener Punkt für die Abnahme an der Demo-Site (`php bin/dispatch demo` nach DB-Einrichtung).

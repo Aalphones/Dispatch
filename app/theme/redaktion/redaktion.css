@@ -102,7 +102,7 @@ body.k-modus .v-ansicht .text { user-select: text; }
 
 @media (max-width: 46rem) {
   /* Freigabe wird zur Leiste am unteren Rand; der Freiraum darunter ist so hoch wie die Leiste selbst (gemessen), nicht geschätzt. */
-  .freigabe { position: fixed; top: auto; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--accent-line); border-bottom: 0; box-shadow: 0 -8px 24px rgba(0,0,0,.08); }
+  .freigabe { position: fixed; top: auto; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--accent-line); border-bottom: 0; box-shadow: 0 -8px 24px rgba(0,0,0,.4); }
   .freigabe .wrap { gap: .6rem; padding-block: .75rem calc(.75rem + env(safe-area-inset-bottom)); }
   .pruefung { flex-wrap: nowrap; overflow-x: auto; width: 100%; margin-right: 0; scrollbar-width: none; }
   .freigabe-knoepfe { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
@@ -164,7 +164,7 @@ body.k-modus .v-ansicht .text { user-select: text; }
 .gewicht { display: inline-flex; border-radius: 999px; overflow: hidden; background: rgba(20,16,10,.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.25); }
 .gewicht button { border: 0; background: none; color: rgba(255,255,255,.85); padding: .32rem .58rem; cursor: pointer; font: 700 .75rem var(--sans); transition: background var(--t-fast), color var(--t-fast); }
 .gewicht button:disabled { cursor: progress; }
-.gewicht button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.gewicht button[aria-pressed="true"] { background: var(--accent); color: var(--paper); }
 .hinweis { font: .82rem/1.5 var(--sans); color: var(--ink-3); background: var(--paper-2); border-radius: 8px; padding: .65rem .8rem; margin: 0 0 1rem; text-align: center; }
 
 @media (max-width: 62rem) {

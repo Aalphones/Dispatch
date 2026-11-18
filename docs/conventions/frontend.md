@@ -28,9 +28,9 @@
 - Marken-Assets (Logos, Footer-Maskottchen) liegen in `app/theme/branding/` und kommen nur über `$assets` (`logoPrimary`, `logoIcon`, `logoWordmark`, `footerMascot`) in Templates; eine leere Adresse ist erlaubt.
 - Jede Ausgabe in Templates wird escaped (Helfer `e()`); nur Artikel-HTML aus dem Sanitizer geht roh hinaus.
 - Ohne JavaScript funktioniert alles außer Suche, Videos und Login.
-- Farbwelt: Primärfarbe gedecktes Teal (`--accent` `#256e64` hell, `--accent-ink` `#45a595` dunkel), Grün als Zweitfarbe, kein Neon. Rot nur für `--bad`/`--minus` und Diagramm-`c6`; Diagramm-Palette `--c1…--c8` in `diagramme.css`, keine harten Farbwerte außerhalb der Tokens.
+- Farbwelt: nur Dunkel (ADR-035). Tokens `--color-*` in `style.css` (Grund `#071D1B`, Primär Teal `#43D6C5`, Grün als Zweitfarbe, Text `#F1F5E9`); die älteren Namen (`--paper`, `--ink`, `--accent`, `--rule`) sind Aliase darauf, auch für `redaktion.css`. Rot nur für `--bad`/`--minus` und Diagramm-`c6`; Diagramm-Palette `--c1…--c8` in `diagramme.css` (nur Dunkel), keine harten Farbwerte außerhalb der Tokens; Text auf Primärflächen ist `var(--paper)`, nie `#fff`.
 - Social-Beiträge (X, Instagram, Facebook, TikTok) sind Zwei-Klick-Einbettungen ohne Plattform-Skript; ihre Hosts stehen in der CSP `frame-src` der `.htaccess` (ADR-033, wirkt erst nach dem Deploy). Agenten-CSS wird nie inline ausgeliefert, sondern als `assets/artikel-<slug>.<hash>.css` mit `style-src 'self'` (ADR-034); eigene Klassen nur mit Präfix `x-`.
-- Dark Mode über `prefers-color-scheme`, `prefers-reduced-motion` beachten, Druck-Stylesheet mit ausgeschriebenen Quell-URLs.
+- Kein Farbschema-Umschalter und keine `prefers-color-scheme`-Zweige (ADR-035); `prefers-reduced-motion` beachten, Druck-Stylesheet mit ausgeschriebenen Quell-URLs.
 - Sprunglink zum Inhalt, sichtbare Fokusrahmen, Kontrast mindestens WCAG AA, jedes Bild mit Alt-Text, genau eine `h1` pro Seite.
 - Bilder als `<picture>` mit WebP und JPEG, feste `width`/`height`, `loading="lazy"` außer beim Titelbild.
 - Das Access-JWT liegt nur im Arbeitsspeicher, nie in `localStorage`; dort steht höchstens das Merkzeichen `dispatch.angemeldet`.

@@ -5,29 +5,14 @@
    Nachbarfarben unterscheiden sich in der Helligkeit (Kontrastverhältnis ≥ 1,15); die Identität tragen zusätzlich Druckmuster und Beschriftung.
    ========================================================================== */
 .diagramm {
-  --c1:#2b7a6f; --c2:#7aa84f; --c3:#8ccbb9; --c4:#2c5f4f; --c5:#c0a96c; --c6:#c8353a; --c7:#7c9ab8; --c8:#7f7f2e;
-  --t1:#fff; --t2:#000; --t3:#000; --t4:#fff; --t5:#000; --t6:#fff; --t7:#000; --t8:#fff;
-  --s1:#d7ebe5; --s2:#a9d3c8; --s3:#5fa597; --s4:#2b7a6f; --s5:#174d44;
-  --ts1:#000; --ts2:#000; --ts3:#000; --ts4:#fff; --ts5:#fff;
-  --plus:#2b7a6f; --minus:#c8353a; --summe:var(--ink-2);
-  --flaeche: var(--paper);
-  margin: 2rem 0;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not(.hell) .diagramm {
-    --c1:#4aa595; --c2:#86b86a; --c3:#2f6f62; --c4:#a6d6c6; --c5:#b59f66; --c6:#e06a6e; --c7:#7f9fbd; --c8:#b0b04e;
-    --t1:#000; --t2:#000; --t3:#fff; --t4:#000; --t5:#000; --t6:#000; --t7:#000; --t8:#000;
-    --s1:#1d3d37; --s2:#24574d; --s3:#3b8e7e; --s4:#6cc0ae; --s5:#bfe6db;
-    --ts1:#fff; --ts2:#fff; --ts3:#000; --ts4:#000; --ts5:#000;
-    --plus:#4aa595; --minus:#e06a6e;
-  }
-}
-:root.dunkel .diagramm {
   --c1:#4aa595; --c2:#86b86a; --c3:#2f6f62; --c4:#a6d6c6; --c5:#b59f66; --c6:#e06a6e; --c7:#7f9fbd; --c8:#b0b04e;
   --t1:#000; --t2:#000; --t3:#fff; --t4:#000; --t5:#000; --t6:#000; --t7:#000; --t8:#000;
   --s1:#1d3d37; --s2:#24574d; --s3:#3b8e7e; --s4:#6cc0ae; --s5:#bfe6db;
   --ts1:#fff; --ts2:#fff; --ts3:#000; --ts4:#000; --ts5:#000;
   --plus:#4aa595; --minus:#e06a6e;
+  --summe:var(--ink-2);
+  --flaeche: var(--paper);
+  margin: 2rem 0;
 }
 
 /* ---- Fläche und Schrift ---- */

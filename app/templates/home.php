@@ -24,6 +24,9 @@ use function Dispatch\Site\quellenText;
 <?php if ($aufmacher === null && $posts === []) { ?>
   <header class="seitenkopf"><p>Noch keine Artikel erschienen.</p></header>
 <?php } ?>
+<?php $mitSeite = $seite === 1; ?>
+  <div class="home-layout<?= $mitSeite ? ' mit-seite' : '' ?>">
+  <div class="home-main">
 <?php if ($aufmacher !== null) { ?>
 <?php $cover = $aufmacher['cover']; $sourceCount = count($aufmacher['sources']); ?>
   <article class="aufmacher" data-post-id="<?= (int) $aufmacher['id'] ?>">
@@ -37,6 +40,7 @@ use function Dispatch\Site\quellenText;
       <p class="teaser"><?= e((string) $aufmacher['excerpt']) ?></p>
 <?php } ?>
       <p class="meta"><?= e(datum((string) $aufmacher['published_at'])) ?> · <?= (int) $aufmacher['reading_minutes'] ?> Min. Lesezeit<?php if ($sourceCount > 0) { ?> · <?= e(quellenText($sourceCount)) ?><?php } ?></p>
+      <a class="weiter" href="<?= e($aufmacher['url']) ?>">Weiterlesen<span class="sr-nur">: <?= e($aufmacher['title']) ?></span> <span aria-hidden="true">→</span></a>
     </div>
   </article>
 <?php } ?>
@@ -48,4 +52,27 @@ use function Dispatch\Site\quellenText;
   </div>
 <?php } ?>
 <?= $this->partial('pagination', ['basis' => '/', 'seite' => $seite, 'gesamt' => $gesamt]) ?>
+  </div>
+<?php if ($mitSeite) { ?>
+  <aside class="home-sidebar" aria-label="Über die Seite">
+    <section class="side-karte">
+      <h2><?php if (($assets['logoIcon'] ?? '') !== '') { ?><img src="<?= e($assets['logoIcon']) ?>" alt="" width="128" height="128"><?php } ?>Über DISPATCH</h2>
+<?php if ($aboutText !== '') { ?>
+      <p><?= e($aboutText) ?></p>
+<?php } ?>
+      <a class="weiter" href="/ueber/">Mehr über DISPATCH <span aria-hidden="true">→</span></a>
+    </section>
+<?php if ($topTags !== []) { ?>
+    <section class="side-karte">
+      <h2>Beliebte Schlagwörter</h2>
+      <ul class="chips">
+<?php foreach ($topTags as $tag) { ?>
+        <li><a class="chip tag" href="<?= e($tag['url']) ?>"><?= e($tag['name']) ?> <span class="zahl"><?= (int) $tag['count'] ?></span></a></li>
+<?php } ?>
+      </ul>
+    </section>
+<?php } ?>
+  </aside>
+<?php } ?>
+  </div>
 </div>

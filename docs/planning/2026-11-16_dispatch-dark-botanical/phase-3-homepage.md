@@ -17,10 +17,12 @@
 
 ## Checkliste
 
-- [ ] `app/templates/home.php`: `$aboutText` und `$topTags` dokumentieren, den bisherigen Aufmacher/Raster in `.home-layout`, `.home-main`, `.home-sidebar` strukturieren und ohne Datenverlust rendern.
-- [ ] `app/templates/home.php`: Sidebar-Sektionen als echte Überschriften und Listen ausgeben; Tag-URLs und Zähler weiter escapen; kein JavaScript für Inhalt/Reihenfolge einsetzen.
-- [ ] `app/templates/home.php`: den vorhandenen Featured-Link um einen sichtbaren, per CSS dekorierten Text-/Pfeilhinweis ergänzen, ohne verschachtelte Links zu erzeugen.
-- [ ] `app/templates/partials/card.php`: nur ergänzen, falls ein benannter Karten-Hook für das neue Raster zwingend fehlt; keine parallele Card-Komponente anlegen.
-- [ ] `app/theme/style.css`: `.home-layout`, `.home-sidebar`, Featured- und Card-Varianten für Desktop/Tablet/Mobil definieren; Bilder behalten `<picture>`, intrinsische Maße und Lazy-Loading aus dem bestehenden Helfer.
+- [x] `app/templates/home.php`: `$aboutText` und `$topTags` dokumentieren, den bisherigen Aufmacher/Raster in `.home-layout`, `.home-main`, `.home-sidebar` strukturieren und ohne Datenverlust rendern.
+- [x] `app/templates/home.php`: Sidebar-Sektionen als echte Überschriften und Listen ausgeben; Tag-URLs und Zähler weiter escapen; kein JavaScript für Inhalt/Reihenfolge einsetzen.
+- [x] `app/templates/home.php`: den vorhandenen Featured-Link um einen sichtbaren, per CSS dekorierten Text-/Pfeilhinweis ergänzen, ohne verschachtelte Links zu erzeugen.
+- [x] `app/templates/partials/card.php`: nur ergänzen, falls ein benannter Karten-Hook für das neue Raster zwingend fehlt; keine parallele Card-Komponente anlegen.
+- [x] `app/theme/style.css`: `.home-layout`, `.home-sidebar`, Featured- und Card-Varianten für Desktop/Tablet/Mobil definieren; Bilder behalten `<picture>`, intrinsische Maße und Lazy-Loading aus dem bestehenden Helfer.
 
 ## Report-Back
+
+Status: complete. Startseite in .home-layout (Hauptspalte + Sidebar nur Seite 1, ab 62rem 2fr/1fr), Weiterlesen-Pfeil als eigener Link, Karte `card.php` unverändert. style.css 49.991 Byte (Platz durch kürzere Abschnittsüberschriften). Keine Sichtprüfung ohne DB.

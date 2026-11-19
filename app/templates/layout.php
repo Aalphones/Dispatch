@@ -67,6 +67,13 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot', 'contentBg'
 <?php foreach (Seo::headTags($meta, $site, $baseUrl) as $headTag) { ?>
 <<?= $headTag['tag'] ?><?php foreach ($headTag['attributes'] as $attribute => $value) { ?> <?= $attribute ?>="<?= e($value) ?>"<?php } ?>>
 <?php } ?>
+<?php if (($assets['faviconSvg'] ?? '') !== '') { ?>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="<?= e($assets['faviconSvg']) ?>" type="image/svg+xml">
+<?php } ?>
+<?php if (($assets['appleTouchIcon'] ?? '') !== '') { ?>
+<link rel="apple-touch-icon" href="<?= e($assets['appleTouchIcon']) ?>">
+<?php } ?>
 <link rel="stylesheet" href="<?= e($assets['style']) ?>">
 <?php foreach ((array) ($meta['styles'] ?? []) as $style) { ?>
 <link rel="stylesheet" href="<?= e((string) $style) ?>">

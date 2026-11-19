@@ -13,7 +13,7 @@ return [
     'reserved_top_level' => ['card', 'api', 'backend', 'scanner', 'garage', 'garage-app', 'dispatch', 'dispatch-app', '.htaccess', '.well-known'],
     // ADR-014: der Builder schreibt und löscht nur unter diesen Namen der obersten Ebene.
     'builder_top_level' => [
-        'index.html', '404.html', 'feed.xml', 'sitemap.xml', 'robots.txt', 'seite', 'artikel', 'kategorie',
+        'index.html', '404.html', 'feed.xml', 'sitemap.xml', 'robots.txt', 'favicon.ico', 'seite', 'artikel', 'kategorie',
         'kategorien', 'tag', 'suche', 'vorschau', 'anmelden', 'ueber', 'impressum', 'datenschutz', 'assets', 'media',
     ],
     // Formvorgaben und Betriebsmodi: nur hier änderbar, nie per Service (SettingService → not_changeable).

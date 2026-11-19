@@ -28,6 +28,8 @@ final class Assets
         'logoWordmark' => ['logo-wordmark.svg', 'logo-wordmark', 'svg'],
         'footerMascot' => ['footer-mascot.webp', 'footer-mascot', 'webp'],
         'contentBg' => ['content-bg.webp', 'content-bg', 'webp'],
+        'faviconSvg' => ['favicon.svg', 'favicon', 'svg'],
+        'appleTouchIcon' => ['apple-touch-icon.png', 'apple-touch-icon', 'png'],
     ];
 
     private const BRANDING_FOLDER = 'branding';

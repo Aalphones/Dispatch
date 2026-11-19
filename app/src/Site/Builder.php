@@ -192,11 +192,19 @@ final class Builder
             . "Disallow: /suche/\n"
             . 'Sitemap: ' . $baseUrl . "/sitemap.xml\n";
 
-        return [
+        $files = [
             'feed.xml' => Feed::build($this->site, $this->rendered, $baseUrl, (string) $this->config['storage_dir'] . '/media'),
             'sitemap.xml' => Sitemap::build($this->site, $baseUrl),
             'robots.txt' => $robots,
         ];
+
+        // Browser, Feed-Reader und Crawler fragen `/favicon.ico` ohne Hash-Adresse an; fehlt die Datei, entfällt sie.
+        $favicon = (string) $this->config['app_dir'] . '/theme/branding/favicon.ico';
+        if (is_file($favicon)) {
+            $files['favicon.ico'] = (string) file_get_contents($favicon);
+        }
+
+        return $files;
     }
 
     /** Startseite: Seite 1 mit Aufmacher und `posts_per_page` Karten, danach `seite/{n}/`. @return array<string, string> */

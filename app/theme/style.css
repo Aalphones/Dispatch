@@ -184,6 +184,11 @@ figcaption .nachweis { color: var(--ink-3); }
 .iv a[aria-current]::before { color: var(--accent-ink); }
 .iv .marker { position: absolute; left: -2px; top: 0; width: 2px; height: 2rem; background: var(--accent-ink); border-radius: 2px; transition: transform var(--t-mid) var(--ease-out), height var(--t-mid) var(--ease-out); }
 .seitenspalte .chips { margin-top: .6rem; }
+.seitenspalte { grid-template-columns: minmax(0, 1fr); overflow-x: hidden; }
+.seitenspalte > * { min-width: 0; }
+.seitenspalte .iv a { overflow-wrap: anywhere; }
+.seitenspalte .chips li { min-width: 0; max-width: 100%; }
+.seitenspalte .chip { white-space: normal; overflow-wrap: anywhere; line-height: 1.25; max-width: 100%; }
 
 .text { min-width: 0; }
 .text > * { margin: 0 0 1.15rem; }

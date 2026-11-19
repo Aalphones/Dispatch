@@ -11,7 +11,7 @@ use function Dispatch\Site\e;
  * @var string $content fertiges HTML der Seitenvorlage
  * @var array<string, mixed> $meta title, description, canonical, robots, bodyPage, activeCategory, scripts, styles
  * @var SiteData $site
- * @var array<string, string> $assets Name → URL (Marken-Assets: logoPrimary, logoIcon, logoWordmark, footerMascot; leer, wenn die Quelldatei fehlt)
+ * @var array<string, string> $assets Name → URL (Marken-Assets: logoPrimary, logoIcon, logoWordmark, footerMascot, contentBg; leer, wenn die Quelldatei fehlt)
  * @var string $baseUrl
  */
 
@@ -47,7 +47,7 @@ if ($footAbout === '') {
 }
 // Marken-Adressen: ohne Asset leer, die Vorlage zeigt dann statt des Bildes den Namen.
 $brand = [];
-foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKey) {
+foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot', 'contentBg'] as $brandKey) {
     $brand[$brandKey] = (string) ($assets[$brandKey] ?? '');
 }
 ?>
@@ -120,6 +120,9 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
 </header>
 
 <main id="inhalt">
+<?php if ($brand['contentBg'] !== '') { ?>
+<div class="inhalt-grund" aria-hidden="true"><img src="<?= e($brand['contentBg']) ?>" alt="" width="1920" height="909" decoding="async" fetchpriority="low"></div>
+<?php } ?>
 <?php if ($startseiteH1) { ?>
 <h1 class="sr-nur"><?= e($siteTitle) ?></h1>
 <?php } ?>
@@ -127,7 +130,7 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot'] as $brandKe
 </main>
 
 <?php if ($brand['footerMascot'] !== '') { ?>
-<div class="fuss-motiv"><img src="<?= e($brand['footerMascot']) ?>" alt="" width="1774" height="887" loading="lazy" decoding="async"></div>
+<div class="fuss-motiv"><img src="<?= e($brand['footerMascot']) ?>" alt="" width="960" height="480" loading="lazy" decoding="async"></div>
 <?php } ?>
 <footer class="fuss">
 <?php if ($footTags !== [] || $footAbout !== '') { ?>

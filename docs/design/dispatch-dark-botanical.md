@@ -46,7 +46,7 @@ Ruhiges, minimalistisches Dark-Editorial-Magazin: klare Typografie, feine Kontur
 
 ## Marken-Assets (Asset-Regel)
 
-Quellen liegen in `app/theme/branding/`; `Assets::collect()` legt sie hash-benannt unter `assets/` ab und liefert die Adressen `logoPrimary`, `logoIcon`, `logoWordmark`, `footerMascot` im `$assets`-Array. Templates lesen sie nur dort (defensiv, leer erlaubt). Das Footer-Maskottchen ist `footer-mascot.png` (1774 × 887 px, RGBA), wird unverändert als PNG mit festen `width`/`height` ausgeliefert und nie vektorisiert. Besucher laden nichts von Dritten.
+Quellen liegen in `app/theme/branding/`; `Assets::collect()` legt sie hash-benannt unter `assets/` ab und liefert die Adressen `logoPrimary`, `logoIcon`, `logoWordmark`, `footerMascot` im `$assets`-Array. Templates lesen sie nur dort (defensiv, leer erlaubt). Das Footer-Maskottchen ist `footer-mascot.webp` (960 × 480 px, mit Transparenz, verkleinert aus dem Original `docs/design/quellbilder/footer-mascot.png`, 1774 × 887) und wird mit festen `width`/`height` ausgeliefert, nie vektorisiert. Der Inhaltsbereich zwischen Kopf und Fuß trägt `content-bg.webp` (1920 px breit) als festen Hintergrund (Original: `docs/design/quellbilder/content-bg.png`, 4096 × 1940; die Originale liegen bewusst außerhalb von `app/`, der Deploy lädt sie nicht hoch): `.inhalt-grund` in `<main>`, Bild `position: fixed`, `clip-path` schneidet es auf den Bereich zu (die CSP `style-src self` verbietet eine Adresse im Inline-Stil). Besucher laden nichts von Dritten.
 
 ## Verbote
 

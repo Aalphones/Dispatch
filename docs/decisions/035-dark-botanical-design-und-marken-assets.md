@@ -15,7 +15,7 @@ Die Website soll als ruhiges Dark-Editorial-Magazin mit Teal und Blattfarben ers
 ## Entscheidung
 
 - Option 3. Das PNG wird unverändert ausgeliefert; Autovektorisierung ist verworfen (weiche Verläufe wären entweder Trace-Artefakte oder eine große Pfadsammlung).
-- Marken-Assets liegen in `app/theme/branding/` (`logo-primary.svg`, `logo-icon.svg`, `logo-wordmark.svg`, `footer-mascot.png`). `Assets::collect()` hasht den Inhalt und liefert `assets/<name>.<hash>.<ext>` unter den Schlüsseln `logoPrimary`, `logoIcon`, `logoWordmark`, `footerMascot`. Fehlt eine Quelle, ist die Adresse leer; der Bau läuft weiter.
+- Marken-Assets liegen in `app/theme/branding/` (`logo-primary.svg`, `logo-icon.svg`, `logo-wordmark.svg`, `footer-mascot.webp`, `content-bg.webp`). `Assets::collect()` hasht den Inhalt und liefert `assets/<name>.<hash>.<ext>` unter den Schlüsseln `logoPrimary`, `logoIcon`, `logoWordmark`, `footerMascot`, `contentBg`. Fehlt eine Quelle, ist die Adresse leer; der Bau läuft weiter.
 - `Builder::collectHome()` reicht `aboutText` (`site_description`, sonst `site_tagline`) und `topTags` (zehn häufigste) an `home.php`; keine neue Abfrage, das Dokument „Über“ wird nicht als HTML gelesen.
 - Verbindliche visuelle Quelle ist `docs/design/dispatch-dark-botanical.md` (Tokens, Breakpoints, Komponenten, Verbote, Asset-Regel).
 

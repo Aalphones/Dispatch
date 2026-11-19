@@ -26,7 +26,8 @@ final class Assets
         'logoPrimary' => ['logo-primary.svg', 'logo-primary', 'svg'],
         'logoIcon' => ['logo-icon.svg', 'logo-icon', 'svg'],
         'logoWordmark' => ['logo-wordmark.svg', 'logo-wordmark', 'svg'],
-        'footerMascot' => ['footer-mascot.png', 'footer-mascot', 'png'],
+        'footerMascot' => ['footer-mascot.webp', 'footer-mascot', 'webp'],
+        'contentBg' => ['content-bg.webp', 'content-bg', 'webp'],
     ];
 
     private const BRANDING_FOLDER = 'branding';

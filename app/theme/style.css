@@ -169,6 +169,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 .1em; borde
 .titelbild .foto div.titelbild-hintergrund img { object-fit: cover; filter: blur(1.5rem); transform: scale(1.08); opacity: .8; }
 figcaption { font: .8rem/1.45 var(--sans); color: var(--ink-3); margin-top: .5rem; }
 figcaption .nachweis { color: var(--ink-3); }
+.titelbild figcaption { max-width: var(--wide); margin-inline: auto; padding: 0 1.25rem; text-align: center; }
 
 /* Dreispaltig: links Navigation, Mitte Text, rechts "Kurz gesagt". Nichts ragt in die linke Spalte. */
 .koerper { display: grid; grid-template-columns: var(--side) minmax(0, var(--measure)) var(--side-r); column-gap: var(--gap); justify-content: center; }

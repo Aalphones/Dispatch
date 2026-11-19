@@ -68,7 +68,41 @@ if (searchField) {
 	});
 }
 
-const UNCOUNTED_PAGES = ['vorschau', 'zustimmung'];
+// Nach oben: erscheint erst, wenn man den Seitenanfang verlassen hat; ohne Skript gibt es ihn nicht.
+const toTop = document.createElement('button');
+toTop.type = 'button';
+toTop.className = 'nach-oben';
+toTop.setAttribute('aria-label', 'Nach oben');
+toTop.hidden = true;
+const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+arrow.setAttribute('viewBox', '0 0 24 24');
+arrow.setAttribute('aria-hidden', 'true');
+const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+arrowPath.setAttribute('d', 'M6 14l6-6 6 6');
+arrow.append(arrowPath);
+toTop.append(arrow);
+document.body.append(toTop);
+
+let toTopTick = false;
+function updateToTop() {
+	toTopTick = false;
+	const show = window.scrollY > 400;
+	if (show === toTop.hidden) {
+		toTop.hidden = !show;
+	}
+}
+window.addEventListener('scroll', () => {
+	if (!toTopTick) {
+		toTopTick = true;
+		requestAnimationFrame(updateToTop);
+	}
+}, { passive: true });
+toTop.addEventListener('click', () => {
+	window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+});
+updateToTop();
+
+const UNCOUNTED_PAGES =['vorschau', 'zustimmung'];
 
 // Gezählt wird nur, wer nicht widerspricht (DNT, GPC), nicht angemeldet ist und weder Vorschau noch Zustimmungsseite sieht.
 function isCounted() {

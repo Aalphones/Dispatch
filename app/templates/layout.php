@@ -119,10 +119,11 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot', 'contentBg'
   </nav>
 </header>
 
-<main id="inhalt">
+<div class="inhalt-huelle">
 <?php if ($brand['contentBg'] !== '') { ?>
-<div class="inhalt-grund" aria-hidden="true"><img src="<?= e($brand['contentBg']) ?>" alt="" width="1920" height="909" decoding="async" fetchpriority="low"></div>
+<div class="inhalt-grund" aria-hidden="true"><img src="<?= e($brand['contentBg']) ?>" alt="" width="2560" height="1212" decoding="async" fetchpriority="low"></div>
 <?php } ?>
+<main id="inhalt">
 <?php if ($startseiteH1) { ?>
 <h1 class="sr-nur"><?= e($siteTitle) ?></h1>
 <?php } ?>
@@ -132,6 +133,7 @@ foreach (['logoPrimary', 'logoIcon', 'logoWordmark', 'footerMascot', 'contentBg'
 <?php if ($brand['footerMascot'] !== '') { ?>
 <div class="fuss-motiv"><img src="<?= e($brand['footerMascot']) ?>" alt="" width="960" height="480" loading="lazy" decoding="async"></div>
 <?php } ?>
+</div>
 <footer class="fuss">
 <?php if ($footTags !== [] || $footAbout !== '') { ?>
   <div class="wrap fuss-extra">
